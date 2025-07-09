@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Banner from './Banner';
-import CommandOutput from './CommandOutput';
 import commandsData from '../data/commands.json';
 
 interface Command {
@@ -8,6 +6,43 @@ interface Command {
   desc: string;
   outputLines: string[];
 }
+
+// User's custom rhino ASCII art and CODERHINO block
+const RHINO_ART = [
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣼⢹⠀⠀⠀⠀⠀⠀⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣐⣠⣄⣐⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣼⣿⢹⠀⠀⠀⠀⡜⢲⡖⣶⣦⠀⠀⠀⡄⠀⠀⡄⢪⣾⠋⠀⣴⣾⣿⡗⢡⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ _____           _____         _____        ______        _____    ____   ____  ____  _____   ______           _____                   ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢀⢡⡏⢾⡟⠀⠀⠀⠰⢰⡌⣿⠄⡬⣷⣩⠶⡾⠟⠛⠶⡾⠃⣠⣾⣿⣿⠄⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀___|\\    \\     ____|\\    \\    ___|\\    \\   ___|\\     \\   ___|\\    \\  |    | |    ||    ||\\    \\ |\\     \\     ____|\\    \\  ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⡀⣾⠀⢾⣇⠅⠀⠀⠀⣾⣷⡹⣤⣿⠟⠁⠐⠀⠀⠀⠈⠰⠾⢿⣿⠿⠋⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀/    /\\    \\   /     /\\    \\  |    |\\    \\ |     \\     \\ |    |\\    \\ |    | |    ||    | \\\\    \\| \\     \\   /     /\\    \\",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢡⡏⠀⡀⢿⡌⡀⠀⡇⣿⠌⢷⣴⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠛⠳⢦⣅⡠⠀⠀⠀⠀⠀⠀⠀|    |  |    | /     /  \\    \\ |    | |    ||     ,_____/||    | |    ||    |_|    ||    |  \\|    \\  \\     | /     /  \\    \\         ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠡⠸⣿⡔⠀⡇⣿⠈⠄⠻⣿⡀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⡙⢿⣦⡀⡀⠀⠀⠀⠀|    |  |____||     |    |    ||    | |    ||     \\--'\\_|/|    |/____/ |    .-.    ||    |   |     \\  |    ||     |    |    |            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄⠀⠀⠀|    |   ____ |     |    |    ||    | |    ||     /___/|  |    |\\    \\ |    | |    ||    |   |      \\ |    ||     |    |    |            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐⠀⠀⠀|    |  |    ||\\     \\  /    /||    | |    ||     \\____\\  |    | |    ||    | |    ||    |   |    |\\ \\|    ||\\     \\  /    /|       ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇⠀⠀⠀|\\ ___\\/    /|| \\_____\\____/ ||____|/____/||____ '     /| |____| |____||____| |____||____|   |____||\\_____/|| \\_____\\____/ | |       ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴⣿⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇⠀⠀⠀| |   /____/ | \\ |    ||    | /|    /    | ||    /_____/ | |    | |    ||    | |    ||    |   |    |/ \\|   || \\ |    ||    | /           ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱⠀⠀⠀⠀\\|___|    | /  \\|____||____|/ |____|____|/ |____|     | / |____| |____||____| |____||____|   |____|   |___|/  \\|____||____|/            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁⠀⠀⠀⠀⠀\\( |____|/      \\(    )/      \\(    )/     \\( |_____|/   \\(     )/    \\(     )/    \\(       \\(       )/       \\(    )/           ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀⠀⠀⠀⠀⠀⠀'   )/          '    '        '    '       '    )/       '     '      '     '      '        '       '         '    '                    ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀  '                                           '                                                                                       ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⢿⡶⠶⠶⣶⣶⣤⣤⣨⣽⡿⠋⠑⠀⠀⠀⠀⢰⢸⠟⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠜⠛⠿⢿⣿⠟⠘⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+];
+
+/*const CODERHINO_BLOCK = [
+  ""
+];*/
+
+const WELCOME_LINES = [
+  'Welcome to the CODERHINO Terminal Portfolio',
+  "Type 'help' for available commands",
+  ''
+];
+
+const PROMPT = 'visitor@c0derhin0-wp.com:~$ ';
 
 /**
  * Main Terminal component that handles the interactive terminal interface
@@ -63,8 +98,8 @@ const Terminal: React.FC = () => {
             brightWhite: '#ffffff'
           },
           fontFamily: 'Source Code Pro, monospace',
-          fontSize: 14,
-          lineHeight: 1.2,
+          fontSize: 11,
+          lineHeight: 1.0,
           scrollback: 1000,
           cols: 80,
           rows: 24
@@ -80,8 +115,8 @@ const Terminal: React.FC = () => {
         fitAddonRef.current = fitAddon;
         setIsInitialized(true);
 
-        // Display initial banner
-        displayBanner();
+        // Print banner and welcome
+        printBannerAndWelcome();
         writePrompt();
 
         // Handle window resize
@@ -136,70 +171,23 @@ const Terminal: React.FC = () => {
     })();
   }, [isInitialized]); // Only depend on isInitialized
 
-  // Display the ASCII art banner
-  const displayBanner = () => {
+  // Print banner and welcome message, side by side
+  const printBannerAndWelcome = () => {
     if (!xtermRef.current) return;
-    
-    const rhinoArt = `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣼⢹⠀⠀⠀⠀⠀⠀⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣐⣠⣄⣐⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣼⣿⢹⠀⠀⠀⠀⡜⢲⡖⣶⣦⠀⠀⠀⡄⠀⠀⡄⢪⣾⠋⠀⣴⣾⣿⡗⢡⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢀⢡⡏⢾⡟⠀⠀⠀⠰⢰⡌⣿⠄⡬⣷⣩⠶⡾⠟⠛⠶⡾⠃⣠⣾⣿⣿⠄⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡀⣾⠀⢾⣇⠅⠀⠀⠀⣾⣷⡹⣤⣿⠟⠁⠐⠀⠀⠀⠈⠰⠾⢿⣿⠿⠋⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢡⡏⠀⡀⢿⡌⡀⠀⡇⣿⠌⢷⣴⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠛⠳⢦⣅⡠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠡⠸⣿⡔⠀⡇⣿⠈⠄⠻⣿⡀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⡙⢿⣦⡀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴⣿⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⢿⡶⠶⠶⣶⣶⣤⣤⣨⣽⡿⠋⠑⠀⠀⠀⠀⢰⢸⠟⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠜⠛⠿⢿⣿⠟⠘⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
-
-    const coderhinoArt = `      _____           _____         _____        ______        _____    ____   ____  ____  _____   ______           _____    
-  ___|\\    \\     ____|\\    \\    ___|\\    \\   ___|\\     \\   ___|\\    \\  |    | |    ||    ||\\    \\ |\\     \\     ____|\\    \\   
- /    /\\    \\   /     /\\    \\  |    |\\    \\ |     \\     \\ |    |\\    \\ |    | |    ||    | \\\\    \\| \\     \\   /     /\\    \\  
-|    |  |    | /     /  \\    \\ |    | |    ||     ,_____/||    | |    ||    |_|    ||    |  \\|    \\  \\     | /     /  \\    \\ 
-|    |  |____||     |    |    ||    | |    ||     \\--'\\_|/|    |/____/ |    .-.    ||    |   |     \\  |    ||     |    |    |
-|    |   ____ |     |    |    ||    | |    ||     /___/|  |    |\\    \\ |    | |    ||    |   |      \\ |    ||     |    |    |
-|    |  |    ||\\     \\  /    /||    | |    ||     \\____|\\ |    | |    ||    | |    ||    |   |    |\\ \\|    ||\\     \\  /    /|
-|\\ ___\\/    /|| \\_____\\/____/ ||____|/____/||____ '     /||____| |____||____| |____||____|   |____||\\_____/|| \\_____\\/____/ |
-| |   /____/ | \\ |    ||    | /|    /    | ||    /_____/ ||    | |    ||    | |    ||    |   |    |/ \\|   || \\ |    ||    | /
- \\|___|    | /  \\|____||____|/ |____|____|/ |____|     | /|____| |____||____| |____||____|   |____|   |___|/  \\|____||____|/ 
-   \\( |____|/      \\(    )/      \\(    )/     \\( |_____|/   \\(     )/    \\(     )/    \\(       \\(       )/       \\(    )/    
-    '   )/          '    '        '    '       '    )/       '     '      '     '      '        '       '         '    '     
-        '                                           '                                                                        `;
-
-    // Split the ASCII art into lines
-    const rhinoLines = rhinoArt.split('\n');
-    const coderhinoLines = coderhinoArt.split('\n');
-    
-    // Find the maximum number of lines
-    const maxLines = Math.max(rhinoLines.length, coderhinoLines.length);
-    
-    // Display the ASCII art side by side
+    // Print rhino and block side by side, left-aligned
+    const maxLines = Math.max(RHINO_ART.length); //, CODERHINO_BLOCK.length);
     for (let i = 0; i < maxLines; i++) {
-      const rhinoLine = rhinoLines[i] || '';
-      const coderhinoLine = coderhinoLines[i] || '';
-      xtermRef.current.write(rhinoLine + '  ' + coderhinoLine + '\r\n');
+      const rhinoLine = (RHINO_ART[i] || '').trimStart();
+      //const blockLine = (CODERHINO_BLOCK[i] || '').trimStart();
+      xtermRef.current.write(rhinoLine.padEnd(70, ' ') + '\r\n'); //+ '  ' + blockLine + '\r\n');
     }
-    
-    xtermRef.current.write('\r\n');
-    xtermRef.current.write('Welcome to the CODERHINO Terminal Portfolio\r\n');
-    xtermRef.current.write('Type \'help\' for available commands\r\n');
-    xtermRef.current.write('\r\n');
+    WELCOME_LINES.forEach(line => xtermRef.current.write(line + '\r\n'));
   };
 
   // Write the terminal prompt
   const writePrompt = () => {
     if (!xtermRef.current) return;
-    xtermRef.current.write('visitor@c0derhin0-wp.com:~$ ');
+    xtermRef.current.write(PROMPT);
   };
 
   // Navigate command history
@@ -213,9 +201,9 @@ const Terminal: React.FC = () => {
       setCurrentCommand(command);
       
       // Clear current line and write new command
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
       xtermRef.current.write(command);
     } else if (direction === 'down' && historyIndex > 0) {
       const newIndex = historyIndex - 1;
@@ -224,18 +212,18 @@ const Terminal: React.FC = () => {
       setCurrentCommand(command);
       
       // Clear current line and write new command
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
       xtermRef.current.write(command);
     } else if (direction === 'down' && historyIndex === 0) {
       setHistoryIndex(-1);
       setCurrentCommand('');
       
       // Clear current line
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\rvisitor@c0derhin0-wp.com:~$ ');
+      xtermRef.current.write('\r' + PROMPT);
     }
   };
 
@@ -258,7 +246,17 @@ const Terminal: React.FC = () => {
     const cmd = command.toLowerCase();
     
     if (cmd === 'help') {
-      displayHelp();
+      // Generate help output as lines and use typewriter effect
+      const helpLines = [
+        'Available commands:',
+        ''
+      ];
+      (commandsData as Command[]).forEach(cmdObj => {
+        const padding = ' '.repeat(15 - cmdObj.cmd.length);
+        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
+      });
+      helpLines.push('');
+      displayCommandOutput(helpLines);
     } else if (cmd === 'clear') {
       clearTerminal();
     } else {
@@ -267,25 +265,9 @@ const Terminal: React.FC = () => {
       if (commandData) {
         displayCommandOutput(commandData.outputLines);
       } else {
-        xtermRef.current.write(`command not found: ${command}\r\n`);
-        writePrompt();
+        displayCommandOutput([`command not found: ${command}`]);
       }
     }
-  };
-
-  // Display help information
-  const displayHelp = () => {
-    if (!xtermRef.current) return;
-    
-    xtermRef.current.write('Available commands:\r\n\r\n');
-    
-    (commandsData as Command[]).forEach(cmd => {
-      const padding = ' '.repeat(15 - cmd.cmd.length);
-      xtermRef.current!.write(`  ${cmd.cmd}${padding} - ${cmd.desc}\r\n`);
-    });
-    
-    xtermRef.current.write('\r\n');
-    writePrompt();
   };
 
   // Clear the terminal
@@ -293,7 +275,7 @@ const Terminal: React.FC = () => {
     if (!xtermRef.current) return;
     
     xtermRef.current.clear();
-    displayBanner();
+    printBannerAndWelcome();
     writePrompt();
   };
 
