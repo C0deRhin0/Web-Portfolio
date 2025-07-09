@@ -1,0 +1,36 @@
+{
+  "name": "web-portfolio",
+  "version": "1.0.0",
+  "description": "Interactive hacker-terminal web portfolio built with Next.js",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next build && next export",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/C0deRhin0/Web-Portfolio.git"
+  },
+  "keywords": ["portfolio", "terminal", "nextjs", "react", "typescript"],
+  "author": "Paulo \"C0DERHIN0\" Perez",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/C0deRhin0/Web-Portfolio/issues"
+  },
+  "homepage": "https://github.com/C0deRhin0/Web-Portfolio#readme",
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.7.0",
+    "next": "^15.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}
