@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import commandsData from '../data/commands.json';
+import { TERMINAL_CONFIG } from '../config/terminalConfig';
 
 interface Command {
   cmd: string;
@@ -8,6 +9,30 @@ interface Command {
 }
 
 // User's custom rhino ASCII art and CODERHINO block
+const RHINO_ART = [
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣼⢹⠀⠀⠀⠀⠀⠀⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣐⣠⣄⣐⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣼⣿⢹⠀⠀⠀⠀⡜⢲⡖⣶⣦⠀⠀⠀⡄⠀⠀⡄⢪⣾⠋⠀⣴⣾⣿⡗⢡⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                        ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢀⢡⡏⢾⡟⠀⠀⠀⠰⢰⡌⣿⠄⡬⣷⣩⠶⡾⠟⠛⠶⡾⠃⣠⣾⣿⣿⠄⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                        ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⡀⣾⠀⢾⣇⠅⠀⠀⠀⣾⣷⡹⣤⣿⠟⠁⠐⠀⠀⠀⠈⠰⠾⢿⣿⠿⠋⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                        ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢡⡏⠀⡀⢿⡌⡀⠀⡇⣿⠌⢷⣴⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠛⠳⢦⣅⡠⠀⠀⠀⠀⠀⠀                                ░░░              ░░░░░░░     ░░░                                          ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠡⠸⣿⡔⠀⡇⣿⠈⠄⠻⣿⡀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⡙⢿⣦⡀⡀⠀    ░▒▓███▓░    ░▓██▓▒            ▒█▓              ▓▓▓▓▓▓▒░░   ▒██           ░▓█▒                    ░▒███▓░   ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄  ░███░░░░▓█▒░░██▓░░░██░          ▒█▓              ██░░░░▒███░ ▒██           ░██▓                   ▓██░░░▓█  ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐░▒██░         ██░   ░███░   ░░▒▒░░▒█▓    ░░▒▒▒░░   ██░     ▓██░▒██ ░░▒▒░░  ░░░░░░░    ░░░▒▒▒░     ▒██░  ░███▓ ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇░██░         ▒██   ░█░▓█▒ ░▓██▓▒▒███▓  ░▓██▓▒▓██▓░ ██░     ▓██░▒████▒▒▓██░ ░▓▓▓▓██    ░██████▓    ██▒  ░██░██░⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴▓⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇▒██          ▓█▓  ░█▒ ▓██ ▓██░    ▒█▓  ▓█▓    ░▓█▓ ██░  ░░▓██░ ▒██░    ▒█▓     ░██    ░██    ░██  ██░  ▓█░░██░⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱▒██          ▓█▓ ░█▒  ▓██ ██░     ▒█▓ ░██░░░░░░░██ ███████▒░   ▒██     ▒█▓     ░██    ░██     ░██ ██░ ▓█░ ░██░⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁░██░         ▒██░█▓   ▓█▓ ██░     ▒█▓ ░██████████▓ ██░  ▒██░   ▒██     ▒█▓     ░██    ░██     ░██ ██░▒█░  ░██░⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀░▓█▓░         ███▓   ░██░ ██▒     ▒█▓ ░██▒         ██░   ▒██░  ▒██     ▒█▓     ░██    ░██     ░██ ▓███░   ▓█▓ ⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀ ▓██▒░░░░▒█▓░▒██░ ░░██▒░ ░██▒░ ░▒██▓  ░██▓░  ░▒▓░ ██░    ░██▒ ▒██     ▒█▓ ░░░░░██░░░░░██     ░██ ░▓█▓░ ░▓██  ⠀⠀⠀                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⢿⡶⠶⠶⣶⣶⣤⣤⣨⣽⡿⠋⠑⠀⠀⠀⠀⢰⢸⠟⠀⠀⠀⠁⠀⠀⠀⠀⠀░▒▓█████▒░  ░▒████▓░    ░▓████▒░█▓    ▒█████▓░░ ██░     ░██▒▒██     ▒█▓ ░█████████▓░██     ░██ ░░█████▒   ⠀⠀⠀⠀⠀⠀⠀⠀                      ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠜⠛⠿⢿⣿⠟⠘⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+];
+/*
 const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
@@ -23,26 +48,21 @@ const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇⠀⠀⠀|\\ ___\\/    /|| \\_____\\____/ ||____|/____/||____ '     /| |____| |____||____| |____||____|   |____||\\_____/|| \\_____\\____/ | |       ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴⣿⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇⠀⠀⠀| |   /____/ | \\ |    ||    | /|    /    | ||    /_____/ | |    | |    ||    | |    ||    |   |    |/ \\|   || \\ |    ||    | /           ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱⠀⠀⠀⠀\\|___|    | /  \\|____||____|/ |____|____|/ |____|     | / |____| |____||____| |____||____|   |____|   |___|/  \\|____||____|/            ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁⠀⠀⠀⠀⠀\\( |____|/      \\(    )/      \\(    )/     \\( |_____|/   \\(     )/    \\(     )/    \\(       \\(       )/       \\(    )/           ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁⠀⠀⠀⠀⠀ \\( |____|/      \\(    )/      \\(    )/     \\( |_____|/   \\(     )/    \\(     )/    \\(       \\(       )/       \\(    )/           ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀⠀⠀⠀⠀⠀⠀'   )/          '    '        '    '       '    )/       '     '      '     '      '        '       '         '    '                    ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀  '                                           '                                                                                       ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⢿⡶⠶⠶⣶⣶⣤⣤⣨⣽⡿⠋⠑⠀⠀⠀⠀⢰⢸⠟⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠜⠛⠿⢿⣿⠟⠘⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                                            ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 ];
-
-/*const CODERHINO_BLOCK = [
-  ""
-];*/
+*/
 
 const WELCOME_LINES = [
   'Welcome to the CODERHINO Terminal Portfolio',
   "Type 'help' for available commands",
   ''
 ];
-
-const PROMPT = 'visitor@c0derhin0-wp.com:~$ ';
 
 /**
  * Main Terminal component that handles the interactive terminal interface
@@ -57,6 +77,17 @@ const Terminal: React.FC = () => {
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Helper function to convert hex to RGB
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
 
   // Initialize xterm.js terminal - only once
   useEffect(() => {
@@ -77,9 +108,9 @@ const Terminal: React.FC = () => {
         terminal = new Terminal({
           cursorBlink: true,
           theme: {
-            background: '#1e1e1e',
-            foreground: '#cfcfcf',
-            cursor: '#cfcfcf',
+            background: TERMINAL_CONFIG.appearance.backgroundColor,
+            foreground: TERMINAL_CONFIG.appearance.foregroundColor,
+            cursor: TERMINAL_CONFIG.appearance.cursorColor,
             black: '#000000',
             red: '#cd3131',
             green: '#0dbc79',
@@ -126,7 +157,13 @@ const Terminal: React.FC = () => {
         // Handle terminal input
         let currentLine = '';
         terminal.onData((data: string) => {
-          if (isTyping) return; // Don't accept input while typing
+          if (isTyping) {
+            // Handle Ctrl+C to interrupt typewriter effect
+            if (data.charCodeAt(0) === 3) { // Ctrl+C
+              interruptTypewriter();
+            }
+            return; // Don't accept other input while typing
+          }
 
           const code = data.charCodeAt(0);
           
@@ -171,23 +208,51 @@ const Terminal: React.FC = () => {
     })();
   }, [isInitialized]); // Only depend on isInitialized
 
+  // Interrupt typewriter effect
+  const interruptTypewriter = () => {
+    if (typewriterTimeout) {
+      clearTimeout(typewriterTimeout);
+      setTypewriterTimeout(null);
+    }
+    setIsTyping(false);
+    if (xtermRef.current) {
+      xtermRef.current.write('\r\n');
+      writePrompt();
+    }
+  };
+
   // Print banner and welcome message, side by side
   const printBannerAndWelcome = () => {
     if (!xtermRef.current) return;
-    // Print rhino and block side by side, left-aligned
-    const maxLines = Math.max(RHINO_ART.length); //, CODERHINO_BLOCK.length);
+    
+    // Get rhino color from config
+    const rhinoColor = hexToRgb(TERMINAL_CONFIG.colors.rhino);
+    
+    // Print rhino art with color
+    const maxLines = Math.max(RHINO_ART.length);
     for (let i = 0; i < maxLines; i++) {
       const rhinoLine = (RHINO_ART[i] || '').trimStart();
-      //const blockLine = (CODERHINO_BLOCK[i] || '').trimStart();
-      xtermRef.current.write(rhinoLine.padEnd(70, ' ') + '\r\n'); //+ '  ' + blockLine + '\r\n');
+      if (rhinoColor) {
+        const coloredLine = `\x1b[38;2;${rhinoColor.r};${rhinoColor.g};${rhinoColor.b}m${rhinoLine.padEnd(70, ' ')}\x1b[0m\r\n`;
+        xtermRef.current.write(coloredLine);
+      } else {
+        xtermRef.current.write(rhinoLine.padEnd(70, ' ') + '\r\n');
+      }
     }
     WELCOME_LINES.forEach(line => xtermRef.current.write(line + '\r\n'));
   };
 
-  // Write the terminal prompt
+  // Write the terminal prompt with color
   const writePrompt = () => {
     if (!xtermRef.current) return;
-    xtermRef.current.write(PROMPT);
+    
+    const promptColor = hexToRgb(TERMINAL_CONFIG.colors.prompt);
+    if (promptColor) {
+      const coloredPrompt = `\x1b[38;2;${promptColor.r};${promptColor.g};${promptColor.b}m${TERMINAL_CONFIG.appearance.prompt}\x1b[0m`;
+      xtermRef.current.write(coloredPrompt);
+    } else {
+      xtermRef.current.write(TERMINAL_CONFIG.appearance.prompt);
+    }
   };
 
   // Navigate command history
@@ -201,9 +266,9 @@ const Terminal: React.FC = () => {
       setCurrentCommand(command);
       
       // Clear current line and write new command
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
       xtermRef.current.write(command);
     } else if (direction === 'down' && historyIndex > 0) {
       const newIndex = historyIndex - 1;
@@ -212,18 +277,18 @@ const Terminal: React.FC = () => {
       setCurrentCommand(command);
       
       // Clear current line and write new command
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
       xtermRef.current.write(command);
     } else if (direction === 'down' && historyIndex === 0) {
       setHistoryIndex(-1);
       setCurrentCommand('');
       
       // Clear current line
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
       xtermRef.current.write(' '.repeat(currentCommand.length));
-      xtermRef.current.write('\r' + PROMPT);
+      writePrompt();
     }
   };
 
@@ -248,24 +313,31 @@ const Terminal: React.FC = () => {
     if (cmd === 'help') {
       // Generate help output as lines and use typewriter effect
       const helpLines = [
+        "",
         'Available commands:',
-        ''
+        ""
       ];
       (commandsData as Command[]).forEach(cmdObj => {
         const padding = ' '.repeat(15 - cmdObj.cmd.length);
         helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
       });
-      helpLines.push('');
-      displayCommandOutput(helpLines);
+      //helpLines.push('');
+      displayCommandOutput(helpLines, 'info');
     } else if (cmd === 'clear') {
       clearTerminal();
-    } else {
+    } /*else if (cmd === 'contact') {
+      const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
+      if (commandData) {
+        displayCommandOutput(commandData.outputLines, 'warning');
+      }
+    } */else {
       const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
       
       if (commandData) {
         displayCommandOutput(commandData.outputLines);
       } else {
-        displayCommandOutput([`command not found: ${command}`]);
+        // Display error with red color
+        displayCommandOutput([`command not found: ${command}`], 'error');
       }
     }
   };
@@ -279,8 +351,8 @@ const Terminal: React.FC = () => {
     writePrompt();
   };
 
-  // Display command output with typewriter effect
-  const displayCommandOutput = (lines: string[]) => {
+  // Display command output with typewriter effect and color support
+  const displayCommandOutput = (lines: string[], type: 'normal' | 'error' | 'success' | 'warning' | 'info' = 'normal') => {
     if (!xtermRef.current) return;
     
     setIsTyping(true);
@@ -291,6 +363,7 @@ const Terminal: React.FC = () => {
     const typeNextChar = () => {
       if (currentLineIndex >= lines.length) {
         setIsTyping(false);
+        setTypewriterTimeout(null);
         xtermRef.current!.write('\r\n');
         writePrompt();
         return;
@@ -299,14 +372,42 @@ const Terminal: React.FC = () => {
       const currentLine = lines[currentLineIndex];
       
       if (currentCharIndex < currentLine.length) {
-        xtermRef.current!.write(currentLine[currentCharIndex]);
+        // Apply color based on type using config colors
+        let colorHex = TERMINAL_CONFIG.colors.output; // Default white
+        switch (type) {
+          case 'error':
+            colorHex = TERMINAL_CONFIG.colors.error;
+            break;
+          case 'success':
+            colorHex = TERMINAL_CONFIG.colors.success;
+            break;
+          case 'warning':
+            colorHex = TERMINAL_CONFIG.colors.warning;
+            break;
+          case 'info':
+            colorHex = TERMINAL_CONFIG.colors.info;
+            break;
+          default:
+            colorHex = TERMINAL_CONFIG.colors.output;
+        }
+        
+        const color = hexToRgb(colorHex);
+        if (color) {
+          const colorCode = `\x1b[38;2;${color.r};${color.g};${color.b}m`;
+          xtermRef.current!.write(colorCode + currentLine[currentCharIndex]);
+        } else {
+          xtermRef.current!.write(currentLine[currentCharIndex]);
+        }
+        
         currentCharIndex++;
-        setTimeout(typeNextChar, 50);
+        const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.charDelay);
+        setTypewriterTimeout(timeout);
       } else {
-        xtermRef.current!.write('\r\n');
+        xtermRef.current!.write('\x1b[0m\r\n'); // Reset color and new line
         currentLineIndex++;
         currentCharIndex = 0;
-        setTimeout(typeNextChar, 200);
+        const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.lineDelay);
+        setTypewriterTimeout(timeout);
       }
     };
     

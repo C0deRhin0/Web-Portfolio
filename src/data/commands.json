@@ -27,6 +27,27 @@
     ]
   },
   {
+    "cmd": "skills",
+    "desc": "Technical skills",
+    "outputLines": [
+      "Languages: JavaScript, TypeScript, Python, Go",
+      "Frontend: React, Next.js, Vue.js",
+      "Backend: Node.js, Express, Django",
+      "Security: Penetration Testing, CTF Challenges",
+      "DevOps: Docker, Kubernetes, CI/CD"
+    ]
+  },
+  {
+    "cmd": "contact",
+    "desc": "Contact information",
+    "outputLines": [
+      "Email: c0derhin0@example.com",
+      "GitHub: github.com/c0derhin0",
+      "LinkedIn: linkedin.com/in/c0derhin0",
+      "Twitter: @c0derhin0"
+    ]
+  },
+  {
     "cmd": "clear",
     "desc": "Clear the terminal",
     "outputLines": []
