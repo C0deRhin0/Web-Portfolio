@@ -23,7 +23,7 @@ const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐░▒██░         ██░   ░███░   ░░▒▒░░▒█▓    ░░▒▒▒░░   ██░     ▓██░▒██ ░░▒▒░░  ░░░░░░░    ░░░▒▒▒░     ▒██░  ░███▓ ⠀                              ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇░██░         ▒██   ░█░▓█▒ ░▓██▓▒▒███▓  ░▓██▓▒▓██▓░ ██░     ▓██░▒████▒▒▓██░ ░▓▓▓▓██    ░██████▓    ██▒  ░██░██░⠀                              ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴▓⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇▒██          ▓█▓  ░█▒ ▓██ ▓██░    ▒█▓  ▓█▓    ░▓█▓ ██░  ░░▓██░ ▒██░    ▒█▓     ░██    ░██    ░██  ██░  ▓█░░██░⠀                              ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱▒██          ▓█▓ ░█▒  ▓██ ██░     ▒█▓ ░██░░░░░░░██ ███████▒░   ▒██     ▒█▓     ░██    ░██     ░██ ██░ ▓█░ ░██░⠀                              ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱▒██          ▓█▓ ░█▒  ▓██ ██░     ▒█▓ ░██░░░░░░░██ ███████▒░   ▒██     ▒█▓     ░██    ░██     ░██ ██░▒█░  ░██░⠀                              ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁░██░         ▒██░█▓   ▓█▓ ██░     ▒█▓ ░██████████▓ ██░  ▒██░   ▒██     ▒█▓     ░██    ░██     ░██ ██░▒█░  ░██░⠀                              ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀░▓█▓░         ███▓   ░██░ ██▒     ▒█▓ ░██▒         ██░   ▒██░  ▒██     ▒█▓     ░██    ░██     ░██ ▓███░   ▓█▓ ⠀                              ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀ ▓██▒░░░░▒█▓░▒██░ ░░██▒░ ░██▒░ ░▒██▓  ░██▓░  ░▒▓░ ██░    ░██▒ ▒██     ▒█▓ ░░░░░██░░░░░██     ░██ ░▓█▓░ ░▓██  ⠀⠀⠀                            ",
@@ -43,7 +43,7 @@ const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⡀⣾⠀⢾⣇⠅⠀⠀⠀⣾⣷⡹⣤⣿⠟⠁⠐⠀⠀⠀⠈⠰⠾⢿⣿⠿⠋⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀/    /\\    \\   /     /\\    \\  |    |\\    \\ |     \\     \\ |    |\\    \\ |    | |    ||    | \\\\    \\| \\     \\   /     /\\    \\",
   "⠀⠀⠀⠀⠀⠀⠀⠀⢡⡏⠀⡀⢿⡌⡀⠀⡇⣿⠌⢷⣴⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠛⠳⢦⣅⡠⠀⠀⠀⠀⠀⠀⠀|    |  |    | /     /  \\    \\ |    | |    ||     ,_____/||    | |    ||    |_|    ||    |  \\|    \\  \\     | /     /  \\    \\         ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠡⠸⣿⡔⠀⡇⣿⠈⠄⠻⣿⡀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⡙⢿⣦⡀⡀⠀⠀⠀⠀|    |  |____||     |    |    ||    | |    ||     \\--'\\_|/|    |/____/ |    .-.    ||    |   |     \\  |    ||     |    |    |            ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄⠀⠀⠀|    |   ____ |     |    |    ||    | |    ||     /___/|  |    |\\    \\ |    | |    ||    |   |      \\ |    ||     |    |    |            ",
+  "⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄⠀⠀⠀|    |   ____ |     |    |    ||    | |    ||     /___/|  |    | |    ||    | |    ||    |   |      \\ |    ||     |    |    |            ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐⠀⠀⠀|    |  |    ||\\     \\  /    /||    | |    ||     \\____\\  |    | |    ||    | |    ||    |   |    |\\ \\|    ||\\     \\  /    /|       ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇⠀⠀⠀|\\ ___\\/    /|| \\_____\\____/ ||____|/____/||____ '     /| |____| |____||____| |____||____|   |____||\\_____/|| \\_____\\____/ | |       ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴⣿⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇⠀⠀⠀| |   /____/ | \\ |    ||    | /|    /    | ||    /_____/ | |    | |    ||    | |    ||    |   |    |/ \\|   || \\ |    ||    | /           ",
@@ -72,10 +72,11 @@ const Terminal: React.FC = () => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<any>(null);
   const fitAddonRef = useRef<any>(null);
+  // Command history and input buffer management
+  const commandHistory = useRef<string[]>([]);
+  const historyIndex = useRef<number>(-1); // -1 means not navigating
+  const currentLineBuffer = useRef<string>('');
   const [isTyping, setIsTyping] = useState(false);
-  const [currentCommand, setCurrentCommand] = useState<string>('');
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
 
@@ -155,43 +156,65 @@ const Terminal: React.FC = () => {
         window.addEventListener('resize', handleResize);
 
         // Handle terminal input
-        let currentLine = '';
-        terminal.onData((data: string) => {
+        terminal.onKey(({ key, domEvent }: any) => {
           if (isTyping) {
             // Handle Ctrl+C to interrupt typewriter effect
-            if (data.charCodeAt(0) === 3) { // Ctrl+C
+            if (domEvent.key === 'c' && domEvent.ctrlKey) {
               interruptTypewriter();
             }
             return; // Don't accept other input while typing
           }
 
-          const code = data.charCodeAt(0);
-          
-          if (code === 13) { // Enter key
-            handleCommand(currentLine.trim());
-            currentLine = '';
-            setCurrentCommand('');
-            setHistoryIndex(-1);
-          } else if (code === 127) { // Backspace
-            if (currentLine.length > 0) {
-              currentLine = currentLine.slice(0, -1);
-              setCurrentCommand(currentLine);
-              terminal.write('\b \b');
-            }
-          } else if (code === 27) { // Escape sequence
-            // Handle arrow keys
-            if (data.length >= 3 && data[1] === '[') {
-              const arrowCode = data[2];
-              if (arrowCode === 'A') { // Up arrow
-                navigateHistory('up');
-              } else if (arrowCode === 'B') { // Down arrow
-                navigateHistory('down');
+          const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
+
+          switch (domEvent.key) {
+            case 'Enter':
+              terminal.write('\r\n');
+              handleCommand(currentLineBuffer.current.trim());
+              if (currentLineBuffer.current.trim()) {
+                commandHistory.current.push(currentLineBuffer.current);
               }
-            }
-          } else if (code >= 32) { // Printable characters
-            currentLine += data;
-            setCurrentCommand(currentLine);
-            terminal.write(data);
+              historyIndex.current = commandHistory.current.length;
+              currentLineBuffer.current = '';
+              break;
+            case 'Backspace':
+              if (currentLineBuffer.current.length > 0) {
+                currentLineBuffer.current = currentLineBuffer.current.slice(0, -1);
+                terminal.write('\b \b');
+              }
+              break;
+            case 'ArrowUp':
+              if (commandHistory.current.length && historyIndex.current > 0) {
+                // Clear current line
+                for (let i = 0; i < currentLineBuffer.current.length; i++) {
+                  terminal.write('\b \b');
+                }
+                historyIndex.current--;
+                currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+                terminal.write(currentLineBuffer.current);
+              }
+              break;
+            case 'ArrowDown':
+              if (commandHistory.current.length && historyIndex.current < commandHistory.current.length - 1) {
+                for (let i = 0; i < currentLineBuffer.current.length; i++) {
+                  terminal.write('\b \b');
+                }
+                historyIndex.current++;
+                currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+                terminal.write(currentLineBuffer.current);
+              } else if (historyIndex.current === commandHistory.current.length - 1) {
+                for (let i = 0; i < currentLineBuffer.current.length; i++) {
+                  terminal.write('\b \b');
+                }
+                historyIndex.current = commandHistory.current.length;
+                currentLineBuffer.current = '';
+              }
+              break;
+            default:
+              if (printable && domEvent.key.length === 1) {
+                currentLineBuffer.current += key;
+                terminal.write(key);
+              }
           }
         });
 
@@ -255,50 +278,13 @@ const Terminal: React.FC = () => {
     }
   };
 
-  // Navigate command history
-  const navigateHistory = (direction: 'up' | 'down') => {
-    if (!xtermRef.current) return;
-    
-    if (direction === 'up' && historyIndex < commandHistory.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      const command = commandHistory[commandHistory.length - 1 - newIndex];
-      setCurrentCommand(command);
-      
-      // Clear current line and write new command
-      writePrompt();
-      xtermRef.current.write(' '.repeat(currentCommand.length));
-      writePrompt();
-      xtermRef.current.write(command);
-    } else if (direction === 'down' && historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      const command = commandHistory[commandHistory.length - 1 - newIndex];
-      setCurrentCommand(command);
-      
-      // Clear current line and write new command
-      writePrompt();
-      xtermRef.current.write(' '.repeat(currentCommand.length));
-      writePrompt();
-      xtermRef.current.write(command);
-    } else if (direction === 'down' && historyIndex === 0) {
-      setHistoryIndex(-1);
-      setCurrentCommand('');
-      
-      // Clear current line
-      writePrompt();
-      xtermRef.current.write(' '.repeat(currentCommand.length));
-      writePrompt();
-    }
-  };
-
   // Handle command execution
   const handleCommand = (command: string) => {
     if (!xtermRef.current) return;
     
     // Add command to history
     if (command.trim()) {
-      setCommandHistory(prev => [...prev, command]);
+      commandHistory.current.push(command);
     }
     
     xtermRef.current.write('\r\n');
