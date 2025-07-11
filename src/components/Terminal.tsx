@@ -34,7 +34,7 @@ const RHINO_ART = [
 ];
 
 const WELCOME_LINES = [
-  'Welcome to the COdeRhin0 Terminal Portfolio',
+  'Welcome to the COdeRhin0 Terminal Portfolio.   (Version 1.0.0)',
   "Type 'help' for available commands",
   ''
 ];
@@ -375,9 +375,10 @@ const Terminal: React.FC = () => {
         ];
       } else if (currentDirectoryRef.current === 'secret') {
         lsOutput = [
-          'easter-egg.md'
+          //'easter-egg.md'
         ];
       } else {
+        /*
         // For any other directory (shouldn't happen with current validation)
         lsOutput = [
           'README.md',
@@ -385,8 +386,32 @@ const Terminal: React.FC = () => {
           'data/',
           'src/'
         ];
+        */
       }
       
+      displayCommandOutput(lsOutput, 'normal');
+    } else if (cmd === 'ls -a') {
+      // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.exe'
+      let lsOutput: string[] = [];
+      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+        lsOutput = [
+          'test.txt'
+        ];
+      } else if (currentDirectoryRef.current === 'secret') {
+        lsOutput = [
+          //'easter-egg.md',
+          'secret.exe'
+        ];
+      } else {
+        /*
+        lsOutput = [
+          'README.md',
+          'config.json',
+          'data/',
+          'src/'
+        ];
+        */
+      }
       displayCommandOutput(lsOutput, 'normal');
     } else if (cmd === 'pwd') {
       // Handle pwd command
