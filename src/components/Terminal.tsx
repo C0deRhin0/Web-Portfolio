@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import commandsData from '../data/commands.json';
 import { TERMINAL_CONFIG } from '../config/terminalConfig';
+import SubTerminal from './SubTerminal';
 
 interface Command {
   cmd: string;
@@ -36,7 +37,7 @@ const RHINO_ART = [
 const WELCOME_LINES = [
   "Hi there! Welcome to my Web Portfolio                                                                                               (Version 1.0.0)",
   '',
-  "     I have hidden a flag somewhere in this portfolio. Can you find it?",
+  "     *I have hidden a flag somewhere in this portfolio. Can you find it?",
   '',
   '=====',
   '',
@@ -64,6 +65,8 @@ const Terminal: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentDirectory, setCurrentDirectory] = useState(TERMINAL_CONFIG.appearance.defaultDirectory);
+  const [subTerminalVisible, setSubTerminalVisible] = useState(false);
+  const [subTerminalContent, setSubTerminalContent] = useState('');
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -155,8 +158,10 @@ const Terminal: React.FC = () => {
               handleCommand(currentLineBuffer.current.trim());
               if (currentLineBuffer.current.trim()) {
                 commandHistory.current.push(currentLineBuffer.current);
+                historyIndex.current = commandHistory.current.length - 1;
+              } else {
+                historyIndex.current = commandHistory.current.length;
               }
-              historyIndex.current = commandHistory.current.length;
               currentLineBuffer.current = '';
               break;
             case 'Backspace':
@@ -166,30 +171,31 @@ const Terminal: React.FC = () => {
               }
               break;
             case 'ArrowUp':
-              if (commandHistory.current.length && historyIndex.current > 0) {
+              if (commandHistory.current.length) {
                 // Clear current line
                 for (let i = 0; i < currentLineBuffer.current.length; i++) {
                   terminal.write('\b \b');
                 }
-                historyIndex.current--;
+                if (historyIndex.current > 0) {
+                  historyIndex.current--;
+                }
                 currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
                 terminal.write(currentLineBuffer.current);
               }
               break;
             case 'ArrowDown':
-              if (commandHistory.current.length && historyIndex.current < commandHistory.current.length - 1) {
+              if (commandHistory.current.length) {
                 for (let i = 0; i < currentLineBuffer.current.length; i++) {
                   terminal.write('\b \b');
                 }
-                historyIndex.current++;
-                currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
-                terminal.write(currentLineBuffer.current);
-              } else if (historyIndex.current === commandHistory.current.length - 1) {
-                for (let i = 0; i < currentLineBuffer.current.length; i++) {
-                  terminal.write('\b \b');
+                if (historyIndex.current < commandHistory.current.length - 1) {
+                  historyIndex.current++;
+                  currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+                  terminal.write(currentLineBuffer.current);
+                } else {
+                  historyIndex.current = commandHistory.current.length;
+                  currentLineBuffer.current = '';
                 }
-                historyIndex.current = commandHistory.current.length;
-                currentLineBuffer.current = '';
               }
               break;
             default:
@@ -322,8 +328,32 @@ const Terminal: React.FC = () => {
       return;
     }
     
-    const cmd = command;//.toLowerCase();
+    const cmd = command;
     
+    // --- RUN COMMAND HANDLING ---
+    if (cmd === 'run' || cmd.startsWith('run ')) {
+      const param = command.substring(3).trim();
+      // Only allow in default dir
+      const validFiles = [];
+      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+        validFiles.push('clue.sh');
+      }
+      if (currentDirectoryRef.current === 'secret') {
+        validFiles.push('secret.sh');
+      }
+      if (!param) {
+        displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
+        return;
+      }
+      if (!validFiles.includes(param)) {
+        displayCommandOutput([`No file found with name ${param}`], 'error');
+        return;
+      }
+      setSubTerminalContent(param === 'clue.sh' || param === 'secret.sh' ? 'testest' : '');
+      writePrompt();
+      setSubTerminalVisible(true);
+      return;
+    }
     if (cmd === 'help') {
       // Generate help output as lines and use typewriter effect
       const helpLines = [
@@ -342,7 +372,7 @@ const Terminal: React.FC = () => {
       helpLines.push('  cd              - Back to default directory');
       helpLines.push('  ls              - List directory contents');
       helpLines.push('  pwd             - Print working directory');
-      helpLines.push('  run             - Run .exe files');
+      helpLines.push('  run             - Run .sh files');
       //helpLines.push('');
       displayCommandOutput(helpLines, 'normal');
     } else if (cmd === 'clear') {
@@ -352,7 +382,8 @@ const Terminal: React.FC = () => {
       if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
         currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
         setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-        displayCommandOutput(['Changed to default directory'], 'normal');
+        // No output, just prompt
+        writePrompt();
       } else {
         // If already in default directory, just write the prompt
         writePrompt();
@@ -360,15 +391,14 @@ const Terminal: React.FC = () => {
     } else if (cmd.startsWith('cd')) {
       // Handle cd command with directory argument
       const newDir = command.substring(3).trim();
-      
       // Define valid directories (only actual directories, not commands)
       const validDirectories = ['c0derhin0-wp.com', 'secret'];
-      
       if (validDirectories.includes(newDir)) {
         if (currentDirectoryRef.current !== newDir) {
           currentDirectoryRef.current = newDir;
           setCurrentDirectory(newDir);
-          displayCommandOutput([`Changed directory to: ${newDir}`], 'normal');
+          // No output, just prompt
+          writePrompt();
         } else {
           // If already in the target directory, just write the prompt
           writePrompt();
@@ -382,7 +412,7 @@ const Terminal: React.FC = () => {
       
       if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
         lsOutput = [
-          'clue.exe'
+          'clue.sh'
         ];
       } else if (currentDirectoryRef.current === 'secret') {
         lsOutput = [
@@ -402,16 +432,16 @@ const Terminal: React.FC = () => {
       
       displayCommandOutput(lsOutput, 'normal');
     } else if (cmd === 'ls -a') {
-      // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.exe'
+      // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.sh'
       let lsOutput: string[] = [];
       if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
         lsOutput = [
-          'test.txt'
+          'clue.sh'
         ];
       } else if (currentDirectoryRef.current === 'secret') {
         lsOutput = [
           //'easter-egg.md',
-          'secret.exe'
+          'secret.sh'
         ];
       } else {
         /*
@@ -519,9 +549,27 @@ const Terminal: React.FC = () => {
     typeNextChar();
   };
 
+  // Escape key handler for subterminal
+  useEffect(() => {
+    if (!subTerminalVisible) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSubTerminalVisible(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [subTerminalVisible]);
+
   return (
     <div className="terminal-container">
       <div ref={terminalRef} style={{ height: '100%', width: '100%' }} />
+      {subTerminalVisible && (
+        <SubTerminal
+          content={subTerminalContent}
+          onClose={() => setSubTerminalVisible(false)}
+        />
+      )}
     </div>
   );
 };
