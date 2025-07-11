@@ -10,7 +10,7 @@ export const TERMINAL_CONFIG = {
   colors: {
     host: '#daa520', // Dark gold for host
     directory: '#3e8600', // Dark green for directory
-    error: '#ff0000', // Red for errors
+    error: '#b02b01', // Red for errors
     output: '#cfcfcf', // White for normal output
     //#ffffff //white
     success: '#00ff00', // Green for success messages

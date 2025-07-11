@@ -34,8 +34,15 @@ const RHINO_ART = [
 ];
 
 const WELCOME_LINES = [
-  'Welcome to the COdeRhin0 Terminal Portfolio.   (Version 1.0.0)',
+  "Hi there! Welcome to my Web Portfolio                                                                                               (Version 1.0.0)",
+  '',
+  "     I have hidden a flag somewhere in this portfolio. Can you find it?",
+  '',
+  '=====',
+  '',
   "Type 'help' for available commands",
+  '',
+  '=====',
   ''
 ];
 
@@ -315,7 +322,7 @@ const Terminal: React.FC = () => {
       return;
     }
     
-    const cmd = command.toLowerCase();
+    const cmd = command;//.toLowerCase();
     
     if (cmd === 'help') {
       // Generate help output as lines and use typewriter effect
@@ -328,12 +335,16 @@ const Terminal: React.FC = () => {
         helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
       });
       // Add new directory commands
+      helpLines.push('');
+      helpLines.push('Directory commands:');
+      helpLines.push('');
       helpLines.push('  cd [dir]        - Change directory');
       helpLines.push('  cd              - Back to default directory');
       helpLines.push('  ls              - List directory contents');
       helpLines.push('  pwd             - Print working directory');
+      helpLines.push('  run             - Run .exe files');
       //helpLines.push('');
-      displayCommandOutput(helpLines, 'info');
+      displayCommandOutput(helpLines, 'normal');
     } else if (cmd === 'clear') {
       clearTerminal();
     } else if (cmd === 'cd') {
@@ -371,7 +382,7 @@ const Terminal: React.FC = () => {
       
       if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
         lsOutput = [
-          'test.txt'
+          'clue.exe'
         ];
       } else if (currentDirectoryRef.current === 'secret') {
         lsOutput = [
