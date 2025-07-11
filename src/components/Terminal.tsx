@@ -76,6 +76,7 @@ const Terminal: React.FC = () => {
   const commandHistory = useRef<string[]>([]);
   const historyIndex = useRef<number>(-1); // -1 means not navigating
   const currentLineBuffer = useRef<string>('');
+  const isTypingRef = useRef<boolean>(false); // Use ref for event handler access
   const [isTyping, setIsTyping] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -157,12 +158,9 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
-          if (isTyping) {
-            // Handle Ctrl+C to interrupt typewriter effect
-            if (domEvent.key === 'c' && domEvent.ctrlKey) {
-              interruptTypewriter();
-            }
-            return; // Don't accept other input while typing
+          // Completely disable terminal input during typewriter effect
+          if (isTypingRef.current) {
+            return;
           }
 
           const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
@@ -237,6 +235,7 @@ const Terminal: React.FC = () => {
       clearTimeout(typewriterTimeout);
       setTypewriterTimeout(null);
     }
+    isTypingRef.current = false;
     setIsTyping(false);
     if (xtermRef.current) {
       xtermRef.current.write('\r\n');
@@ -299,7 +298,6 @@ const Terminal: React.FC = () => {
     if (cmd === 'help') {
       // Generate help output as lines and use typewriter effect
       const helpLines = [
-        "",
         'Available commands:',
         ""
       ];
@@ -341,6 +339,7 @@ const Terminal: React.FC = () => {
   const displayCommandOutput = (lines: string[], type: 'normal' | 'error' | 'success' | 'warning' | 'info' = 'normal') => {
     if (!xtermRef.current) return;
     
+    isTypingRef.current = true;
     setIsTyping(true);
     
     let currentLineIndex = 0;
@@ -348,6 +347,7 @@ const Terminal: React.FC = () => {
     
     const typeNextChar = () => {
       if (currentLineIndex >= lines.length) {
+        isTypingRef.current = false;
         setIsTyping(false);
         setTypewriterTimeout(null);
         xtermRef.current!.write('\r\n');
