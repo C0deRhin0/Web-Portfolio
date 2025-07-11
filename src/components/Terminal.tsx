@@ -34,7 +34,7 @@ const RHINO_ART = [
 ];
 
 const WELCOME_LINES = [
-  'Welcome to the CODERHINO Terminal Portfolio',
+  'Welcome to the COdeRhin0 Terminal Portfolio',
   "Type 'help' for available commands",
   ''
 ];
@@ -226,6 +226,7 @@ const Terminal: React.FC = () => {
     
     // Get rhino color from config
     const rhinoColor = hexToRgb(TERMINAL_CONFIG.colors.rhino);
+    const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory); // Use directory color (#3e8600)
     
     // Print rhino art with color
     const maxLines = Math.max(RHINO_ART.length);
@@ -238,7 +239,22 @@ const Terminal: React.FC = () => {
         xtermRef.current.write(rhinoLine.padEnd(70, ' ') + '\r\n');
       }
     }
-    WELCOME_LINES.forEach(line => xtermRef.current.write(line + '\r\n'));
+    
+    // Print welcome lines with colored "help"
+    WELCOME_LINES.forEach(line => {
+      if (line.includes("help")) {
+        // Split the line to color only the "help" part
+        const parts = line.split("help");
+        if (helpColor) {
+          const coloredLine = `${parts[0]}\x1b[38;2;${helpColor.r};${helpColor.g};${helpColor.b}mhelp\x1b[0m${parts[1]}\r\n`;
+          xtermRef.current.write(coloredLine);
+        } else {
+          xtermRef.current.write(line + '\r\n');
+        }
+      } else {
+        xtermRef.current.write(line + '\r\n');
+      }
+    });
   };
 
   // Write the terminal prompt with color
@@ -325,7 +341,7 @@ const Terminal: React.FC = () => {
       if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
         currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
         setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-        displayCommandOutput(['Changed to default directory'], 'success');
+        displayCommandOutput(['Changed to default directory'], 'normal');
       } else {
         // If already in default directory, just write the prompt
         writePrompt();
@@ -341,7 +357,7 @@ const Terminal: React.FC = () => {
         if (currentDirectoryRef.current !== newDir) {
           currentDirectoryRef.current = newDir;
           setCurrentDirectory(newDir);
-          displayCommandOutput([`Changed directory to: ${newDir}`], 'success');
+          displayCommandOutput([`Changed directory to: ${newDir}`], 'normal');
         } else {
           // If already in the target directory, just write the prompt
           writePrompt();
@@ -355,17 +371,11 @@ const Terminal: React.FC = () => {
       
       if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
         lsOutput = [
-          'index.html',
-          'portfolio.css', 
-          'about.html',
-          'projects.html',
-          'contact.html'
+          'test.txt'
         ];
       } else if (currentDirectoryRef.current === 'secret') {
         lsOutput = [
-          'hidden-feature.txt',
-          'easter-egg.md',
-          'backdoor.sh'
+          'easter-egg.md'
         ];
       } else {
         // For any other directory (shouldn't happen with current validation)
