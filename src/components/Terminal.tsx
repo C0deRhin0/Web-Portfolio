@@ -77,9 +77,11 @@ const Terminal: React.FC = () => {
   const historyIndex = useRef<number>(-1); // -1 means not navigating
   const currentLineBuffer = useRef<string>('');
   const isTypingRef = useRef<boolean>(false); // Use ref for event handler access
+  const currentDirectoryRef = useRef<string>(TERMINAL_CONFIG.appearance.defaultDirectory); // Use ref for prompt access
   const [isTyping, setIsTyping] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [currentDirectory, setCurrentDirectory] = useState(TERMINAL_CONFIG.appearance.defaultDirectory);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -268,13 +270,42 @@ const Terminal: React.FC = () => {
   const writePrompt = () => {
     if (!xtermRef.current) return;
     
-    const promptColor = hexToRgb(TERMINAL_CONFIG.colors.prompt);
-    if (promptColor) {
-      const coloredPrompt = `\x1b[38;2;${promptColor.r};${promptColor.g};${promptColor.b}m${TERMINAL_CONFIG.appearance.prompt}\x1b[0m`;
-      xtermRef.current.write(coloredPrompt);
+    const hostColor = hexToRgb(TERMINAL_CONFIG.colors.host);
+    const directoryColor = hexToRgb(TERMINAL_CONFIG.colors.directory);
+    const foregroundColor = hexToRgb(TERMINAL_CONFIG.appearance.foregroundColor);
+    
+    // Build the colored prompt: [host]@[directory]:~$ 
+    let coloredPrompt = '';
+    
+    // Host in dark gold
+    if (hostColor) {
+      coloredPrompt += `\x1b[38;2;${hostColor.r};${hostColor.g};${hostColor.b}m${TERMINAL_CONFIG.appearance.host}\x1b[0m`;
     } else {
-      xtermRef.current.write(TERMINAL_CONFIG.appearance.prompt);
+      coloredPrompt += TERMINAL_CONFIG.appearance.host;
     }
+    
+    // @ and :~$ in foreground color
+    if (foregroundColor) {
+      coloredPrompt += `\x1b[38;2;${foregroundColor.r};${foregroundColor.g};${foregroundColor.b}m@\x1b[0m`;
+    } else {
+      coloredPrompt += '@';
+    }
+    
+    // Directory in dark green - use ref for immediate access
+    if (directoryColor) {
+      coloredPrompt += `\x1b[38;2;${directoryColor.r};${directoryColor.g};${directoryColor.b}m${currentDirectoryRef.current}\x1b[0m`;
+    } else {
+      coloredPrompt += currentDirectoryRef.current;
+    }
+    
+    // :~$ in foreground color
+    if (foregroundColor) {
+      coloredPrompt += `\x1b[38;2;${foregroundColor.r};${foregroundColor.g};${foregroundColor.b}m:~$ \x1b[0m`;
+    } else {
+      coloredPrompt += ':~$ ';
+    }
+    
+    xtermRef.current.write(coloredPrompt);
   };
 
   // Handle command execution
@@ -305,10 +336,73 @@ const Terminal: React.FC = () => {
         const padding = ' '.repeat(15 - cmdObj.cmd.length);
         helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
       });
+      // Add new directory commands
+      helpLines.push('  cd [dir]        - Change directory');
+      helpLines.push('  cd              - Back to default directory');
+      helpLines.push('  ls              - List directory contents');
+      helpLines.push('  pwd             - Print working directory');
       //helpLines.push('');
       displayCommandOutput(helpLines, 'info');
     } else if (cmd === 'clear') {
       clearTerminal();
+    } else if (cmd === 'cd') {
+      // Handle cd command with no arguments - go to default directory
+      if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
+        currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
+        setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
+        displayCommandOutput(['Changed to default directory'], 'success');
+      }
+      // If already in default directory, don't show any output
+    } else if (cmd.startsWith('cd')) {
+      // Handle cd command with directory argument
+      const newDir = command.substring(3).trim();
+      
+      // Define valid directories (only actual directories, not commands)
+      const validDirectories = ['c0derhin0-wp.com', 'secret'];
+      
+      if (validDirectories.includes(newDir)) {
+        if (currentDirectoryRef.current !== newDir) {
+          currentDirectoryRef.current = newDir;
+          setCurrentDirectory(newDir);
+          displayCommandOutput([`Changed directory to: ${newDir}`], 'success');
+        }
+        // If already in the target directory, don't show any output
+      } else {
+        displayCommandOutput([`Directory not found: ${newDir}`], 'error');
+      }
+    } else if (cmd === 'ls') {
+      // Handle ls command - directory-specific content
+      let lsOutput: string[] = [];
+      
+      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+        lsOutput = [
+          'index.html',
+          'portfolio.css', 
+          'about.html',
+          'projects.html',
+          'contact.html'
+        ];
+      } else if (currentDirectoryRef.current === 'secret') {
+        lsOutput = [
+          'hidden-feature.txt',
+          'easter-egg.md',
+          'backdoor.sh'
+        ];
+      } else {
+        // For any other directory (shouldn't happen with current validation)
+        lsOutput = [
+          'README.md',
+          'config.json',
+          'data/',
+          'src/'
+        ];
+      }
+      
+      displayCommandOutput(lsOutput, 'normal');
+    } else if (cmd === 'pwd') {
+      // Handle pwd command
+      const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
+      displayCommandOutput([pwdOutput], 'normal');
     } /*else if (cmd === 'contact') {
       const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
       if (commandData) {

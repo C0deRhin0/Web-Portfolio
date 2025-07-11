@@ -2,13 +2,14 @@
 export const TERMINAL_CONFIG = {
   // Typewriter effect settings
   typewriter: {
-    charDelay: 10, // Milliseconds between each character (was 50)
-    lineDelay: 50, // Milliseconds between lines (was 200)
+    charDelay: 5, // Milliseconds between each character (was 50)
+    lineDelay: 20, // Milliseconds between lines (was 200)
   },
   
   // Color scheme - easily configurable
   colors: {
-    prompt: '#3e8600', // Darker green prompt
+    host: '#daa520', // Dark gold for host
+    directory: '#3e8600', // Dark green for directory
     error: '#ff0000', // Red for errors
     output: '#cfcfcf', // White for normal output
     //#ffffff //white
@@ -21,7 +22,8 @@ export const TERMINAL_CONFIG = {
   
   // Terminal appearance
   appearance: {
-    prompt: 'visitor@c0derhin0-wp.com:~$ ',
+    host: 'visitor',
+    defaultDirectory: 'c0derhin0-wp.com',
     backgroundColor: '#1e1e1e',
     foregroundColor: '#cfcfcf',
     cursorColor: '#cfcfcf',
