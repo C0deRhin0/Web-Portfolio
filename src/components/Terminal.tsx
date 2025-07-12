@@ -3,6 +3,7 @@ import commandsData from '../data/commands.json';
 import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
+import { createClearingLoader } from '../utils/clearingLoader';
 
 interface Command {
   cmd: string;
@@ -69,7 +70,9 @@ const Terminal: React.FC = () => {
   const [subTerminalVisible, setSubTerminalVisible] = useState(false);
   const [subTerminalContent, setSubTerminalContent] = useState('');
   const [isFetching, setIsFetching] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const fetchingLoaderRef = useRef<any>(null);
+  const clearingLoaderRef = useRef<any>(null);
   const pendingCommandRef = useRef<{ command: string; type: string } | null>(null);
 
   // Helper function to convert hex to RGB
@@ -100,6 +103,28 @@ const Terminal: React.FC = () => {
             if (pendingCommandRef.current) {
               executePendingCommand();
             }
+          }
+        }
+      );
+    }
+  }, [xtermRef.current]);
+
+  // Initialize clearing loader when terminal is ready
+  useEffect(() => {
+    if (xtermRef.current && !clearingLoaderRef.current) {
+      clearingLoaderRef.current = createClearingLoader(
+        (text: string) => {
+          if (xtermRef.current) {
+            xtermRef.current.write(text);
+          }
+        },
+        {
+          duration: 2000, // 2 seconds
+          charInterval: 300, // 0.3 seconds
+          onComplete: () => {
+            setIsClearing(false);
+            // Clear the terminal after clearing loader completes
+            clearTerminal();
           }
         }
       );
@@ -173,8 +198,8 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
-          // Disable input during typewriter effect or fetching
-          if (isTypingRef.current || isFetching) {
+          // Disable input during typewriter effect, fetching, or clearing
+          if (isTypingRef.current || isFetching || isClearing) {
             return;
           }
 
@@ -421,27 +446,7 @@ const Terminal: React.FC = () => {
     pendingCommandRef.current = null;
     
     // Execute the actual command
-    if (type === 'help') {
-      const helpLines = [
-        'Available commands:',
-        ""
-      ];
-      (commandsData as Command[]).forEach(cmdObj => {
-        const padding = ' '.repeat(15 - cmdObj.cmd.length);
-        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
-      });
-      helpLines.push('');
-      helpLines.push('Directory commands:');
-      helpLines.push('');
-      helpLines.push('  cd [dir]        - Change directory');
-      helpLines.push('  cd              - Back to default directory');
-      helpLines.push('  ls              - List directory contents');
-      helpLines.push('  pwd             - Print working directory');
-      helpLines.push('  run [file]      - Run .sh files');
-      displayCommandOutput(helpLines, 'normal');
-    } else if (type === 'clear') {
-      clearTerminal();
-    } else if (type === 'command') {
+    if (type === 'command') {
       const commandData = (commandsData as Command[]).find(c => c.cmd === command);
       if (commandData) {
         displayCommandOutput(commandData.outputLines);
@@ -467,9 +472,40 @@ const Terminal: React.FC = () => {
     
     const cmd = command;
     
+    // Help command - execute immediately (no loader)
+    if (cmd === 'help') {
+      const helpLines = [
+        'Available commands:',
+        ""
+      ];
+      (commandsData as Command[]).forEach(cmdObj => {
+        const padding = ' '.repeat(15 - cmdObj.cmd.length);
+        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
+      });
+      helpLines.push('');
+      helpLines.push('Directory commands:');
+      helpLines.push('');
+      helpLines.push('  cd [dir]        - Change directory');
+      helpLines.push('  cd              - Back to default directory');
+      helpLines.push('  ls              - List directory contents');
+      helpLines.push('  pwd             - Print working directory');
+      helpLines.push('  run [file]      - Run .sh files');
+      displayCommandOutput(helpLines, 'normal');
+      return;
+    }
+    
+    // Clear command - use clearing loader
+    if (cmd === 'clear') {
+      setIsClearing(true);
+      if (clearingLoaderRef.current) {
+        clearingLoaderRef.current.start();
+      }
+      return;
+    }
+    
     // Directory commands (no fetching) - only navigation commands
     const directoryCommands = ['cd', 'ls', 'ls -a', 'pwd'];
-    const isDirectoryCommand = directoryCommands.includes(cmd) || cmd.startsWith('cd ') || cmd.startsWith('run');
+    const isDirectoryCommand = directoryCommands.includes(cmd) || cmd.startsWith('cd ') || (cmd === 'run' || cmd.startsWith('run '));
     
     if (isDirectoryCommand) {
       // Handle directory commands immediately (no fetching)
@@ -528,7 +564,7 @@ const Terminal: React.FC = () => {
         
         displayCommandOutput(lsOutput, 'normal');
       } else if (cmd === 'ls -a') {
-        // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.exe'
+        // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.sh'
         let lsOutput: string[] = [];
         if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
           lsOutput = [
@@ -580,12 +616,12 @@ const Terminal: React.FC = () => {
       return;
     }
     
-    // Valid commands (with fetching) - including help and clear
+    // Valid commands (with fetching) - excluding help and clear
     const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
-    if (commandData || cmd === 'help' || cmd === 'clear') {
+    if (commandData) {
       // Start fetching loader
       setIsFetching(true);
-      pendingCommandRef.current = { command: cmd, type: cmd === 'help' ? 'help' : cmd === 'clear' ? 'clear' : 'command' };
+      pendingCommandRef.current = { command: cmd, type: 'command' };
       if (fetchingLoaderRef.current) {
         fetchingLoaderRef.current.start();
       }
