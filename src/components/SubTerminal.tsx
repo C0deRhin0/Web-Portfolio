@@ -1,20 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "../styles/SubTerminal.module.css";
+import clueContent from "../data/clue.sh.json";
+import secretContent from "../data/secret.sh.json";
 
 interface SubTerminalProps {
-  content: string;
+  file: string; // 'clue.sh' or 'secret.sh'
   onClose: () => void;
 }
 
-const TYPE_SPEED = 40;
+const TYPE_SPEED = 5;
 
-const SubTerminal: React.FC<SubTerminalProps> = ({ content, onClose }) => {
+const SubTerminal: React.FC<SubTerminalProps> = ({ file, onClose }) => {
   const [displayed, setDisplayed] = useState("");
   const idxRef = useRef(0);
+
+  // Get content based on file
+  const getContent = () => {
+    switch (file) {
+      case 'clue.sh':
+        return clueContent.content;
+      case 'secret.sh':
+        return secretContent.content;
+      default:
+        return 'File not found';
+    }
+  };
 
   useEffect(() => {
     setDisplayed("");
     idxRef.current = 0;
+    const content = getContent();
     const type = () => {
       if (idxRef.current < content.length) {
         setDisplayed((prev) => prev + content[idxRef.current]);
@@ -23,23 +38,15 @@ const SubTerminal: React.FC<SubTerminalProps> = ({ content, onClose }) => {
       }
     };
     type();
-  }, [content]);
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
+  }, [file]);
 
   return (
     <div className={styles.overlay}>
       <div className={styles.subTerminalBox}>
+        <button className={styles.exitButton} onClick={onClose}>
+          ×
+        </button>
         <pre className={styles.terminalText}>{displayed}</pre>
-        <div className={styles.escNote}>click anywhere here and press esc key to exit</div>
       </div>
     </div>
   );
