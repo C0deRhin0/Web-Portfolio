@@ -1,4 +1,24 @@
 {
-  "content": 
-  "#!/bin/bash\n\n# CLUE.SH - Hidden Flag Location\n#\n# You're getting closer to finding the flag!\n#\n# This file contains a clue about where the flag might be hidden.\n# Look carefully at the patterns and hints throughout this portfolio.\n#\n# The flag is not in this file, but this file might help you find it.\n#\n# HINT: Sometimes the most obvious places are the ones we overlook.\n#\n# Good luck, visitor!\n"
-} 
+  "outputLines": [
+    "#!/bin/bash",
+    "",
+    "# CLUE.SH – The Whisper of All",
+    "#",
+    "# In this hall where SECRET stands in bold,",
+    "# the true passages murmur in gentler tones.",
+    "# Their names are sung in soft curves, never crying uppercase,",
+    "# so listen closely for the lowercase whispers.",
+    "# Yet one lone letter still holds dominion over every SECRET nook.",
+    "# Speak its name, a humble glyph of unity,",
+    "# and watch as hidden corners yield their treasures.",
+    "# It carries the essence of ‘all’ within its form,",
+    "# though it hides in plain sight among its peers.",
+    "# Append it to your request, let it stand beside your list,",
+    "# and even the shyest SECRETs cannot escape your call.",
+    "# For when you summon this letter’s power,",
+    "# no file—no matter how SECRET or concealed—remains unseen.",
+    "# Embrace the whisper of All, and unveil what lies beneath.",
+    "#",
+    "# Go forth, intrepid explorer!"
+  ]
+}

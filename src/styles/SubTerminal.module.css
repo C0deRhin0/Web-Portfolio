@@ -17,8 +17,8 @@
   min-width: 450px; /* Increased from 300px */
   max-width: 750px; /* Increased from 500px */
   height: 40vh; /* Increased from 25vh */
-  min-height: 275px; /* Increased from 150px */
-  max-height: 450px; /* Increased from 300px */
+  min-height: 300px; /* Increased from 150px */
+  max-height: 475px; /* Increased from 300px */
   
   /* Copy main terminal styling */
   background: #1e1e1e; /* Same as main terminal background */
@@ -37,7 +37,7 @@
   color: #cfcfcf; /* Same as main terminal text color */
   font-family: 'Source Code Pro', monospace; /* Same font as main terminal */
   font-size: 11px; /* Same font size as main terminal */
-  line-height: 1.0; /* Same line height as main terminal */
+  line-height: 1.1; /* Same line height as main terminal */
   white-space: pre-wrap;
   text-align: left;
   width: 100%;
