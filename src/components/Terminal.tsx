@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import commandsData from '../data/commands.json';
 import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
+import { createFetchingLoader } from '../utils/fetchingLoader';
 
 interface Command {
   cmd: string;
@@ -67,6 +68,9 @@ const Terminal: React.FC = () => {
   const [currentDirectory, setCurrentDirectory] = useState(TERMINAL_CONFIG.appearance.defaultDirectory);
   const [subTerminalVisible, setSubTerminalVisible] = useState(false);
   const [subTerminalContent, setSubTerminalContent] = useState('');
+  const [isFetching, setIsFetching] = useState(false);
+  const fetchingLoaderRef = useRef<any>(null);
+  const pendingCommandRef = useRef<{ command: string; type: string } | null>(null);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -77,6 +81,30 @@ const Terminal: React.FC = () => {
       b: parseInt(result[3], 16)
     } : null;
   };
+
+  // Initialize fetching loader when terminal is ready
+  useEffect(() => {
+    if (xtermRef.current && !fetchingLoaderRef.current) {
+      fetchingLoaderRef.current = createFetchingLoader(
+        (text: string) => {
+          if (xtermRef.current) {
+            xtermRef.current.write(text);
+          }
+        },
+        {
+          duration: 2000, // 2 seconds
+          charInterval: 300, // 0.3 seconds
+          onComplete: () => {
+            setIsFetching(false);
+            // Continue with command output after fetching completes
+            if (pendingCommandRef.current) {
+              executePendingCommand();
+            }
+          }
+        }
+      );
+    }
+  }, [xtermRef.current]);
 
   // Initialize xterm.js terminal - only once
   useEffect(() => {
@@ -145,8 +173,8 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
-          // Completely disable terminal input during typewriter effect
-          if (isTypingRef.current) {
+          // Disable input during typewriter effect or fetching
+          if (isTypingRef.current || isFetching) {
             return;
           }
 
@@ -312,169 +340,6 @@ const Terminal: React.FC = () => {
     xtermRef.current.write(coloredPrompt);
   };
 
-  // Handle command execution
-  const handleCommand = (command: string) => {
-    if (!xtermRef.current) return;
-    
-    // Add command to history
-    if (command.trim()) {
-      commandHistory.current.push(command);
-    }
-    
-    xtermRef.current.write('\r\n');
-    
-    if (!command.trim()) {
-      writePrompt();
-      return;
-    }
-    
-    const cmd = command;
-    
-    // --- RUN COMMAND HANDLING ---
-    if (cmd === 'run' || cmd.startsWith('run ')) {
-      const param = command.substring(3).trim();
-      // Only allow in default dir
-      const validFiles = [];
-      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-        validFiles.push('clue.sh');
-      }
-      if (currentDirectoryRef.current === 'secret') {
-        validFiles.push('secret.sh');
-      }
-      if (!param) {
-        displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
-        return;
-      }
-      if (!validFiles.includes(param)) {
-        displayCommandOutput([`No file found with name ${param}`], 'error');
-        return;
-      }
-      setSubTerminalContent(param === 'clue.sh' || param === 'secret.sh' ? 'testest' : '');
-      writePrompt();
-      setSubTerminalVisible(true);
-      return;
-    }
-    if (cmd === 'help') {
-      // Generate help output as lines and use typewriter effect
-      const helpLines = [
-        'Available commands:',
-        ""
-      ];
-      (commandsData as Command[]).forEach(cmdObj => {
-        const padding = ' '.repeat(15 - cmdObj.cmd.length);
-        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
-      });
-      // Add new directory commands
-      helpLines.push('');
-      helpLines.push('Directory commands:');
-      helpLines.push('');
-      helpLines.push('  cd [dir]        - Change directory');
-      helpLines.push('  cd              - Back to default directory');
-      helpLines.push('  ls              - List directory contents');
-      helpLines.push('  pwd             - Print working directory');
-      helpLines.push('  run             - Run .sh files');
-      //helpLines.push('');
-      displayCommandOutput(helpLines, 'normal');
-    } else if (cmd === 'clear') {
-      clearTerminal();
-    } else if (cmd === 'cd') {
-      // Handle cd command with no arguments - go to default directory
-      if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
-        currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
-        setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-        // No output, just prompt
-        writePrompt();
-      } else {
-        // If already in default directory, just write the prompt
-        writePrompt();
-      }
-    } else if (cmd.startsWith('cd')) {
-      // Handle cd command with directory argument
-      const newDir = command.substring(3).trim();
-      // Define valid directories (only actual directories, not commands)
-      const validDirectories = ['c0derhin0-wp.com', 'secret'];
-      if (validDirectories.includes(newDir)) {
-        if (currentDirectoryRef.current !== newDir) {
-          currentDirectoryRef.current = newDir;
-          setCurrentDirectory(newDir);
-          // No output, just prompt
-          writePrompt();
-        } else {
-          // If already in the target directory, just write the prompt
-          writePrompt();
-        }
-      } else {
-        displayCommandOutput([`Directory not found: ${newDir}`], 'error');
-      }
-    } else if (cmd === 'ls') {
-      // Handle ls command - directory-specific content
-      let lsOutput: string[] = [];
-      
-      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-        lsOutput = [
-          'clue.sh'
-        ];
-      } else if (currentDirectoryRef.current === 'secret') {
-        lsOutput = [
-          //'easter-egg.md'
-        ];
-      } else {
-        /*
-        // For any other directory (shouldn't happen with current validation)
-        lsOutput = [
-          'README.md',
-          'config.json',
-          'data/',
-          'src/'
-        ];
-        */
-      }
-      
-      displayCommandOutput(lsOutput, 'normal');
-    } else if (cmd === 'ls -a') {
-      // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.sh'
-      let lsOutput: string[] = [];
-      if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-        lsOutput = [
-          'clue.sh'
-        ];
-      } else if (currentDirectoryRef.current === 'secret') {
-        lsOutput = [
-          //'easter-egg.md',
-          'secret.sh'
-        ];
-      } else {
-        /*
-        lsOutput = [
-          'README.md',
-          'config.json',
-          'data/',
-          'src/'
-        ];
-        */
-      }
-      displayCommandOutput(lsOutput, 'normal');
-    } else if (cmd === 'pwd') {
-      // Handle pwd command
-      const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
-      displayCommandOutput([pwdOutput], 'normal');
-    } /*else if (cmd === 'contact') {
-      const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
-      if (commandData) {
-        displayCommandOutput(commandData.outputLines, 'warning');
-      }
-    } */else {
-      const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
-      
-      if (commandData) {
-        displayCommandOutput(commandData.outputLines);
-      } else {
-        // Display error with red color
-        displayCommandOutput([`command not found: ${command}`], 'error');
-      }
-    }
-  };
-
   // Clear the terminal
   const clearTerminal = () => {
     if (!xtermRef.current) return;
@@ -547,6 +412,188 @@ const Terminal: React.FC = () => {
     };
     
     typeNextChar();
+  };
+
+  const executePendingCommand = () => {
+    if (!pendingCommandRef.current) return;
+    
+    const { command, type } = pendingCommandRef.current;
+    pendingCommandRef.current = null;
+    
+    // Execute the actual command
+    if (type === 'help') {
+      const helpLines = [
+        'Available commands:',
+        ""
+      ];
+      (commandsData as Command[]).forEach(cmdObj => {
+        const padding = ' '.repeat(15 - cmdObj.cmd.length);
+        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
+      });
+      helpLines.push('');
+      helpLines.push('Directory commands:');
+      helpLines.push('');
+      helpLines.push('  cd [dir]        - Change directory');
+      helpLines.push('  cd              - Back to default directory');
+      helpLines.push('  ls              - List directory contents');
+      helpLines.push('  pwd             - Print working directory');
+      helpLines.push('  run [file]      - Run .sh files');
+      displayCommandOutput(helpLines, 'normal');
+    } else if (type === 'clear') {
+      clearTerminal();
+    } else if (type === 'command') {
+      const commandData = (commandsData as Command[]).find(c => c.cmd === command);
+      if (commandData) {
+        displayCommandOutput(commandData.outputLines);
+      }
+    }
+  };
+
+  // Handle command execution
+  const handleCommand = (command: string) => {
+    if (!xtermRef.current) return;
+    
+    // Add command to history
+    if (command.trim()) {
+      commandHistory.current.push(command);
+    }
+    
+    xtermRef.current.write('\r\n');
+    
+    if (!command.trim()) {
+      writePrompt();
+      return;
+    }
+    
+    const cmd = command;
+    
+    // Directory commands (no fetching) - only navigation commands
+    const directoryCommands = ['cd', 'ls', 'ls -a', 'pwd'];
+    const isDirectoryCommand = directoryCommands.includes(cmd) || cmd.startsWith('cd ') || cmd.startsWith('run');
+    
+    if (isDirectoryCommand) {
+      // Handle directory commands immediately (no fetching)
+      if (cmd === 'cd') {
+        // Handle cd command with no arguments - go to default directory
+        if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
+          currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
+          setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
+          // No output, just prompt
+          writePrompt();
+        } else {
+          // If already in default directory, just write the prompt
+          writePrompt();
+        }
+      } else if (cmd.startsWith('cd ')) {
+        // Handle cd command with directory argument
+        const newDir = command.substring(3).trim();
+        // Define valid directories (only actual directories, not commands)
+        const validDirectories = ['c0derhin0-wp.com', 'secret'];
+        if (validDirectories.includes(newDir)) {
+          if (currentDirectoryRef.current !== newDir) {
+            currentDirectoryRef.current = newDir;
+            setCurrentDirectory(newDir);
+            // No output, just prompt
+            writePrompt();
+          } else {
+            // If already in the target directory, just write the prompt
+            writePrompt();
+          }
+        } else {
+          displayCommandOutput([`Directory not found: ${newDir}`], 'error');
+        }
+      } else if (cmd === 'ls') {
+        // Handle ls command - directory-specific content
+        let lsOutput: string[] = [];
+        
+        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+          lsOutput = [
+            'clue.sh'
+          ];
+        } else if (currentDirectoryRef.current === 'secret') {
+          lsOutput = [
+            //'easter-egg.md'
+          ];
+        } else {
+          /*
+          // For any other directory (shouldn't happen with current validation)
+          lsOutput = [
+            'README.md',
+            'config.json',
+            'data/',
+            'src/'
+          ];
+          */
+        }
+        
+        displayCommandOutput(lsOutput, 'normal');
+      } else if (cmd === 'ls -a') {
+        // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.exe'
+        let lsOutput: string[] = [];
+        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+          lsOutput = [
+            'clue.sh'
+          ];
+        } else if (currentDirectoryRef.current === 'secret') {
+          lsOutput = [
+            //'easter-egg.md',
+            'secret.sh'
+          ];
+        } else {
+          /*
+          lsOutput = [
+            'README.md',
+            'config.json',
+            'data/',
+            'src/'
+          ];
+          */
+        }
+        displayCommandOutput(lsOutput, 'normal');
+      } else if (cmd === 'pwd') {
+        // Handle pwd command
+        const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
+        displayCommandOutput([pwdOutput], 'normal');
+      } else if (cmd === 'run' || cmd.startsWith('run ')) {
+        const param = command.substring(3).trim();
+        // Only allow in default dir
+        const validFiles = [];
+        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+          validFiles.push('clue.sh');
+        }
+        if (currentDirectoryRef.current === 'secret') {
+          validFiles.push('secret.sh');
+        }
+        if (!param) {
+          displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
+          return;
+        }
+        if (!validFiles.includes(param)) {
+          displayCommandOutput([`No file found with name ${param}`], 'error');
+          return;
+        }
+        setSubTerminalContent(param === 'clue.sh' || param === 'secret.sh' ? 'testest' : '');
+        writePrompt();
+        setSubTerminalVisible(true);
+        return;
+      }
+      return;
+    }
+    
+    // Valid commands (with fetching) - including help and clear
+    const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
+    if (commandData || cmd === 'help' || cmd === 'clear') {
+      // Start fetching loader
+      setIsFetching(true);
+      pendingCommandRef.current = { command: cmd, type: cmd === 'help' ? 'help' : cmd === 'clear' ? 'clear' : 'command' };
+      if (fetchingLoaderRef.current) {
+        fetchingLoaderRef.current.start();
+      }
+      return;
+    }
+    
+    // Command not found
+    displayCommandOutput([`command not found: ${command}`], 'error');
   };
 
   // Escape key handler for subterminal
