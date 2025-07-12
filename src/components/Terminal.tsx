@@ -62,6 +62,8 @@ const Terminal: React.FC = () => {
   const historyIndex = useRef<number>(-1); // -1 means not navigating
   const currentLineBuffer = useRef<string>('');
   const isTypingRef = useRef<boolean>(false); // Use ref for event handler access
+  const isFetchingRef = useRef<boolean>(false); // Use ref for fetching state
+  const isClearingRef = useRef<boolean>(false); // Use ref for clearing state
   const currentDirectoryRef = useRef<string>(TERMINAL_CONFIG.appearance.defaultDirectory); // Use ref for prompt access
   const [isTyping, setIsTyping] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -98,6 +100,7 @@ const Terminal: React.FC = () => {
           duration: 2000, // 2 seconds
           charInterval: 300, // 0.3 seconds
           onComplete: () => {
+            isFetchingRef.current = false;
             setIsFetching(false);
             // Continue with command output after fetching completes
             if (pendingCommandRef.current) {
@@ -122,6 +125,7 @@ const Terminal: React.FC = () => {
           duration: 2000, // 2 seconds
           charInterval: 300, // 0.3 seconds
           onComplete: () => {
+            isClearingRef.current = false;
             setIsClearing(false);
             // Clear the terminal after clearing loader completes
             clearTerminal();
@@ -198,8 +202,8 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
-          // Disable input during typewriter effect, fetching, or clearing
-          if (isTypingRef.current || isFetching || isClearing) {
+          // Disable input during typewriter effect, fetching, or clearing using refs
+          if (isTypingRef.current || isFetchingRef.current || isClearingRef.current) {
             return;
           }
 
@@ -496,6 +500,7 @@ const Terminal: React.FC = () => {
     
     // Clear command - use clearing loader
     if (cmd === 'clear') {
+      isClearingRef.current = true;
       setIsClearing(true);
       if (clearingLoaderRef.current) {
         clearingLoaderRef.current.start();
@@ -620,6 +625,7 @@ const Terminal: React.FC = () => {
     const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
     if (commandData) {
       // Start fetching loader
+      isFetchingRef.current = true;
       setIsFetching(true);
       pendingCommandRef.current = { command: cmd, type: 'command' };
       if (fetchingLoaderRef.current) {
