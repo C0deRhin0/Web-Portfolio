@@ -567,7 +567,12 @@ const Terminal: React.FC = () => {
           */
         }
         
-        displayCommandOutput(lsOutput, 'normal');
+        // Only display output if there's content, otherwise just show prompt
+        if (lsOutput.length > 0) {
+          displayCommandOutput(lsOutput, 'normal');
+        } else {
+          writePrompt();
+        }
       } else if (cmd === 'ls -a') {
         // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.sh'
         let lsOutput: string[] = [];
@@ -590,7 +595,12 @@ const Terminal: React.FC = () => {
           ];
           */
         }
-        displayCommandOutput(lsOutput, 'normal');
+        // Only display output if there's content, otherwise just show prompt
+        if (lsOutput.length > 0) {
+          displayCommandOutput(lsOutput, 'normal');
+        } else {
+          writePrompt();
+        }
       } else if (cmd === 'pwd') {
         // Handle pwd command
         const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
