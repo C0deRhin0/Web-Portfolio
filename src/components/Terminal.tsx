@@ -98,7 +98,7 @@ const Terminal: React.FC = () => {
         },
         {
           duration: 2000, // 2 seconds
-          charInterval: 300, // 0.3 seconds
+          charInterval: 50, // 0.3 seconds
           onComplete: () => {
             isFetchingRef.current = false;
             setIsFetching(false);
@@ -123,7 +123,7 @@ const Terminal: React.FC = () => {
         },
         {
           duration: 2000, // 2 seconds
-          charInterval: 300, // 0.3 seconds
+          charInterval: 50, // 0.3 seconds
           onComplete: () => {
             isClearingRef.current = false;
             setIsClearing(false);

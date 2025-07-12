@@ -16,7 +16,7 @@ const DEFAULT_CHAR_INTERVAL = 300; // 0.3 seconds
 // Helper function to get colored text for terminal output
 const getColoredFetchingText = (spinningChar: string): string => {
   // Color codes: #cfcfcf for "fetching", #dda520 for spinning character
-  return `\x1b[38;2;207;207;207mfetching \x1b[38;2;221;165;32m${spinningChar}\x1b[0m`;
+  return `\x1b[38;2;207;207;207mfetching... \x1b[38;2;221;165;32m${spinningChar}\x1b[0m`;
 };
 
 export const createFetchingLoader = (
