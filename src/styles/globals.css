@@ -7,43 +7,57 @@
   margin: 0;
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+html, body {
+  width: 100vw;
+  height: 100vh;
   margin: 0;
+  padding: 0;
   background: #1e1e1e;
   color: #cfcfcf;
   font-family: 'Source Code Pro', monospace;
   text-align: left;
+  overflow: hidden;
 }
 
 .terminal-container {
+  width: 100vw;
   height: 100vh;
-  padding: 1rem;
+  padding-bottom: 20px;
+  margin: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-/* xterm.js cursor blinking animation */
-.xterm-cursor {
-  animation: blink 1s step-start infinite;
-}
-
-@keyframes blink {
-  50% { 
-    opacity: 0; 
-  }
-}
-
-/* Ensure xterm container takes full height */
 .xterm {
+  width: 100vw !important;
   height: 100% !important;
+  /* No overflow here, let xterm-viewport handle it */
+  white-space: nowrap !important;
 }
 
-/* Custom scrollbar for the terminal */
+/* Remove any fixed height/width from .xterm-viewport and .xterm-screen! */
+
+.xterm-viewport {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2d2d2d;
+}
+
+.xterm-screen {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+.xterm canvas {
+  white-space: nowrap !important;
+}
+
+/* Thinner custom scrollbars for Webkit browsers */
 .xterm-viewport::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .xterm-viewport::-webkit-scrollbar-track {
@@ -59,9 +73,13 @@ body {
   background: #777;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .terminal-container {
-    padding: 0.5rem;
+/* xterm.js cursor blinking animation */
+.xterm-cursor {
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  50% { 
+    opacity: 0; 
   }
-} 
+}

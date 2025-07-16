@@ -14,8 +14,8 @@
 .subTerminalBox {
   /* SOURCE CODE LOCATION: Change width/height here to resize subterminal */
   width: 40vw; /* Increased from 25vw */
-  min-width: 450px; /* Increased from 300px */
-  max-width: 750px; /* Increased from 500px */
+  min-width: 400px; /* Increased from 300px */
+  max-width: 700px; /* Increased from 500px */
   height: 40vh; /* Increased from 25vh */
   min-height: 300px; /* Increased from 150px */
   max-height: 475px; /* Increased from 300px */
@@ -73,5 +73,3 @@
 .exitButton:active {
   background: #d02a01bb;
 }
-
-/* Remove the old esc note */

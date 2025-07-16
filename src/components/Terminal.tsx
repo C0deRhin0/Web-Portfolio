@@ -178,14 +178,32 @@ const Terminal: React.FC = () => {
           fontSize: 11,
           lineHeight: 1.0,
           scrollback: 1000,
-          cols: 80,
-          rows: 24
+          cols: 200, // Increased minimum columns to accommodate ASCII art (longest line is ~200 chars)
+          rows: 24,
+          convertEol: false, // Disable automatic line wrapping
+          allowTransparency: true,
+          scrollOnUserInput: false, // Prevent auto-scroll on input
+          scrollSensitivity: 1,
+          fastScrollModifier: 'alt',
+          fastScrollSensitivity: 5,
+          rightClickSelectsWord: false,
+          macOptionIsMeta: true
         });
 
         fitAddon = new FitAddon();
         terminal.loadAddon(fitAddon);
         terminal.open(terminalRef.current);
-        fitAddon.fit();
+        
+        // Fit the terminal to the container and enforce minimum columns for ASCII art
+        const customFit = () => {
+          fitAddon.fit();
+          // Enforce minimum columns for ASCII art
+          if (terminal.cols < 200) {
+            terminal.resize(200, terminal.rows);
+          }
+        };
+        
+        customFit();
 
         // Store references
         xtermRef.current = terminal;
@@ -196,8 +214,8 @@ const Terminal: React.FC = () => {
         printBannerAndWelcome();
         writePrompt();
 
-        // Handle window resize
-        const handleResize = () => fitAddon.fit();
+        // Handle window resize with custom fit
+        const handleResize = () => customFit();
         window.addEventListener('resize', handleResize);
 
         // Handle terminal input
