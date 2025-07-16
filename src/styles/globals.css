@@ -1,12 +1,4 @@
-/* Global styles for the hacker-terminal portfolio */
-@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
+/* Remove the global hide‐all‐overflow */
 html, body {
   width: 100vw;
   height: 100vh;
@@ -16,70 +8,59 @@ html, body {
   color: #cfcfcf;
   font-family: 'Source Code Pro', monospace;
   text-align: left;
-  overflow: hidden;
+
+  /* ← remove this: overflow: hidden; */
 }
 
+/* Terminal container: allow horizontal scroll here */
 .terminal-container {
   width: 100vw;
   height: 100vh;
-  padding-bottom: 20px;
+  padding: 0 20px 20px;
   margin: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+
+  /* ← let it scroll on X, hide on Y */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;  /* smooth scrolling on iOS */
 }
 
+/* Make sure xterm itself squashes to its content width */
 .xterm {
-  width: 100vw !important;
+  /* Let it grow wider than the viewport if needed */
+  min-width: max-content !important;
   height: 100% !important;
-  /* No overflow here, let xterm-viewport handle it */
   white-space: nowrap !important;
 }
 
-/* Remove any fixed height/width from .xterm-viewport and .xterm-screen! */
-
+/* Viewport: scroll only horizontally */
 .xterm-viewport {
   overflow-x: auto !important;
-  overflow-y: auto !important;
+  overflow-y: hidden !important;
   scrollbar-width: thin;
   scrollbar-color: #555 #2d2d2d;
 }
 
+/* Screen: no internal clipping */
 .xterm-screen {
   white-space: nowrap !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
-.xterm canvas {
-  white-space: nowrap !important;
-}
-
-/* Thinner custom scrollbars for Webkit browsers */
+/* (Scrollbars styling you already have… ) */
 .xterm-viewport::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 .xterm-viewport::-webkit-scrollbar-track {
   background: #2d2d2d;
 }
-
 .xterm-viewport::-webkit-scrollbar-thumb {
   background: #555;
   border-radius: 4px;
 }
-
 .xterm-viewport::-webkit-scrollbar-thumb:hover {
   background: #777;
-}
-
-/* xterm.js cursor blinking animation */
-.xterm-cursor {
-  animation: blink 1s step-start infinite;
-}
-
-@keyframes blink {
-  50% { 
-    opacity: 0; 
-  }
 }

@@ -13,11 +13,11 @@
 
 .subTerminalBox {
   /* SOURCE CODE LOCATION: Change width/height here to resize subterminal */
-  width: 40vw; /* Increased from 25vw */
-  min-width: 400px; /* Increased from 300px */
+  width: 35vw; /* Increased from 25vw */
+  min-width: 300px; /* Increased from 300px */
   max-width: 700px; /* Increased from 500px */
-  height: 40vh; /* Increased from 25vh */
-  min-height: 300px; /* Increased from 150px */
+  height: 35vh; /* Increased from 25vh */
+  min-height: 200px; /* Increased from 150px */
   max-height: 475px; /* Increased from 300px */
   
   /* Copy main terminal styling */
@@ -37,7 +37,7 @@
   color: #cfcfcf; /* Same as main terminal text color */
   font-family: 'Source Code Pro', monospace; /* Same font as main terminal */
   font-size: 11px; /* Same font size as main terminal */
-  line-height: 1.1; /* Same line height as main terminal */
+  line-height: 1.2; /* Same line height as main terminal */
   white-space: pre-wrap;
   text-align: left;
   width: 100%;

@@ -39,6 +39,8 @@ const RHINO_ART = [
 const WELCOME_LINES = [
   "Hi there! Welcome to my Web Portfolio                                                                                               (Version 1.0.0)",
   '',
+  "For best experience, please use a desktop browser and have your volume maxed out",
+  '',
   "     *I have hidden a flag somewhere in this portfolio. Can you find it?",
   '',
   '=====',
