@@ -279,6 +279,11 @@ const Terminal: React.FC = () => {
               if (printable && domEvent.key.length === 1) {
                 currentLineBuffer.current += key;
                 terminal.write(key);
+                // Auto-scroll to bottom if user is not at the bottom
+                const viewport = terminal.element?.querySelector('.xterm-viewport');
+                if (viewport && viewport.scrollTop + viewport.clientHeight < viewport.scrollHeight - 2) {
+                  viewport.scrollTop = viewport.scrollHeight;
+                }
               }
           }
         });

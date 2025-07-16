@@ -4,6 +4,7 @@ import clueContent from "../data/clue.sh.json";
 import secretContent from "../data/secret.sh.json";
 import { TERMINAL_CONFIG } from "../config/terminalConfig";
 import { createPackageInstallEffect, playAudio } from "../utils/packageInstallEffect";
+import BlackoutOverlay from './BlackoutOverlay';
 
 interface SubTerminalProps {
   file: string; // 'clue.sh' or 'secret.sh'
@@ -16,6 +17,7 @@ const SubTerminal: React.FC<SubTerminalProps> = ({ file, onClose }) => {
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
   const packageInstallRef = useRef<any>(null);
   const terminalTextRef = useRef<HTMLPreElement>(null);
+  const [showBlackout, setShowBlackout] = useState(false);
 
   // Get content based on file
   const getContent = () => {
@@ -109,8 +111,10 @@ const SubTerminal: React.FC<SubTerminalProps> = ({ file, onClose }) => {
     packageInstallRef.current = createPackageInstallEffect({
       onComplete: () => {
         setIsTyping(false);
-        // Play audio when installation is complete
-        playAudio('/audio/zzz.wav');
+        // Play audio when installation is complete (looped)
+        playAudio('/audio/zzz.wav', true);
+        // Show blackout overlay
+        setShowBlackout(true);
       }
     });
 
@@ -155,14 +159,17 @@ const SubTerminal: React.FC<SubTerminalProps> = ({ file, onClose }) => {
   }, [typewriterTimeout]);
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.subTerminalBox}>
-        <button className={styles.exitButton} onClick={onClose}>
-          ×
-        </button>
-        <pre ref={terminalTextRef} className={styles.terminalText}>{displayed}</pre>
+    <>
+      {showBlackout && <BlackoutOverlay />}
+      <div className={styles.overlay} style={{ zIndex: showBlackout ? 1000 : undefined }}>
+        <div className={styles.subTerminalBox}>
+          <button className={styles.exitButton} onClick={onClose}>
+            ×
+          </button>
+          <pre ref={terminalTextRef} className={styles.terminalText}>{displayed}</pre>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

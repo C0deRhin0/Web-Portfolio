@@ -82,13 +82,16 @@ export const createPackageInstallEffect = (
 };
 
 // Audio player utility
-export const playAudio = (audioPath: string) => {
+export const playAudio = (audioPath: string, loop: boolean = false) => {
   try {
     const audio = new Audio(audioPath);
+    audio.loop = loop;
     audio.play().catch(error => {
       console.warn('Audio playback failed:', error);
     });
+    return audio;
   } catch (error) {
     console.warn('Audio creation failed:', error);
+    return null;
   }
 }; 
