@@ -4,6 +4,7 @@ import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
+import { RHINO_ART, printRhinoArt } from './RhinoArt';
 
 interface Command {
   cmd: string;
@@ -12,30 +13,6 @@ interface Command {
 }
 
 // User's custom rhino ASCII art and CODERHINO block
-const RHINO_ART = [
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠀⠄⣼⢹⠀⠀⠀⠀⠀⠀⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣐⣠⣄⣐⡀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠈⣼⣿⢹⠀⠀⠀⠀⡜⢲⡖⣶⣦⠀⠀⠀⡄⠀⠀⡄⢪⣾⠋⠀⣴⣾⣿⡗⢡⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⢀⢡⡏⢾⡟⠀⠀⠀⠰⢰⡌⣿⠄⡬⣷⣩⠶⡾⠟⠛⠶⡾⠃⣠⣾⣿⣿⠄⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⡀⣾⠀⢾⣇⠅⠀⠀⠀⣾⣷⡹⣤⣿⠟⠁⠐⠀⠀⠀⠈⠰⠾⢿⣿⠿⠋⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⢡⡏⠀⡀⢿⡌⡀⠀⡇⣿⠌⢷⣴⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠛⠳⢦⣅⡠⠀⠀⠀⠀⠀⠀                                ░░░              ░░░░░░░     ░░░                                                        ",
-  "⠀⠀⠀⠀⢸⡇⠀⠡⠸⣿⡔⠀⡇⣿⠈⠄⠻⣿⡀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⡙⢿⣦⡀⡀⠀    ░▒▓███▓░    ░▓██▓▒            ▒█▓              ▓▓▓▓▓▓▒░░   ▒██           ░▓█▒                    ░▒███▓░              ",
-  "⠀⠀⠀⠀⢸⡇⠀⠀⠂⢹⣿⣮⡂⢻⡀⠈⠀⠈⠙⠶⡄⠀⠀⣠⠆⠀⠀⠠⡀⠀⠂⠀⠀⡀⠹⣿⡌⠄  ░███░░░░▓█▒░░██▓░░░██░          ▒█▓              ██░░░░▒███░ ▒██           ░██▓                   ▓██░░░▓█              ",
-  "⠀⠀⠀⠀⡜⣧⠀⠀⠈⠀⠻⡌⠻⣮⣷⣐⢄⡀⠢⣰⠏⠀⢰⣏⠀⠀⠀⠀⠙⣦⡀⠀⢂⠠⠀⢻⣿⡐░▒██░         ██░   ░███░   ░░▒▒░░▒█▓    ░░▒▒▒░░   ██░     ▓██░▒██ ░░▒▒░░  ░░░░░░░    ░░░▒▒▒░     ▒██░  ░███▓             ",
-  "⠀⠀⠀⠀⠠⢻⡄⠀⠀⠀⠢⡙⠄⠀⠉⠛⠿⣿⡛⠁⠀⠀⡏⢸⠆⠀⢀⡤⠀⠘⣷⡄⠀⢢⠀⢸⣿⡇░██░         ▒██   ░█░▓█▒ ░▓██▓▒▒███▓  ░▓██▓▒▓██▓░ ██░     ▓██░▒████▒▒▓██░ ░▓▓▓▓██    ░██████▓    ██▒  ░██░██░⠀           ",
-  "⠀⠀⠀⠀⠀⢊⢷⡀⠀⠀⠀⠀⠢⠀⠀⠀⠀⠀⢹⡆⠀⢠⣧⠏⢀⣴▓⠀⠀⢈⣿⣿⡀⠈⠀⣼⣿⡇▒██          ▓█▓  ░█▒ ▓██ ▓██░    ▒█▓  ▓█▓    ░▓█▓ ██░  ░░▓██░ ▒██░    ▒█▓     ░██    ░██    ░██  ██░  ▓█░░██░⠀           ",
-  "⠀⠀⠀⠀⠀⠀⠊⢻⣄⠀⢄⠀⠀⠈⠐⠠⡀⠀⢼⡇⠠⠊⠁⢠⠎⣠⣿⠀⣠⣾⣿⣿⣧⠀⢰⣿⣿⢱▒██          ▓█▓ ░█▒  ▓██ ██░     ▒█▓ ░██░░░░░░░██ ███████▒░   ▒██     ▒█▓     ░██    ░██     ░██ ██░▒█░  ░██░⠀           ",
-  "⠀⠀⠀⠀⠀⠀⠀⠁⠝⢧⣄⠳⣦⣀⠀⠀⠠⢈⡾⢁⡶⠛⢶⣇⠀⢡⣿⣾⣿⣿⣿⣿⣿⢠⣿⢟⡟⡁░██░         ▒██░█▓   ▓█▓ ██░     ▒█▓ ░██████████▓ ██░  ▒██░   ▒██     ▒█▓     ░██    ░██     ░██ ██░▒█░  ░██░⠀           ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⡍⣿⠶⢿⣿⡶⠶⠋⠀⠊⠀⣾⠀⣿⣴⣿⠿⠿⢿⣿⣿⣿⣿⣿⠟⡁⠑⠀░▓█▓░         ███▓   ░██░ ██▒     ▒█▓ ░██▒         ██░   ▒██░  ▒██     ▒█▓     ░██    ░██     ░██ ▓███░   ▓█▓             ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢯⣀⠀⠀⠀⠀⠀⠀⣀⣀⣙⣤⣿⣿⢃⠀⠀⠁⠜⣿⣿⡿⠫⠀⠣⠁⠀⠀ ▓██▒░░░░▒█▓░▒██░ ░░██▒░ ░██▒░ ░▒██▓  ░██▓░  ░▒▓░ ██░    ░██▒ ▒██     ▒█▓ ░░░░░██░░░░░██     ░██ ░▓█▓░ ░▓██              ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⢿⡶⠶⠶⣶⣶⣤⣤⣨⣽⡿⠋⠑⠀⠀⠀⠀⢰⢸⠟⠀⠀⠀⠁⠀⠀⠀⠀⠀░▒▓█████▒░  ░▒████▓░    ░▓████▒░█▓    ▒█████▓░░ ██░     ░██▒▒██     ▒█▓ ░█████████▓░██     ░██ ░░█████▒                ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠜⠛⠿⢿⣿⠟⠘⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                                 ",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-];
-
 const WELCOME_LINES = [
   "Hi there! Welcome to my Web Portfolio                                                                                               (Version 1.0.0)",
   '',
@@ -77,6 +54,13 @@ const Terminal: React.FC = () => {
   const fetchingLoaderRef = useRef<any>(null);
   const clearingLoaderRef = useRef<any>(null);
   const pendingCommandRef = useRef<{ command: string; type: string; param?: string } | null>(null);
+  const [asciiEnabled, setAsciiEnabled] = useState(true); // New state for ascii art
+  const asciiEnabledRef = useRef(asciiEnabled); // Ref to always have latest value
+  const prevAsciiEnabledRef = useRef(asciiEnabled); // Track previous value for effect
+
+  useEffect(() => {
+    asciiEnabledRef.current = asciiEnabled;
+  }, [asciiEnabled]);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -128,8 +112,8 @@ const Terminal: React.FC = () => {
           onComplete: () => {
             isClearingRef.current = false;
             setIsClearing(false);
-            // Clear the terminal after clearing loader completes
-            clearTerminal();
+            // Use the latest value of asciiEnabled
+            clearTerminal(asciiEnabledRef.current);
           }
         }
       );
@@ -317,24 +301,11 @@ const Terminal: React.FC = () => {
   // Print banner and welcome message, side by side
   const printBannerAndWelcome = () => {
     if (!xtermRef.current) return;
-    
-    // Get rhino color from config
-    const rhinoColor = hexToRgb(TERMINAL_CONFIG.colors.rhino);
-    const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory); // Use directory color (#3e8600)
-    
-    // Print rhino art with color
-    const maxLines = Math.max(RHINO_ART.length);
-    for (let i = 0; i < maxLines; i++) {
-      const rhinoLine = (RHINO_ART[i] || '').trimStart();
-      if (rhinoColor) {
-        const coloredLine = `\x1b[38;2;${rhinoColor.r};${rhinoColor.g};${rhinoColor.b}m${rhinoLine.padEnd(70, ' ')}\x1b[0m\r\n`;
-        xtermRef.current.write(coloredLine);
-      } else {
-        xtermRef.current.write(rhinoLine.padEnd(70, ' ') + '\r\n');
-      }
+    if (asciiEnabled) {
+      printRhinoArt(xtermRef.current);
     }
-    
     // Print welcome lines with colored "help"
+    const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory); // Use directory color (#3e8600)
     WELCOME_LINES.forEach(line => {
       if (line.includes("help")) {
         // Split the line to color only the "help" part
@@ -393,12 +364,30 @@ const Terminal: React.FC = () => {
     xtermRef.current.write(coloredPrompt);
   };
 
-  // Clear the terminal
-  const clearTerminal = () => {
+  // Update clearTerminal to accept an optional parameter for asciiEnabled
+  const clearTerminal = (asciiOverride?: boolean) => {
     if (!xtermRef.current) return;
-    
     xtermRef.current.clear();
-    printBannerAndWelcome();
+    const showAscii = typeof asciiOverride === 'boolean' ? asciiOverride : asciiEnabledRef.current;
+    if (showAscii) {
+      printBannerAndWelcome();
+    } else {
+      // Print only the welcome lines (without ASCII art)
+      const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory);
+      WELCOME_LINES.forEach(line => {
+        if (line.includes("help")) {
+          const parts = line.split("help");
+          if (helpColor) {
+            const coloredLine = `${parts[0]}\x1b[38;2;${helpColor.r};${helpColor.g};${helpColor.b}mhelp\x1b[0m${parts[1]}\r\n`;
+            xtermRef.current.write(coloredLine);
+          } else {
+            xtermRef.current.write(line + '\r\n');
+          }
+        } else {
+          xtermRef.current.write(line + '\r\n');
+        }
+      });
+    }
     writePrompt();
   };
 
@@ -495,33 +484,43 @@ const Terminal: React.FC = () => {
       commandHistory.current.push(command);
     }
     
-    xtermRef.current.write('\r\n');
+    const cmd = command.trim();
     
-    if (!command.trim()) {
+    // For ascii on/off, only skip newline if the command will trigger a clear (state change). For errors, always write the newline.
+    let isAsciiOn = cmd === 'ascii on';
+    let isAsciiOff = cmd === 'ascii off';
+    if (isAsciiOn || isAsciiOff) {
+      // Determine if this will be an error or a state change
+      if ((isAsciiOn && asciiEnabledRef.current) || (isAsciiOff && !asciiEnabledRef.current)) {
+        xtermRef.current.write('\r\n'); // Error case: always write newline
+      }
+      // Otherwise, skip newline (will clear)
+    } else {
+      xtermRef.current.write('\r\n');
+    }
+    
+    if (!cmd) {
       writePrompt();
       return;
     }
-    
-    const cmd = command;
-    
-    // Help command - execute immediately (no loader)
+  
     if (cmd === 'help') {
-      const helpLines = [
-        'Available commands:',
-        ""
-      ];
-      (commandsData as Command[]).forEach(cmdObj => {
-        const padding = ' '.repeat(15 - cmdObj.cmd.length);
-        helpLines.push(`  ${cmdObj.cmd}${padding} - ${cmdObj.desc}`);
+      // New help logic: group commands by label/category from commandsData
+      const helpLines: string[] = [];
+      let currentLabel: string | null = null;
+      (commandsData as any[]).forEach((item) => {
+        if (item.type === 'label') {
+          // Print a blank line before each label except the first
+          if (helpLines.length > 0) helpLines.push('');
+          helpLines.push(item.label);
+          currentLabel = item.label;
+        } else if (item.cmd && item.desc) {
+          // Only show commands that are not hidden and have a category
+          // Indent commands under their label
+          const padding = ' '.repeat(17 - item.cmd.length);
+          helpLines.push(`  ${item.cmd}${padding}- ${item.desc}`);
+        }
       });
-      helpLines.push('');
-      helpLines.push('Directory commands:');
-      helpLines.push('');
-      helpLines.push('  cd [dir]        - Change directory');
-      helpLines.push('  cd              - Back to default directory');
-      helpLines.push('  ls              - List directory contents');
-      helpLines.push('  pwd             - Print working directory');
-      helpLines.push('  run [file]      - Run .sh files');
       displayCommandOutput(helpLines, 'normal');
       return;
     }
@@ -533,6 +532,38 @@ const Terminal: React.FC = () => {
       if (clearingLoaderRef.current) {
         clearingLoaderRef.current.start();
       }
+      return;
+    }
+
+    // Handle ascii command
+    if (cmd === 'ascii' || cmd.startsWith('ascii ')) {
+      const arg = cmd.slice(5).trim();
+      if (!arg) {
+        displayCommandOutput([
+          "ascii requires an argument. Usage: ascii [on/off]"
+        ], 'error');
+        return;
+      }
+      if (arg === 'on') {
+        if (asciiEnabledRef.current) {
+          displayCommandOutput(["ASCII art is already enabled."], 'error');
+        } else {
+          setAsciiEnabled(true);
+        }
+        return;
+      }
+      if (arg === 'off') {
+        if (!asciiEnabledRef.current) {
+          displayCommandOutput(["ASCII art is already disabled."], 'error');
+        } else {
+          setAsciiEnabled(false);
+        }
+        return;
+      }
+      // Invalid usage
+      displayCommandOutput([
+        "Usage: ascii [on/off]"
+      ], 'error');
       return;
     }
     
@@ -680,6 +711,14 @@ const Terminal: React.FC = () => {
     // Command not found
     displayCommandOutput([`command not found: ${command}`], 'error');
   };
+
+  // Only call clearTerminal if asciiEnabled actually changed
+  useEffect(() => {
+    if (isInitialized && prevAsciiEnabledRef.current !== asciiEnabled) {
+      clearTerminal(asciiEnabled);
+    }
+    prevAsciiEnabledRef.current = asciiEnabled;
+  }, [asciiEnabled, isInitialized]);
 
   return (
     <div className="terminal-container">

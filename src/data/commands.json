@@ -1,7 +1,12 @@
 [
   {
+    "type": "label",
+    "label": "Portfolio commands:"
+  },
+  {
     "cmd": "whoami",
     "desc": "About me",
+    "category": "Portfolio",
     "outputLines": [
       "                  .----.",
       "      .---------. | == |",
@@ -18,6 +23,7 @@
   {
     "cmd": "projects",
     "desc": "My projects",
+    "category": "Portfolio",
     "outputLines": [
       "• Python multi-threaded port scanner",
       "• Offensive Python scripts demonstrating MITRE ATT&CK tactics",
@@ -31,11 +37,13 @@
   {
     "cmd": "experiences",
     "desc": "Work & Internships",
+    "category": "Portfolio",
     "outputLines": []
   },
   {
     "cmd": "skills",
     "desc": "Technical skills",
+    "category": "Portfolio",
     "outputLines": [
       "Cloud Computing         : AWS (EC2, S3, Lambda, IAM)",
       "Smart Contracts         : Solidity, Truffle, Hardhat",
@@ -51,6 +59,7 @@
   {
     "cmd": "contact",
     "desc": "Contact information",
+    "category": "Portfolio",
     "outputLines": [
       "Name    : Wilfredo Paulo A. Perez III",
       "Email   : pauloperez9754@gmail.com",
@@ -62,6 +71,7 @@
   {
     "cmd": "certifications",
     "desc": "Certifications",
+    "category": "Portfolio",
     "outputLines": [
       "AWS Certified Cloud Security Practitioner (CCSP-AWS)",
       "Certified Network Security Practitioner (CNSP)",
@@ -73,6 +83,7 @@
   {
     "cmd": "competitions",
     "desc": "CTF achievements",
+    "category": "Portfolio",
     "outputLines": [
       "HACK4GOV 3 (AdNU Representative) Nationals - 2nd Place",
       "HACK4GOV 3 (AdNU Representative) Regionals - 1st Place",
@@ -82,6 +93,7 @@
   {
     "cmd": "references",
     "desc": "References",
+    "category": "Portfolio",
     "outputLines": [
       "*References available upon request*"
     ]
@@ -89,6 +101,7 @@
   {
     "cmd": "education",
     "desc": "Education",
+    "category": "Portfolio",
     "outputLines": [
       "2022 - 2026",
       "ATENEO DE NAGA UNIVERSITY",
@@ -97,8 +110,59 @@
     ]
   },
   {
+    "type": "label",
+    "label": "Directory commands:"
+  },
+  {
+    "cmd": "cd",
+    "desc": "Back to default directory",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
+    "cmd": "cd [dir]",
+    "desc": "Change directory",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
+    "cmd": "ls",
+    "desc": "List directory contents",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
+    "cmd": "pwd",
+    "desc": "Print working directory",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
+    "cmd": "run [file]",
+    "desc": "Run .sh files",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
     "cmd": "clear",
     "desc": "Clear the terminal",
+    "category": "Directory",
+    "outputLines": []
+  },
+  {
+    "type": "label",
+    "label": "Additional commands:"
+  },
+  {
+    "cmd": "ascii [on/off]",
+    "desc": "Toggle ASCII art",
+    "category": "Additional",
+    "outputLines": []
+  },
+  {
+    "cmd": "theme [1/2/3]",
+    "desc": "Change terminal theme",
+    "category": "Additional",
     "outputLines": []
   }
 ] 
