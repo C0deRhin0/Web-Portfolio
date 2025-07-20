@@ -5,87 +5,95 @@
     "outputLines": [
       "                  .----.",
       "      .---------. | == |",
-      "      |.-\"\"\"\"\"-.| |----|",
-      "      ||       || | == |",
-      "      ||       || |----|",
-      "      |'-.....-'| |::::|",
-      "     `\"\"\")---(\"\"` |___.|",
+      "      |.-\"\"\"\"\"-.| |----|   Hi! I am Wilfredo Paulo A. Perez III, a BS Computer Science undergraduate with over three years of exposure",
+      "      ||       || | == |   in cybersecurity, honing expertise in offensive and defensive security, system administration, network analysis,",
+      "      ||       || |----|   cloud computing, blockchain technology, and vulnerability assessment through competitive cybersecurity,",
+      "      |'-.....-'| |::::|   projects and hands‑on labs, while extending my skills in scripting, automation, and infrastructure dev,",
+      "     `\"\"\")---(\"\"` |___.|   focused on strengthening security posture and advanced exploitation techniques.",
       "     /:::::::::::\\\" _  \"",
       "    /:::=======:::\\`\\`\\",
-      "    `\"\"\"\"\"\"\"\"\"\"\"\"\"`  '-'",
-      " ",
-      " Name       : Wilfredo Paulo A. Perez III",
-      " Location   : Naga City, Camarines Sur, Philippines",
-      " Email      : pauloperez9754@gmail.com",
-      " Phone      : +63 956-943-6779",
-      " GitHub     : github.com/C0deRhin0",
-      " LinkedIn   : linkedin.com/in/wppereziii",
-      " ",
-      " Education  : BS Computer Science (2022–2026)",
-      "              Ateneo de Naga University (Magna Cum Laude Candidate)",
-      "              Current QPI: 3.64",
-      " ",
-      " Skills     : Cloud (AWS), Smart Contracts (Solidity), IDS/IPS (Suricata),",
-      "              Network Security (Wireshark, TCPdump, pfSense),",
-      "              Vulnerability Assessment (Nessus), Incident Response (MITRE ATT&CK/SHIELD),",
-      "              Scripting (Bash, PowerShell, Python, AWK/GAWK), OSINT (TweetDeck, Maltego, Google Dork),",
-      "              Programming (C, C++, Java)",
-      " ",
-      " Projects   : • Python Multi-threaded Port Scanner",
-      "              • Offensive Python Scripts (MITRE ATT&CK demos)",
-      "              • Automated System Security Logging (Bash & PowerShell)",
-      "              • AdNU CEVAS (LAMP-based cert validation)",
-      "              • Vulnerable Smart Contract Demo (reentrancy exploit)",
-      "              • AWS Cloud DevSecOps Pipeline",
-      "              • Home-Lab Software-defined Firewall (ongoing)",
-      " ",
-      " Certifications & Competitions:",
-      "              • AWS CCSP-AWS, CNSP, ISC² Candidate, Smartbooks & Power BI",
-      "              • Blue Team Level 0 (Junior Analyst)",
-      "              • HACK4GOV: Nationals 2nd Place, Regionals 1st & 2nd Places",
-      " ",
-      " Thesis     : \"Symbolic Finite Automata-based Static Code Audit for SQL Injection Vulnerabilities in LAMP Stack via Bash Scripting\"",
-      " ",
-      " Soft Skills: Data-driven planning, Organized, Time management, Professional, Cooperative"
+      "    `\"\"\"\"\"\"\"\"\"\"\"\"\"`  '-'"
     ]
   },
   {
     "cmd": "projects",
     "desc": "My projects",
     "outputLines": [
-      "- Interactive Terminal Portfolio",
-      "- CTF Challenge Server",
-      "- Wazuh Docker Stack"
+      "• Python multi-threaded port scanner",
+      "• Offensive Python scripts demonstrating MITRE ATT&CK tactics",
+      "• Automated system security logging (Bash & PowerShell)",
+      "• AdNU CEVAS – LAMP-based certificate validation platform",
+      "• Vulnerable smart contract demo with reentrancy exploit",
+      "• AWS Cloud DevSecOps pipeline",
+      "• Home-lab software-defined firewall (in progress)"
     ]
   },
   {
     "cmd": "experiences",
-    "desc": "Work & Education",
-    "outputLines": [
-      "2023–Present: Security Engineer @ Acme Corp",
-      "2021–2023: Front-End Dev @ TechStartup",
-      "2017–2021: B.S. Computer Science"
-    ]
+    "desc": "Work & Internships",
+    "outputLines": []
   },
   {
     "cmd": "skills",
     "desc": "Technical skills",
     "outputLines": [
-      "Languages: JavaScript, TypeScript, Python, Go",
-      "Frontend: React, Next.js, Vue.js",
-      "Backend: Node.js, Express, Django",
-      "Security: Penetration Testing, CTF Challenges",
-      "DevOps: Docker, Kubernetes, CI/CD"
+      "Cloud Computing         : AWS (EC2, S3, Lambda, IAM)",
+      "Smart Contracts         : Solidity, Truffle, Hardhat",
+      "IDS/IPS                 : Wazuh, Suricata",
+      "Network Security        : Wireshark, nmap, tcpdump, pfSense, iptables",
+      "Vulnerability Assessment: Nessus",
+      "Incident Response       : MITRE ATT&CK & SHIELD",
+      "Scripting               : Bash, PowerShell, Python, AWK/GAWK",
+      "OSINT                   : TweetDeck, Maltego, Google Dorking",
+      "Programming             : C, C++, Java, Python"
     ]
   },
   {
     "cmd": "contact",
     "desc": "Contact information",
     "outputLines": [
-      "Email: c0derhin0@example.com",
-      "GitHub: github.com/c0derhin0",
-      "LinkedIn: linkedin.com/in/c0derhin0",
-      "Twitter: @c0derhin0"
+      "Name    : Wilfredo Paulo A. Perez III",
+      "Email   : pauloperez9754@gmail.com",
+      "GitHub  : github.com/C0deRhin0",
+      "LinkedIn: linkedin.com/in/wppereziii",
+      "Location: Naga City, Camarines Sur, Philippines"
+    ]
+  },
+  {
+    "cmd": "certifications",
+    "desc": "Certifications",
+    "outputLines": [
+      "AWS Certified Cloud Security Practitioner (CCSP-AWS)",
+      "Certified Network Security Practitioner (CNSP)",
+      "Blue Team Level 0, Junior Analyst (BTL0)",
+      "ISC² Candidate",
+      "Smartbooks and Power BI (FIT-SM)"
+    ]
+  },
+  {
+    "cmd": "competitions",
+    "desc": "CTF achievements",
+    "outputLines": [
+      "HACK4GOV 3 (AdNU Representative) Nationals - 2nd Place",
+      "HACK4GOV 3 (AdNU Representative) Regionals - 1st Place",
+      "HACK4GOV 2 (AdNU Representative) Regionals - 2nd Place"
+    ]
+  },
+  {
+    "cmd": "references",
+    "desc": "References",
+    "outputLines": [
+      "*References available upon request*"
+    ]
+  },
+  {
+    "cmd": "education",
+    "desc": "Education",
+    "outputLines": [
+      "2022 - 2026",
+      "ATENEO DE NAGA UNIVERSITY",
+      "Bachelor of Science in Computer Science Candidate for Magna Cum Laude",
+      "Consistent President’s Lister & DOST scholar Current QPI: 3.64"
     ]
   },
   {
