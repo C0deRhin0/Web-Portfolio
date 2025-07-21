@@ -33,14 +33,14 @@
       "• AWS Cloud DevSecOps pipeline",
       "• Home-lab software-defined firewall (in progress)"
     ],
-    "projectLinks": [
-      { "name": "Python multi-threaded port scanner", "url": "https://google.com" },
-      { "name": "Offensive Python scripts demonstrating MITRE ATT&CK tactics", "url": "https://google.com" },
-      { "name": "Automated system security logging (Bash & PowerShell)", "url": "https://google.com" },
-      { "name": "AdNU CEVAS – LAMP-based certificate validation platform", "url": "https://google.com" },
-      { "name": "Vulnerable smart contract demo with reentrancy exploit", "url": "https://google.com" },
-      { "name": "AWS Cloud DevSecOps pipeline", "url": "https://google.com" },
-      { "name": "Home-lab software-defined firewall (in progress)", "url": "https://google.com" }
+    "hyperlinks": [
+      { "text": "Python multi-threaded port scanner", "url": "https://google.com" },
+      { "text": "Offensive Python scripts demonstrating MITRE ATT&CK tactics", "url": "https://google.com" },
+      { "text": "Automated system security logging (Bash & PowerShell)", "url": "https://google.com" },
+      { "text": "AdNU CEVAS – LAMP-based certificate validation platform", "url": "https://google.com" },
+      { "text": "Vulnerable smart contract demo with reentrancy exploit", "url": "https://google.com" },
+      { "text": "AWS Cloud DevSecOps pipeline", "url": "https://google.com" },
+      { "text": "Home-lab software-defined firewall (in progress)", "url": "https://google.com" }
     ]
   },
   {
@@ -72,9 +72,13 @@
     "outputLines": [
       "Name    : Wilfredo Paulo A. Perez III",
       "Email   : pauloperez9754@gmail.com",
-      "GitHub  : github.com/C0deRhin0",
-      "LinkedIn: linkedin.com/in/wppereziii",
+      "GitHub  : C0deRhin0",
+      "LinkedIn: wppereziii",
       "Location: Naga City, Camarines Sur, Philippines"
+    ],
+    "hyperlinks": [
+      { "text": "C0deRhin0", "url": "https://github.com/C0deRhin0" },
+      { "text": "wppereziii", "url": "https://linkedin.com/in/wppereziii" }
     ]
   },
   {

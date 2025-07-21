@@ -59,6 +59,14 @@ const Terminal: React.FC = () => {
   const asciiEnabledRef = useRef(asciiEnabled); // Ref to always have latest value
   const prevAsciiEnabledRef = useRef(asciiEnabled); // Track previous value for effect
   const projectLinksProviderRef = useRef<any>(null);
+  const globalLinkMeta = useRef<Array<{
+    y: number;
+    start: number;
+    end: number;
+    url: string;
+    text: string;
+  }>>([]);
+  const globalLinkProviderRef = useRef<any>(null);
 
   useEffect(() => {
     asciiEnabledRef.current = asciiEnabled;
@@ -374,6 +382,12 @@ const Terminal: React.FC = () => {
       projectLinksProviderRef.current.dispose();
       projectLinksProviderRef.current = null;
     }
+    // Dispose of global link provider if it exists
+    if (globalLinkProviderRef.current) {
+      globalLinkProviderRef.current.dispose();
+      globalLinkProviderRef.current = null;
+    }
+    globalLinkMeta.current = [];
     xtermRef.current.clear();
     const showAscii = typeof asciiOverride === 'boolean' ? asciiOverride : asciiEnabledRef.current;
     if (showAscii) {
@@ -469,32 +483,21 @@ const Terminal: React.FC = () => {
     const { command, type, param } = pendingCommandRef.current;
     pendingCommandRef.current = null;
     
-    // Special case for 'projects' command: typewriter effect + clickable links
-    if (type === 'command' && command === 'projects') {
-      const commandData = (commandsData as any[]).find(c => c.cmd === 'projects');
-      if (commandData && commandData.projectLinks && xtermRef.current) {
+    // Generic hyperlinks support for any command
+    if (type === 'command') {
+      const commandData = (commandsData as any[]).find(c => c.cmd === command);
+      if (commandData && commandData.outputLines && xtermRef.current) {
         const term = xtermRef.current;
         let lineNum = term.buffer.active.baseY + term.buffer.active.cursorY + 1;
-        const projectLinkMeta: Array<{
-          y: number;
-          start: number;
-          end: number;
-          url: string;
-          text: string;
-        }> = [];
-        const writeProject = (index: number) => {
-          if (index >= commandData.projectLinks.length) {
+        const hyperlinks = commandData.hyperlinks || [];
+        const writeLine = (index: number) => {
+          if (index >= commandData.outputLines.length) {
             term.write('\r\n');
-            // Dispose previous provider if exists
-            if (projectLinksProviderRef.current) {
-              projectLinksProviderRef.current.dispose();
-              projectLinksProviderRef.current = null;
-            }
-            // Register a single link provider for all project links
-            if (term.registerLinkProvider) {
-              projectLinksProviderRef.current = term.registerLinkProvider({
+            // Register the global link provider if not already
+            if (hyperlinks.length > 0 && term.registerLinkProvider && !globalLinkProviderRef.current) {
+              globalLinkProviderRef.current = term.registerLinkProvider({
                 provideLinks: (y: number, callback: Function) => {
-                  const links = projectLinkMeta
+                  const links = globalLinkMeta.current
                     .filter(meta => meta.y === y)
                     .map(meta => ({
                       text: meta.text,
@@ -507,49 +510,41 @@ const Terminal: React.FC = () => {
                   callback(links);
                 }
               });
-            } else if (term.registerLinkMatcher) {
-              // Fallback for older xterm.js: register all matchers
-              projectLinkMeta.forEach(meta => {
-                term.registerLinkMatcher(
-                  new RegExp(meta.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
-                  () => window.open(meta.url, '_blank'),
-                  { matchIndex: 0, lineNumber: meta.y }
-                );
-              });
             }
             writePrompt();
             return;
           }
-          const project = commandData.projectLinks[index];
+          const line = commandData.outputLines[index];
           let charIdx = 0;
-          const prefix = '• ';
-          const lineText = prefix + project.name;
-          const startCol = prefix.length + 1;
-          const endCol = prefix.length + project.name.length;
           const thisLine = lineNum;
           const typeChar = () => {
-            if (charIdx < lineText.length) {
-              term.write(lineText[charIdx]);
+            if (charIdx < line.length) {
+              term.write(line[charIdx]);
               charIdx++;
               setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
             } else {
-              // Store link meta for this line
-              projectLinkMeta.push({
-                y: thisLine,
-                start: startCol,
-                end: endCol,
-                url: project.url,
-                text: project.name
+              // Check for hyperlinks in this line
+              hyperlinks.forEach((link: { text: string; url: string }) => {
+                const col = line.indexOf(link.text);
+                if (col !== -1) {
+                  globalLinkMeta.current.push({
+                    y: thisLine,
+                    start: col + 1,
+                    end: col + link.text.length,
+                    url: link.url,
+                    text: link.text
+                  });
+                }
               });
               term.write('\r\n');
               lineNum++;
-              setTimeout(() => writeProject(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
+              setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
             }
           };
           typeChar();
         };
         //term.write('\r\n');
-        writeProject(0);
+        writeLine(0);
         return;
       }
     }
