@@ -130,9 +130,9 @@ const Terminal: React.FC = () => {
 
     (async () => {
       try {
-        const xtermPkg = await import('@xterm/xterm');
-        const fitPkg = await import('@xterm/addon-fit');
-        await import('@xterm/xterm/css/xterm.css');
+        const xtermPkg = await import('xterm');
+        const fitPkg = await import('xterm-addon-fit');
+        await import('xterm/css/xterm.css');
         Terminal = xtermPkg.Terminal;
         FitAddon = fitPkg.FitAddon;
 
