@@ -6,6 +6,7 @@ import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
 import { RHINO_ART, printRhinoArt } from './RhinoArt';
 import TypewriterHyperlink from './TypewriterHyperlink';
+import TerminalTooltip from './TerminalTooltip';
 
 interface Command {
   cmd: string;
@@ -67,6 +68,7 @@ const Terminal: React.FC = () => {
     text: string;
   }>>([]);
   const globalLinkProviderRef = useRef<any>(null);
+  const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
     asciiEnabledRef.current = asciiEnabled;
@@ -505,7 +507,19 @@ const Terminal: React.FC = () => {
                         start: { x: meta.start, y },
                         end: { x: meta.end, y }
                       },
-                      activate: () => window.open(meta.url, '_blank')
+                      activate: () => window.open(meta.url, '_blank'),
+                      // Show custom tooltip on hover
+                      hover: (event: MouseEvent, link: any) => {
+                        // Get bounding rect of terminal
+                        const rect = term.element.getBoundingClientRect();
+                        // Position tooltip below mouse
+                        setTooltip({
+                          text: meta.url,
+                          x: event.clientX,
+                          y: event.clientY + 12
+                        });
+                      },
+                      leave: () => setTooltip(null)
                     }));
                   callback(links);
                 }
@@ -815,6 +829,7 @@ const Terminal: React.FC = () => {
           onClose={() => setSubTerminalVisible(false)}
         />
       )}
+      {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
     </div>
   );
 };
