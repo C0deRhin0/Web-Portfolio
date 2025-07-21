@@ -5,6 +5,7 @@ import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
 import { RHINO_ART, printRhinoArt } from './RhinoArt';
+import TypewriterHyperlink from './TypewriterHyperlink';
 
 interface Command {
   cmd: string;
@@ -57,6 +58,7 @@ const Terminal: React.FC = () => {
   const [asciiEnabled, setAsciiEnabled] = useState(true); // New state for ascii art
   const asciiEnabledRef = useRef(asciiEnabled); // Ref to always have latest value
   const prevAsciiEnabledRef = useRef(asciiEnabled); // Track previous value for effect
+  const projectLinksProviderRef = useRef<any>(null);
 
   useEffect(() => {
     asciiEnabledRef.current = asciiEnabled;
@@ -364,9 +366,14 @@ const Terminal: React.FC = () => {
     xtermRef.current.write(coloredPrompt);
   };
 
-  // Update clearTerminal to accept an optional parameter for asciiEnabled
+  // Update clearTerminal to dispose of project links provider
   const clearTerminal = (asciiOverride?: boolean) => {
     if (!xtermRef.current) return;
+    // Dispose of project links provider if it exists
+    if (projectLinksProviderRef.current) {
+      projectLinksProviderRef.current.dispose();
+      projectLinksProviderRef.current = null;
+    }
     xtermRef.current.clear();
     const showAscii = typeof asciiOverride === 'boolean' ? asciiOverride : asciiEnabledRef.current;
     if (showAscii) {
@@ -462,7 +469,91 @@ const Terminal: React.FC = () => {
     const { command, type, param } = pendingCommandRef.current;
     pendingCommandRef.current = null;
     
-    // Execute the actual command
+    // Special case for 'projects' command: typewriter effect + clickable links
+    if (type === 'command' && command === 'projects') {
+      const commandData = (commandsData as any[]).find(c => c.cmd === 'projects');
+      if (commandData && commandData.projectLinks && xtermRef.current) {
+        const term = xtermRef.current;
+        let lineNum = term.buffer.active.baseY + term.buffer.active.cursorY + 1;
+        const projectLinkMeta: Array<{
+          y: number;
+          start: number;
+          end: number;
+          url: string;
+          text: string;
+        }> = [];
+        const writeProject = (index: number) => {
+          if (index >= commandData.projectLinks.length) {
+            term.write('\r\n');
+            // Dispose previous provider if exists
+            if (projectLinksProviderRef.current) {
+              projectLinksProviderRef.current.dispose();
+              projectLinksProviderRef.current = null;
+            }
+            // Register a single link provider for all project links
+            if (term.registerLinkProvider) {
+              projectLinksProviderRef.current = term.registerLinkProvider({
+                provideLinks: (y: number, callback: Function) => {
+                  const links = projectLinkMeta
+                    .filter(meta => meta.y === y)
+                    .map(meta => ({
+                      text: meta.text,
+                      range: {
+                        start: { x: meta.start, y },
+                        end: { x: meta.end, y }
+                      },
+                      activate: () => window.open(meta.url, '_blank')
+                    }));
+                  callback(links);
+                }
+              });
+            } else if (term.registerLinkMatcher) {
+              // Fallback for older xterm.js: register all matchers
+              projectLinkMeta.forEach(meta => {
+                term.registerLinkMatcher(
+                  new RegExp(meta.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+                  () => window.open(meta.url, '_blank'),
+                  { matchIndex: 0, lineNumber: meta.y }
+                );
+              });
+            }
+            writePrompt();
+            return;
+          }
+          const project = commandData.projectLinks[index];
+          let charIdx = 0;
+          const prefix = '• ';
+          const lineText = prefix + project.name;
+          const startCol = prefix.length + 1;
+          const endCol = prefix.length + project.name.length;
+          const thisLine = lineNum;
+          const typeChar = () => {
+            if (charIdx < lineText.length) {
+              term.write(lineText[charIdx]);
+              charIdx++;
+              setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
+            } else {
+              // Store link meta for this line
+              projectLinkMeta.push({
+                y: thisLine,
+                start: startCol,
+                end: endCol,
+                url: project.url,
+                text: project.name
+              });
+              term.write('\r\n');
+              lineNum++;
+              setTimeout(() => writeProject(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
+            }
+          };
+          typeChar();
+        };
+        //term.write('\r\n');
+        writeProject(0);
+        return;
+      }
+    }
+    // Default: Execute the actual command as before
     if (type === 'command') {
       const commandData = (commandsData as Command[]).find(c => c.cmd === command);
       if (commandData) {
