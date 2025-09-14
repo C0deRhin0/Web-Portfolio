@@ -12,27 +12,39 @@ html, body {
   /* ← remove this: overflow: hidden; */
 }
 
-/* Terminal container: allow horizontal scroll here */
+/* Terminal container: centered layout */
 .terminal-container {
   width: 100vw;
   height: 100vh;
-  padding: 0 20px 20px;
+  padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
+  align-items: center; /* Center the terminal horizontally only */
+  justify-content: flex-start; /* Align to top */
 
-  /* ← let it scroll on X, hide on Y */
+  /* Only allow horizontal scroll if content exceeds viewport */
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;  /* smooth scrolling on iOS */
 }
 
-/* Make sure xterm itself squashes to its content width */
+/* Terminal wrapper to constrain width and center */
+.terminal-container > div:first-child {
+  width: 90vw;
+  max-width: 1200px;
+  height: 100%;
+  padding: 0 20px 20px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Make sure xterm itself fits within its container */
 .xterm {
-  /* Let it grow wider than the viewport if needed */
-  min-width: max-content !important;
+  width: 100% !important;
   height: 100% !important;
   white-space: nowrap !important;
+  max-width: 100% !important;
 }
 
 /* Viewport: scroll only horizontally */
