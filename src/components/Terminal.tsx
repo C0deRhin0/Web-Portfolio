@@ -172,10 +172,10 @@ const Terminal: React.FC = () => {
             brightWhite: '#ffffff'
           },
           fontFamily: 'Source Code Pro, monospace',
-          fontSize: 11,
+          fontSize: 14,
           lineHeight: 1.0,
           scrollback: 1000,
-          cols: 200, // Increased minimum columns to accommodate ASCII art (longest line is ~200 chars)
+          cols: 200, // Terminal width set to 80 columns
           rows: 24,
           convertEol: false, // Disable automatic line wrapping
           allowTransparency: true,
@@ -191,12 +191,12 @@ const Terminal: React.FC = () => {
         terminal.loadAddon(fitAddon);
         terminal.open(terminalRef.current);
         
-        // Fit the terminal to the container and enforce minimum columns for ASCII art
+        // Fit the terminal to the container and enforce column limit
         const customFit = () => {
           fitAddon.fit();
-          // Enforce minimum columns for ASCII art
+          // Enforce maximum columns limit
           if (terminal.cols < 200) {
-            terminal.resize(200, terminal.rows);
+            terminal.resize(152, terminal.rows);
           }
         };
         
