@@ -16,7 +16,7 @@ interface Command {
 
 // User's custom rhino ASCII art and CODERHINO block
 const WELCOME_LINES = [
-  "Hi there! Welcome to my Web Portfolio                                                                                               (Version 1.0.0)",
+  "Hi there! Welcome to my Web Portfolio",
   '',
   "     *I have hidden a flag somewhere in this portfolio. Can you find it?",
   "     *For best experience, please use a desktop browser and have your volume MAXED out",
