@@ -1,6 +1,8 @@
 import React from 'react';
 import Head from 'next/head';
 import Terminal from '../components/Terminal';
+import dynamic from 'next/dynamic';
+const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'), { ssr: false });
 // import '../styles/globals.css';
 
 /**
@@ -32,6 +34,7 @@ const Home: React.FC = () => {
       </Head>
       
       <main>
+        <BinaryRainOverlay />
         <Terminal />
       </main>
     </>
