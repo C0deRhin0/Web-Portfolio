@@ -17,7 +17,6 @@ An interactive hacker-terminal web portfolio built with Next.js, TypeScript, and
 - **Next.js 15** - React framework with static export
 - **TypeScript** - Type-safe development
 - **xterm.js** - Terminal emulator for the browser
-- **Source Code Pro** - Monospace font for authentic terminal feel
 
 ## 📦 Installation
 
@@ -74,7 +73,6 @@ Or use any static file server to serve the `out/` directory.
 Since this generates a fully static site, you can deploy to any static hosting service:
 - AWS S3 + CloudFront
 - Firebase Hosting
-- Surge.sh
 - And many more!
 
 ## 📝 Adding New Commands
@@ -175,7 +173,7 @@ Web-Portfolio/
 ## 👨‍💻 Author
 
 **Paulo "C0DERHIN0" Perez**
-- Security Enthusiast
+- Cybersecurity Enthusiast
 - Bicol, Philippines
 
 ---
