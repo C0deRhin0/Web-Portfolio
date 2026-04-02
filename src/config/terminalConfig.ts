@@ -6,27 +6,113 @@ export const TERMINAL_CONFIG = {
     lineDelay: 20, // Milliseconds between lines (was 200)
   },
   
-  // Color scheme - easily configurable
-  colors: {
-    host: '#daa520', // Dark gold for host
-    directory: '#3e8600', // Dark green for directory
-    error: '#b02b01', // Red for errors
-    output: '#cfcfcf', // White for normal output
-    //#ffffff //white
-    success: '#00ff00', // Green for success messages
-    warning: '#ffff00', // Yellow for warnings
-    info: '#00b3b3', // Darker cyan for info messages
-    rhino: '#0dbc79', // Blue for RHINO_ART
-    //#4a9eff //cyan
-  },
-  
-  // Terminal appearance
+  // Terminal appearance and host defaults
   appearance: {
     host: 'visitor',
     defaultDirectory: 'c0derhin0-wp.com',
-    backgroundColor: '#1e1e1e',
-    foregroundColor: '#cfcfcf',
-    cursorColor: '#cfcfcf',
+  },
+
+  // Theme definitions
+  themes: {
+    '1': {
+      name: 'Classic Hacker',
+      background: '#1e1e1e',
+      foreground: '#cfcfcf',
+      cursor: '#cfcfcf',
+      host: '#daa520',
+      directory: '#3e8600',
+      error: '#b02b01',
+      output: '#cfcfcf',
+      success: '#00ff00',
+      warning: '#ffff00',
+      info: '#00b3b3',
+      rhino: '#0dbc79',
+      binaryRain: '#00ff9c',
+      ansi: {
+        black: '#000000',
+        red: '#b02b01',          // Error
+        green: '#3e8600',        // Directory
+        yellow: '#e5e510',       // Warning
+        blue: '#2472c8',
+        magenta: '#bc3fbc',
+        cyan: '#00b3b3',         // Info
+        white: '#cfcfcf',        // Normal Output
+        brightBlack: '#666666',
+        brightRed: '#f14c4c',
+        brightGreen: '#0dbc79',  // Rhino & Success
+        brightYellow: '#daa520', // Host
+        brightBlue: '#3b8eea',
+        brightMagenta: '#d670d6',
+        brightCyan: '#29b8db',
+        brightWhite: '#cfcfcf'   // Foreground / Separators
+      }
+    },
+    '2': {
+      name: 'Cyberpunk Neon',
+      background: '#0d0221',
+      foreground: '#f4f4f9',
+      cursor: '#ff0055',
+      host: '#ff0055',
+      directory: '#00f5d4',
+      error: '#ff5400',
+      output: '#f4f4f9',
+      success: '#70e000',
+      warning: '#fee440',
+      info: '#9d4edd',
+      rhino: '#ff0055',
+      binaryRain: '#ff0055',
+      ansi: {
+        black: '#0d0221',
+        red: '#ff5400',          // Error
+        green: '#00f5d4',        // Directory
+        yellow: '#fee440',       // Warning
+        blue: '#9d4edd',
+        magenta: '#ff0055',
+        cyan: '#9d4edd',         // Info
+        white: '#f4f4f9',        // Normal Output
+        brightBlack: '#5a189a',
+        brightRed: '#ff0055',
+        brightGreen: '#ff0055',  // Rhino & Success (Pink)
+        brightYellow: '#ff0055', // Host
+        brightBlue: '#c77dff',
+        brightMagenta: '#ff0055',
+        brightCyan: '#00f5d4',
+        brightWhite: '#f4f4f9'   // Foreground / Separators
+      }
+    },
+    '3': {
+      name: 'Nord Ice',
+      background: '#2e3440',
+      foreground: '#d8dee9',
+      cursor: '#88c0d0',
+      host: '#81a1c1',
+      directory: '#8fbcbb',
+      error: '#bf616a',
+      output: '#d8dee9',
+      success: '#a3be8c',
+      warning: '#ebcb8b',
+      info: '#b48ead',
+      rhino: '#88c0d0',
+      binaryRain: '#88c0d0',
+      ansi: {
+        black: '#3b4252',
+        red: '#bf616a',          // Error
+        green: '#8fbcbb',        // Directory
+        yellow: '#ebcb8b',       // Warning
+        blue: '#81a1c1',
+        magenta: '#b48ead',
+        cyan: '#b48ead',         // Info
+        white: '#d8dee9',        // Normal Output
+        brightBlack: '#4c566a',
+        brightRed: '#bf616a',
+        brightGreen: '#88c0d0',  // Rhino & Success
+        brightYellow: '#81a1c1', // Host
+        brightBlue: '#81a1c1',
+        brightMagenta: '#b48ead',
+        brightCyan: '#88c0d0',
+        brightWhite: '#d8dee9'   // Foreground / Separators
+      }
+    }
   }
 };
 

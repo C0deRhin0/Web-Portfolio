@@ -57,7 +57,9 @@ const Terminal: React.FC = () => {
   const clearingLoaderRef = useRef<any>(null);
   const pendingCommandRef = useRef<{ command: string; type: string; param?: string } | null>(null);
   const [asciiEnabled, setAsciiEnabled] = useState(true); // New state for ascii art
+  const [currentTheme, setCurrentTheme] = useState('1'); // Theme state: '1', '2', or '3'
   const asciiEnabledRef = useRef(asciiEnabled); // Ref to always have latest value
+  const currentThemeRef = useRef(currentTheme); // Ref for event handlers
   const prevAsciiEnabledRef = useRef(asciiEnabled); // Track previous value for effect
   const projectLinksProviderRef = useRef<any>(null);
   const globalLinkMeta = useRef<Array<{
@@ -73,6 +75,32 @@ const Terminal: React.FC = () => {
   useEffect(() => {
     asciiEnabledRef.current = asciiEnabled;
   }, [asciiEnabled]);
+
+  useEffect(() => {
+    currentThemeRef.current = currentTheme;
+    
+    // Update xterm theme if initialized
+    if (xtermRef.current) {
+      const theme = (TERMINAL_CONFIG as any).themes[currentTheme];
+      xtermRef.current.options.theme = {
+        background: theme.background,
+        foreground: theme.foreground,
+        cursor: theme.cursor,
+        ...theme.ansi
+      };
+    }
+    
+    // Update CSS variables for other UI elements
+    if (typeof document !== 'undefined') {
+      const theme = (TERMINAL_CONFIG as any).themes[currentTheme];
+      const root = document.documentElement;
+      root.style.setProperty('--terminal-bg', theme.background);
+      root.style.setProperty('--terminal-fg', theme.foreground);
+      root.style.setProperty('--binary-rain-color', theme.binaryRain);
+      root.style.setProperty('--scrollbar-thumb', theme.ansi.brightBlack); // Using brightBlack as a neutral scrollbar color
+      root.style.setProperty('--scrollbar-track', theme.background);
+    }
+  }, [currentTheme]);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -148,28 +176,14 @@ const Terminal: React.FC = () => {
         Terminal = xtermPkg.Terminal;
         FitAddon = fitPkg.FitAddon;
 
+        const initialTheme = (TERMINAL_CONFIG as any).themes[currentThemeRef.current];
         terminal = new Terminal({
           cursorBlink: true,
           theme: {
-            background: TERMINAL_CONFIG.appearance.backgroundColor,
-            foreground: TERMINAL_CONFIG.appearance.foregroundColor,
-            cursor: TERMINAL_CONFIG.appearance.cursorColor,
-            black: '#000000',
-            red: '#cd3131',
-            green: '#0dbc79',
-            yellow: '#e5e510',
-            blue: '#2472c8',
-            magenta: '#bc3fbc',
-            cyan: '#11a8cd',
-            white: '#e5e5e5',
-            brightBlack: '#666666',
-            brightRed: '#f14c4c',
-            brightGreen: '#23d18b',
-            brightYellow: '#f5f543',
-            brightBlue: '#3b8eea',
-            brightMagenta: '#d670d6',
-            brightCyan: '#29b8db',
-            brightWhite: '#ffffff'
+            background: initialTheme.background,
+            foreground: initialTheme.foreground,
+            cursor: initialTheme.cursor,
+            ...initialTheme.ansi
           },
           fontFamily: 'Source Code Pro, monospace',
           fontSize: 14,
@@ -316,18 +330,13 @@ const Terminal: React.FC = () => {
     if (asciiEnabled) {
       printRhinoArt(xtermRef.current);
     }
-    // Print welcome lines with colored "help"
-    const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory); // Use directory color (#3e8600)
+    // Print banner and welcome lines with colored "help" 
+    // Directory color = ANSI Green (32)
     WELCOME_LINES.forEach(line => {
       if (line.includes("help")) {
-        // Split the line to color only the "help" part
         const parts = line.split("help");
-        if (helpColor) {
-          const coloredLine = `${parts[0]}\x1b[38;2;${helpColor.r};${helpColor.g};${helpColor.b}mhelp\x1b[0m${parts[1]}\r\n`;
-          xtermRef.current.write(coloredLine);
-        } else {
-          xtermRef.current.write(line + '\r\n');
-        }
+        const coloredLine = `${parts[0]}\x1b[32mhelp\x1b[0m${parts[1]}\r\n`;
+        xtermRef.current.write(coloredLine);
       } else {
         xtermRef.current.write(line + '\r\n');
       }
@@ -338,40 +347,21 @@ const Terminal: React.FC = () => {
   const writePrompt = () => {
     if (!xtermRef.current) return;
     
-    const hostColor = hexToRgb(TERMINAL_CONFIG.colors.host);
-    const directoryColor = hexToRgb(TERMINAL_CONFIG.colors.directory);
-    const foregroundColor = hexToRgb(TERMINAL_CONFIG.appearance.foregroundColor);
-    
     // Build the colored prompt: [host]@[directory]:~$ 
+    // Host = Bright Yellow (93), Directory = Green (32), Separators = White (37)
     let coloredPrompt = '';
     
-    // Host in dark gold
-    if (hostColor) {
-      coloredPrompt += `\x1b[38;2;${hostColor.r};${hostColor.g};${hostColor.b}m${TERMINAL_CONFIG.appearance.host}\x1b[0m`;
-    } else {
-      coloredPrompt += TERMINAL_CONFIG.appearance.host;
-    }
+    // Host 
+    coloredPrompt += `\x1b[93m${TERMINAL_CONFIG.appearance.host}\x1b[0m`;
     
-    // @ and :~$ in foreground color
-    if (foregroundColor) {
-      coloredPrompt += `\x1b[38;2;${foregroundColor.r};${foregroundColor.g};${foregroundColor.b}m@\x1b[0m`;
-    } else {
-      coloredPrompt += '@';
-    }
+    // @ separator
+    coloredPrompt += `\x1b[37m@\x1b[0m`;
     
-    // Directory in dark green - use ref for immediate access
-    if (directoryColor) {
-      coloredPrompt += `\x1b[38;2;${directoryColor.r};${directoryColor.g};${directoryColor.b}m${currentDirectoryRef.current}\x1b[0m`;
-    } else {
-      coloredPrompt += currentDirectoryRef.current;
-    }
+    // Directory
+    coloredPrompt += `\x1b[32m${currentDirectoryRef.current}\x1b[0m`;
     
-    // :~$ in foreground color
-    if (foregroundColor) {
-      coloredPrompt += `\x1b[38;2;${foregroundColor.r};${foregroundColor.g};${foregroundColor.b}m:~$ \x1b[0m`;
-    } else {
-      coloredPrompt += ':~$ ';
-    }
+    // :~$ terminator
+    coloredPrompt += `\x1b[37m:~$ \x1b[0m`;
     
     xtermRef.current.write(coloredPrompt);
   };
@@ -396,16 +386,11 @@ const Terminal: React.FC = () => {
       printBannerAndWelcome();
     } else {
       // Print only the welcome lines (without ASCII art)
-      const helpColor = hexToRgb(TERMINAL_CONFIG.colors.directory);
       WELCOME_LINES.forEach(line => {
         if (line.includes("help")) {
           const parts = line.split("help");
-          if (helpColor) {
-            const coloredLine = `${parts[0]}\x1b[38;2;${helpColor.r};${helpColor.g};${helpColor.b}mhelp\x1b[0m${parts[1]}\r\n`;
-            xtermRef.current.write(coloredLine);
-          } else {
-            xtermRef.current.write(line + '\r\n');
-          }
+          const coloredLine = `${parts[0]}\x1b[32mhelp\x1b[0m${parts[1]}\r\n`;
+          xtermRef.current.write(coloredLine);
         } else {
           xtermRef.current.write(line + '\r\n');
         }
@@ -437,33 +422,26 @@ const Terminal: React.FC = () => {
       const currentLine = lines[currentLineIndex];
       
       if (currentCharIndex < currentLine.length) {
-        // Apply color based on type using config colors
-        let colorHex = TERMINAL_CONFIG.colors.output; // Default white
+        // Apply ANSI color based on type
+        let colorCode = '\x1b[37m'; // Default White (37)
         switch (type) {
           case 'error':
-            colorHex = TERMINAL_CONFIG.colors.error;
+            colorCode = '\x1b[31m'; // Red (31)
             break;
           case 'success':
-            colorHex = TERMINAL_CONFIG.colors.success;
+            colorCode = '\x1b[92m'; // Bright Green (92)
             break;
           case 'warning':
-            colorHex = TERMINAL_CONFIG.colors.warning;
+            colorCode = '\x1b[33m'; // Yellow (33)
             break;
           case 'info':
-            colorHex = TERMINAL_CONFIG.colors.info;
+            colorCode = '\x1b[36m'; // Cyan (36)
             break;
           default:
-            colorHex = TERMINAL_CONFIG.colors.output;
+            colorCode = '\x1b[37m';
         }
         
-        const color = hexToRgb(colorHex);
-        if (color) {
-          const colorCode = `\x1b[38;2;${color.r};${color.g};${color.b}m`;
-          xtermRef.current!.write(colorCode + currentLine[currentCharIndex]);
-        } else {
-          xtermRef.current!.write(currentLine[currentCharIndex]);
-        }
-        
+        xtermRef.current!.write(colorCode + currentLine[currentCharIndex]);
         currentCharIndex++;
         const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.charDelay);
         setTypewriterTimeout(timeout);
@@ -666,6 +644,38 @@ const Terminal: React.FC = () => {
       ], 'error');
       return;
     }
+
+    // Handle theme command
+    if (cmd === 'theme' || cmd.startsWith('theme ')) {
+      const arg = cmd.slice(5).trim();
+      if (!arg) {
+        displayCommandOutput([
+          "theme requires an argument. Usage: theme [1/2/3]"
+        ], 'error');
+        return;
+      }
+      
+      const validThemes = ['1', '2', '3'];
+      if (validThemes.includes(arg)) {
+        if (currentThemeRef.current === arg) {
+          displayCommandOutput([`Theme ${arg} is already active.`], 'error');
+        } else {
+          setCurrentTheme(arg);
+          // Show feedback without clearing. The xterm theme update will refresh colors.
+          setTimeout(() => {
+            const activeTheme = (TERMINAL_CONFIG as any).themes[arg];
+            displayCommandOutput([`Successfully changed theme to ${activeTheme.name}`], 'success');
+          }, 50);
+        }
+        return;
+      }
+      
+      // Invalid usage
+      displayCommandOutput([
+        "Invalid theme. Usage: theme [1/2/3]"
+      ], 'error');
+      return;
+    }
     
     // Directory commands (no fetching) - only navigation commands
     const directoryCommands = ['cd', 'ls', 'ls -a', 'pwd'];
@@ -714,17 +724,7 @@ const Terminal: React.FC = () => {
           lsOutput = [
             //'easter-egg.md'
           ];
-        } else {
-          /*
-          // For any other directory (shouldn't happen with current validation)
-          lsOutput = [
-            'README.md',
-            'config.json',
-            'data/',
-            'src/'
-          ];
-          */
-        }
+        } 
         
         // Only display output if there's content, otherwise just show prompt
         if (lsOutput.length > 0) {
@@ -744,16 +744,7 @@ const Terminal: React.FC = () => {
             //'easter-egg.md',
             'secret.sh'
           ];
-        } else {
-          /*
-          lsOutput = [
-            'README.md',
-            'config.json',
-            'data/',
-            'src/'
-          ];
-          */
-        }
+        } 
         // Only display output if there's content, otherwise just show prompt
         if (lsOutput.length > 0) {
           displayCommandOutput(lsOutput, 'normal');
@@ -786,19 +777,17 @@ const Terminal: React.FC = () => {
         // Valid run command - show fetching loader first, then subterminal
         isFetchingRef.current = true;
         setIsFetching(true);
-        pendingCommandRef.current = { command: cmd, type: 'run', param: param };
+        pendingCommandRef.current = { command, type: 'run', param };
         if (fetchingLoaderRef.current) {
           fetchingLoaderRef.current.start();
         }
-        return;
       }
       return;
     }
-    
-    // Valid commands (with fetching) - excluding help and clear
-    const commandData = (commandsData as Command[]).find(c => c.cmd === cmd);
-    if (commandData) {
-      // Start fetching loader
+  
+    // Check if it's a social/link command (whoami, stack, github, etc.)
+    const socialCommand = (commandsData as any[]).find(c => c.cmd === cmd);
+    if (socialCommand) {
       isFetchingRef.current = true;
       setIsFetching(true);
       pendingCommandRef.current = { command: cmd, type: 'command' };
@@ -807,12 +796,12 @@ const Terminal: React.FC = () => {
       }
       return;
     }
-    
-    // Command not found
-    displayCommandOutput([`command not found: ${command}`], 'error');
+  
+    // Unknown command
+    displayCommandOutput([`Command not found: ${cmd}`], 'error');
   };
 
-  // Only call clearTerminal if asciiEnabled actually changed
+  // Sync asciiEnabled with cleared terminal if it changes independently
   useEffect(() => {
     if (isInitialized && prevAsciiEnabledRef.current !== asciiEnabled) {
       clearTerminal(asciiEnabled);
@@ -822,16 +811,16 @@ const Terminal: React.FC = () => {
 
   return (
     <div className="terminal-container">
-      <div ref={terminalRef} style={{ height: '100%', width: '100%' }} />
+      <div ref={terminalRef} className="xterm-wrapper" />
+      {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
       {subTerminalVisible && (
-        <SubTerminal
-          file={subTerminalFile}
-          onClose={() => setSubTerminalVisible(false)}
+        <SubTerminal 
+          file={subTerminalFile} 
+          onClose={() => setSubTerminalVisible(false)} 
         />
       )}
-      {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
     </div>
   );
 };
 
-export default Terminal; 
+export default Terminal;

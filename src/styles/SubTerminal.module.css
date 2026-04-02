@@ -21,7 +21,7 @@
   max-height: 475px; /* Increased from 300px */
   
   /* Copy main terminal styling */
-  background: #1e1e1e; /* Same as main terminal background */
+  background: var(--terminal-bg); /* Same as main terminal background */
   border-radius: 8px;
   box-shadow: 0 4px 32px rgba(0,0,0,0.7);
   display: flex;
@@ -30,11 +30,11 @@
   align-items: flex-start; /* Changed from center to align content to left */
   padding: 2rem;
   position: relative;
-  border: 1px solid #333; /* Add subtle border like terminal */
+  border: 1px solid var(--scrollbar-thumb); /* Add subtle border like terminal */
 }
 
 .terminalText {
-  color: #cfcfcf; /* Same as main terminal text color */
+  color: var(--terminal-fg); /* Same as main terminal text color */
   font-family: 'Source Code Pro', monospace; /* Same font as main terminal */
   font-size: 11px; /* Same font size as main terminal */
   line-height: 1.2; /* Same line height as main terminal */

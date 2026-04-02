@@ -1,8 +1,6 @@
 // RhinoArt.ts
 // Exports the RHINO_ART array and a function to print it to xterm
 
-import { TERMINAL_CONFIG } from '../config/terminalConfig';
-
 export const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                ",
   "⠀⠀⠀⠀⠀⠀⠀⠀⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                                                                                                 ",
@@ -27,27 +25,15 @@ export const RHINO_ART = [
   "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 ];
 
-// Print the rhino art to xterm, with color
+// Print the rhino art to xterm, using ANSI bright green index (92)
+// This allows the color to update dynamically when the theme's brightGreen index changes.
 export function printRhinoArt(xterm: any) {
   if (!xterm) return;
-  const rhinoColor = hexToRgb(TERMINAL_CONFIG.colors.rhino);
+  // Use ANSI bright green (38;5;10 or 92)
+  const colorCode = '\x1b[92m';
   for (let i = 0; i < RHINO_ART.length; i++) {
     const rhinoLine = (RHINO_ART[i] || '').trimStart();
-    if (rhinoColor) {
-      const coloredLine = `\x1b[38;2;${rhinoColor.r};${rhinoColor.g};${rhinoColor.b}m${rhinoLine.padEnd(70, ' ')}\x1b[0m\r\n`;
-      xterm.write(coloredLine);
-    } else {
-      xterm.write(rhinoLine.padEnd(70, ' ') + '\r\n');
-    }
+    const coloredLine = `${colorCode}${rhinoLine.padEnd(70, ' ')}\x1b[0m\r\n`;
+    xterm.write(coloredLine);
   }
 }
-
-// Helper: hex to rgb
-function hexToRgb(hex: string) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
-} 
