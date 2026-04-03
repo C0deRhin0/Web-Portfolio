@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import commandsData from '../data/commands.json';
 import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
@@ -7,6 +7,8 @@ import { createClearingLoader } from '../utils/clearingLoader';
 import { RHINO_ART, printRhinoArt } from './RhinoArt';
 import TypewriterHyperlink from './TypewriterHyperlink';
 import TerminalTooltip from './TerminalTooltip';
+import { tokenizeCommandInput } from '../utils/commandParsing';
+import { getCommonPrefix, getCompletionCandidates } from '../utils/commandCompletion';
 
 interface Command {
   cmd: string;
@@ -34,6 +36,7 @@ const WELCOME_LINES = [
  * Integrates xterm.js with custom command processing and typewriter effects
  */
 const Terminal: React.FC = () => {
+  const MAX_HISTORY_LENGTH = 500;
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<any>(null);
   const fitAddonRef = useRef<any>(null);
@@ -41,6 +44,8 @@ const Terminal: React.FC = () => {
   const commandHistory = useRef<string[]>([]);
   const historyIndex = useRef<number>(-1); // -1 means not navigating
   const currentLineBuffer = useRef<string>('');
+  const ghostSuggestionRef = useRef<string>('');
+  const ghostRenderedLengthRef = useRef<number>(0);
   const isTypingRef = useRef<boolean>(false); // Use ref for event handler access
   const isFetchingRef = useRef<boolean>(false); // Use ref for fetching state
   const isClearingRef = useRef<boolean>(false); // Use ref for clearing state
@@ -71,6 +76,86 @@ const Terminal: React.FC = () => {
   }>>([]);
   const globalLinkProviderRef = useRef<any>(null);
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
+
+  const availableCommands = useMemo(() => {
+    const commandList = (commandsData as any[])
+      .map((item) => item.cmd)
+      .filter((cmd) => typeof cmd === 'string') as string[];
+    const baseCommands = [
+      'cd',
+      'ls',
+      'ls -a',
+      'pwd',
+      'run',
+      'clear',
+      'help',
+      'ascii',
+      'theme'
+    ];
+    const deduped = Array.from(new Set([...commandList, ...baseCommands]));
+
+    return deduped;
+  }, []);
+
+  const clearGhostSuggestion = () => {
+    if (!xtermRef.current) return;
+    const ghostLength = ghostRenderedLengthRef.current;
+    if (!ghostLength) {
+      return;
+    }
+
+    const saveCursor = '\x1b[s';
+    const restoreCursor = '\x1b[u';
+    const hideCursor = '\x1b[?25l';
+    const showCursor = '\x1b[?25h';
+    xtermRef.current.write(`${hideCursor}${saveCursor}${' '.repeat(ghostLength)}${restoreCursor}${showCursor}`);
+    ghostRenderedLengthRef.current = 0;
+  };
+
+  const updateGhostSuggestion = () => {
+    if (!xtermRef.current) return;
+
+    ghostSuggestionRef.current = '';
+    const currentInput = currentLineBuffer.current.trim();
+    if (!currentInput) {
+      return;
+    }
+
+    const candidates = getCompletionCandidates(availableCommands, currentInput);
+    if (!candidates.length) {
+      return;
+    }
+
+    const commonPrefix = getCommonPrefix(candidates);
+    if (!commonPrefix || commonPrefix === currentInput) {
+      return;
+    }
+
+    const remainingText = commonPrefix.slice(currentInput.length);
+    if (!remainingText) {
+      return;
+    }
+
+    ghostSuggestionRef.current = remainingText;
+  };
+
+  const renderGhostSuggestion = () => {
+    if (!xtermRef.current) return;
+    const suggestion = ghostSuggestionRef.current;
+    clearGhostSuggestion();
+    if (!suggestion) {
+      return;
+    }
+
+    const saveCursor = '\x1b[s';
+    const restoreCursor = '\x1b[u';
+    const hideCursor = '\x1b[?25l';
+    const showCursor = '\x1b[?25h';
+    const dimColor = '\x1b[90m';
+    const resetColor = '\x1b[0m';
+    xtermRef.current.write(`${hideCursor}${saveCursor}${dimColor}${suggestion}${resetColor}${restoreCursor}${showCursor}`);
+    ghostRenderedLengthRef.current = suggestion.length;
+  };
 
   useEffect(() => {
     asciiEnabledRef.current = asciiEnabled;
@@ -221,6 +306,24 @@ const Terminal: React.FC = () => {
         fitAddonRef.current = fitAddon;
         setIsInitialized(true);
 
+        const storedHistory = (() => {
+          try {
+            const rawHistory = window.localStorage.getItem('terminalCommandHistory');
+            if (!rawHistory) {
+              return [] as string[];
+            }
+            const parsedHistory = JSON.parse(rawHistory);
+            const isStringArray = Array.isArray(parsedHistory)
+              && parsedHistory.every((item) => typeof item === 'string');
+            return isStringArray ? parsedHistory : [];
+          } catch (error) {
+            return [] as string[];
+          }
+        })();
+
+        commandHistory.current = storedHistory;
+        historyIndex.current = storedHistory.length;
+
         // Print banner and welcome
         printBannerAndWelcome();
         writePrompt();
@@ -242,22 +345,58 @@ const Terminal: React.FC = () => {
             case 'Enter':
               terminal.write('\r\n');
               handleCommand(currentLineBuffer.current.trim());
-              if (currentLineBuffer.current.trim()) {
-                commandHistory.current.push(currentLineBuffer.current);
-                historyIndex.current = commandHistory.current.length - 1;
-              } else {
-                historyIndex.current = commandHistory.current.length;
-              }
+              historyIndex.current = commandHistory.current.length;
               currentLineBuffer.current = '';
+              ghostSuggestionRef.current = '';
+              clearGhostSuggestion();
               break;
             case 'Backspace':
               if (currentLineBuffer.current.length > 0) {
+                clearGhostSuggestion();
                 currentLineBuffer.current = currentLineBuffer.current.slice(0, -1);
                 terminal.write('\b \b');
+                if (currentLineBuffer.current.length === 0) {
+                  ghostSuggestionRef.current = '';
+                } else {
+                  updateGhostSuggestion();
+                }
+                renderGhostSuggestion();
+              }
+              break;
+            case 'Tab':
+              domEvent.preventDefault();
+              clearGhostSuggestion();
+              if (currentLineBuffer.current.trim().length === 0) {
+                break;
+              }
+              if (currentLineBuffer.current.includes(' ')) {
+                break;
+              }
+              ghostSuggestionRef.current = '';
+              const currentInput = currentLineBuffer.current.trim();
+              const candidates = getCompletionCandidates(availableCommands, currentInput);
+              if (!candidates.length) {
+                break;
+              }
+              const commonPrefix = getCommonPrefix(candidates);
+              if (commonPrefix && commonPrefix.length > currentInput.length) {
+                for (let index = 0; index < currentLineBuffer.current.length; index += 1) {
+                  terminal.write('\b \b');
+                }
+                currentLineBuffer.current = commonPrefix;
+                terminal.write(commonPrefix);
+                updateGhostSuggestion();
+                renderGhostSuggestion();
+                break;
+              }
+              if (candidates.length > 1) {
+                terminal.write('\r\n');
+                displayCommandOutput(candidates, 'info');
               }
               break;
             case 'ArrowUp':
               if (commandHistory.current.length) {
+                clearGhostSuggestion();
                 // Clear current line
                 for (let i = 0; i < currentLineBuffer.current.length; i++) {
                   terminal.write('\b \b');
@@ -267,10 +406,13 @@ const Terminal: React.FC = () => {
                 }
                 currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
                 terminal.write(currentLineBuffer.current);
+                updateGhostSuggestion();
+                renderGhostSuggestion();
               }
               break;
             case 'ArrowDown':
               if (commandHistory.current.length) {
+                clearGhostSuggestion();
                 for (let i = 0; i < currentLineBuffer.current.length; i++) {
                   terminal.write('\b \b');
                 }
@@ -282,12 +424,17 @@ const Terminal: React.FC = () => {
                   historyIndex.current = commandHistory.current.length;
                   currentLineBuffer.current = '';
                 }
+                updateGhostSuggestion();
+                renderGhostSuggestion();
               }
               break;
             default:
               if (printable && domEvent.key.length === 1) {
+                clearGhostSuggestion();
                 currentLineBuffer.current += key;
                 terminal.write(key);
+                updateGhostSuggestion();
+                renderGhostSuggestion();
                 // Auto-scroll to bottom if user is not at the bottom
                 const viewport = terminal.element?.querySelector('.xterm-viewport');
                 if (viewport && viewport.scrollTop + viewport.clientHeight < viewport.scrollHeight - 2) {
@@ -559,10 +706,19 @@ const Terminal: React.FC = () => {
     
     // Add command to history
     if (command.trim()) {
-      commandHistory.current.push(command);
+      const lastCommand = commandHistory.current[commandHistory.current.length - 1];
+      if (lastCommand !== command) {
+        const nextHistory = [...commandHistory.current, command];
+        commandHistory.current = nextHistory.slice(-MAX_HISTORY_LENGTH);
+        try {
+          window.localStorage.setItem('terminalCommandHistory', JSON.stringify(commandHistory.current));
+        } catch (error) {
+          // Ignore persistence errors
+        }
+      }
     }
     
-    const cmd = command.trim();
+    const { cmd, args } = tokenizeCommandInput(command);
     
     // For ascii on/off, only skip newline if the command will trigger a clear (state change). For errors, always write the newline.
     let isAsciiOn = cmd === 'ascii on';
@@ -615,7 +771,7 @@ const Terminal: React.FC = () => {
 
     // Handle ascii command
     if (cmd === 'ascii' || cmd.startsWith('ascii ')) {
-      const arg = cmd.slice(5).trim();
+      const arg = args.join(' ').trim();
       if (!arg) {
         displayCommandOutput([
           "ascii requires an argument. Usage: ascii [on/off]"
@@ -647,7 +803,7 @@ const Terminal: React.FC = () => {
 
     // Handle theme command
     if (cmd === 'theme' || cmd.startsWith('theme ')) {
-      const arg = cmd.slice(5).trim();
+      const arg = args.join(' ').trim();
       if (!arg) {
         displayCommandOutput([
           "theme requires an argument. Usage: theme [1/2/3]"
@@ -696,7 +852,7 @@ const Terminal: React.FC = () => {
         }
       } else if (cmd.startsWith('cd ')) {
         // Handle cd command with directory argument
-        const newDir = command.substring(3).trim();
+        const newDir = args.join(' ').trim();
         // Define valid directories (only actual directories, not commands)
         const validDirectories = ['c0derhin0-wp.com', 'secret'];
         if (validDirectories.includes(newDir)) {
@@ -756,7 +912,7 @@ const Terminal: React.FC = () => {
         const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
         displayCommandOutput([pwdOutput], 'normal');
       } else if (cmd === 'run' || cmd.startsWith('run ')) {
-        const param = command.substring(3).trim();
+        const param = args.join(' ').trim();
         // Only allow in default dir
         const validFiles = [];
         if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
