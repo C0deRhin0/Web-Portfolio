@@ -46,6 +46,9 @@ Thumbs.db
 logs
 *.log
 
+# Agent
+.opencode
+
 # Runtime data
 pids
 *.pid
