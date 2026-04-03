@@ -9,6 +9,10 @@ import TypewriterHyperlink from './TypewriterHyperlink';
 import TerminalTooltip from './TerminalTooltip';
 import { tokenizeCommandInput } from '../utils/commandParsing';
 import { getCommonPrefix, getCompletionCandidates } from '../utils/commandCompletion';
+import CRTEffect from './effects/CRTEffect';
+import GlitchEffect from './effects/GlitchEffect';
+import { useKeyboardSounds } from '../hooks/useKeyboardSounds';
+import { loadVisualEffectsSettings, saveVisualEffectsSettings } from '../utils/visualEffectsStorage';
 
 interface Command {
   cmd: string;
@@ -76,6 +80,10 @@ const Terminal: React.FC = () => {
   }>>([]);
   const globalLinkProviderRef = useRef<any>(null);
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [glitchTriggerKey, setGlitchTriggerKey] = useState(0);
+  const [crtEnabled, setCrtEnabled] = useState(true);
+  const [glitchEnabled, setGlitchEnabled] = useState(true);
+  const { enabled: keyboardSoundsEnabled, setEnabled: setKeyboardSoundsEnabled, play: playKeyboardSound } = useKeyboardSounds();
 
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
@@ -90,7 +98,11 @@ const Terminal: React.FC = () => {
       'clear',
       'help',
       'ascii',
-      'theme'
+      'theme',
+      'effects',
+      'effects crt',
+      'effects glitch',
+      'effects sounds'
     ];
     const deduped = Array.from(new Set([...commandList, ...baseCommands]));
 
@@ -175,6 +187,16 @@ const Terminal: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const settings = loadVisualEffectsSettings();
+    setCrtEnabled(settings.crtEnabled);
+    setGlitchEnabled(settings.glitchEnabled);
+  }, []);
+
+  useEffect(() => {
     currentThemeRef.current = currentTheme;
     
     // Update xterm theme if initialized
@@ -207,6 +229,8 @@ const Terminal: React.FC = () => {
         // Ignore persistence errors
       }
     }
+
+    setGlitchTriggerKey((prev) => prev + 1);
   }, [currentTheme]);
 
   // Helper function to convert hex to RGB
@@ -355,6 +379,10 @@ const Terminal: React.FC = () => {
           // Disable input during typewriter effect, fetching, or clearing using refs
           if (isTypingRef.current || isFetchingRef.current || isClearingRef.current) {
             return;
+          }
+
+          if (keyboardSoundsEnabled) {
+            playKeyboardSound();
           }
 
           const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
@@ -756,6 +784,10 @@ const Terminal: React.FC = () => {
       return;
     }
   
+    if (glitchEnabled) {
+      setGlitchTriggerKey((prev) => prev + 1);
+    }
+
     if (cmd === 'help') {
       // New help logic: group commands by label/category from commandsData
       const helpLines: string[] = [];
@@ -769,7 +801,8 @@ const Terminal: React.FC = () => {
         } else if (item.cmd && item.desc) {
           // Only show commands that are not hidden and have a category
           // Indent commands under their label
-          const padding = ' '.repeat(17 - item.cmd.length);
+          const paddingCount = Math.max(1, 17 - item.cmd.length);
+          const padding = ' '.repeat(paddingCount);
           helpLines.push(`  ${item.cmd}${padding}- ${item.desc}`);
         }
       });
@@ -850,6 +883,53 @@ const Terminal: React.FC = () => {
       ], 'error');
       return;
     }
+
+    // Handle effects command
+    if (cmd === 'effects' || cmd.startsWith('effects ')) {
+      const arg = args.join(' ').trim();
+      if (!arg) {
+        displayCommandOutput([
+          `effects status: crt=${crtEnabled ? 'on' : 'off'}, glitch=${glitchEnabled ? 'on' : 'off'}, sounds=${keyboardSoundsEnabled ? 'on' : 'off'}`
+        ], 'info');
+        return;
+      }
+
+      const [target, value] = arg.split(/\s+/).length > 1 ? arg.split(/\s+/) : [arg, ''];
+      const normalizedValue = value.toLowerCase();
+      const isToggle = normalizedValue === 'on' || normalizedValue === 'off';
+
+      if (!value || !isToggle) {
+        displayCommandOutput([
+          'Usage: effects [crt|glitch|sounds] [on/off]'
+        ], 'error');
+        return;
+      }
+
+      if (target === 'crt') {
+        const next = normalizedValue === 'on';
+        setCrtEnabled(next);
+        saveVisualEffectsSettings({ crtEnabled: next, glitchEnabled });
+        displayCommandOutput([`CRT overlay ${next ? 'enabled' : 'disabled'}.`], 'success');
+        return;
+      }
+      if (target === 'glitch') {
+        const next = normalizedValue === 'on';
+        setGlitchEnabled(next);
+        saveVisualEffectsSettings({ crtEnabled, glitchEnabled: next });
+        displayCommandOutput([`Glitch effects ${next ? 'enabled' : 'disabled'}.`], 'success');
+        return;
+      }
+      if (target === 'sounds') {
+        const next = normalizedValue === 'on';
+        setKeyboardSoundsEnabled(next);
+        displayCommandOutput([`Keyboard sounds ${next ? 'enabled' : 'disabled'}.`], 'success');
+        return;
+      }
+
+      displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
+      return;
+    }
+
     
     // Directory commands (no fetching) - only navigation commands
     const directoryCommands = ['cd', 'ls', 'ls -a', 'pwd'];
@@ -968,6 +1048,9 @@ const Terminal: React.FC = () => {
       if (fetchingLoaderRef.current) {
         fetchingLoaderRef.current.start();
       }
+      if (glitchEnabled) {
+        setGlitchTriggerKey((prev) => prev + 1);
+      }
       return;
     }
   
@@ -986,21 +1069,25 @@ const Terminal: React.FC = () => {
   const rhinoArtText = RHINO_ART.join('\n');
 
   return (
-    <div className="terminal-container">
-      {asciiEnabled && (
-        <div className="rhino-art-viewport" aria-hidden="true">
-          <pre className="rhino-art-text">{rhinoArtText}</pre>
-        </div>
-      )}
-      <div ref={terminalRef} className="xterm-wrapper" />
-      {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
-      {subTerminalVisible && (
-        <SubTerminal 
-          file={subTerminalFile} 
-          onClose={() => setSubTerminalVisible(false)} 
-        />
-      )}
-    </div>
+    <GlitchEffect triggerKey={glitchTriggerKey} enabled={glitchEnabled} intensity="normal">
+      <div className="terminal-container">
+        <CRTEffect enabled={crtEnabled} />
+        {asciiEnabled && (
+          <div className="rhino-art-viewport" aria-hidden="true">
+            <pre className="rhino-art-text">{rhinoArtText}</pre>
+          </div>
+        )}
+        <div ref={terminalRef} className="xterm-wrapper" />
+        <div className="terminal-bottom-spacer" aria-hidden="true" />
+        {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
+        {subTerminalVisible && (
+          <SubTerminal 
+            file={subTerminalFile} 
+            onClose={() => setSubTerminalVisible(false)}
+          />
+        )}
+      </div>
+    </GlitchEffect>
   );
 };
 

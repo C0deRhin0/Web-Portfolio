@@ -177,5 +177,11 @@
     "desc": "Change terminal theme",
     "category": "Additional",
     "outputLines": []
+  },
+  {
+    "cmd": "effects [crt|glitch|sounds] [on/off]",
+    "desc": "Toggle CRT overlay, glitch, or keyboard sounds",
+    "category": "Additional",
+    "outputLines": []
   }
 ] 
