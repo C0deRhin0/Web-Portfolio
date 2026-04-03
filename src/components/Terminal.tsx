@@ -104,11 +104,10 @@ const Terminal: React.FC = () => {
       return;
     }
 
-    const saveCursor = '\x1b[s';
-    const restoreCursor = '\x1b[u';
     const hideCursor = '\x1b[?25l';
     const showCursor = '\x1b[?25h';
-    xtermRef.current.write(`${hideCursor}${saveCursor}${' '.repeat(ghostLength)}${restoreCursor}${showCursor}`);
+    const moveLeft = `\x1b[${ghostLength}D`;
+    xtermRef.current.write(`${hideCursor}${' '.repeat(ghostLength)}${moveLeft}${showCursor}`);
     ghostRenderedLengthRef.current = 0;
   };
 
@@ -147,13 +146,12 @@ const Terminal: React.FC = () => {
       return;
     }
 
-    const saveCursor = '\x1b[s';
-    const restoreCursor = '\x1b[u';
     const hideCursor = '\x1b[?25l';
     const showCursor = '\x1b[?25h';
     const dimColor = '\x1b[90m';
     const resetColor = '\x1b[0m';
-    xtermRef.current.write(`${hideCursor}${saveCursor}${dimColor}${suggestion}${resetColor}${restoreCursor}${showCursor}`);
+    const moveLeft = `\x1b[${suggestion.length}D`;
+    xtermRef.current.write(`${hideCursor}${dimColor}${suggestion}${resetColor}${moveLeft}${showCursor}`);
     ghostRenderedLengthRef.current = suggestion.length;
   };
 
