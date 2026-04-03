@@ -14,7 +14,13 @@
     "type": "git",
     "url": "git+https://github.com/C0deRhin0/Web-Portfolio.git"
   },
-  "keywords": ["portfolio", "terminal", "nextjs", "react", "typescript"],
+  "keywords": [
+    "portfolio",
+    "terminal",
+    "nextjs",
+    "react",
+    "typescript"
+  ],
   "author": "Wilfredo Paulo \"C0DERHIN0\" Perez III",
   "license": "ISC",
   "type": "commonjs",
@@ -25,7 +31,7 @@
   "dependencies": {
     "xterm-addon-fit": "^0.8.0",
     "xterm": "^5.3.0",
-    "next": "^15.0.0",
+    "next": "15.0.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.7.0",
