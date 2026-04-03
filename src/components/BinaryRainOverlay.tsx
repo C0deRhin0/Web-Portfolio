@@ -8,40 +8,29 @@ interface Rect {
   right: number;
 }
 
-const measureMonoCharWidth = (): number => {
-  if (typeof window === 'undefined') return 10;
-  const measurer = document.createElement('span');
-  measurer.style.position = 'fixed';
-  measurer.style.visibility = 'hidden';
-  measurer.style.whiteSpace = 'pre';
-  measurer.style.fontFamily = 'Source Code Pro, monospace';
-  measurer.style.fontSize = getComputedStyle(document.documentElement).getPropertyValue('--xterm-font-size') || '14px';
-  measurer.textContent = '00000';
-  document.body.appendChild(measurer);
-  const width = measurer.getBoundingClientRect().width / 5;
-  document.body.removeChild(measurer);
-  return width || 10;
-};
+const SIDE_WIDTH_VW = 10;
+const MAX_SIDE_WIDTH_VW = 15;
+const SIDE_COLUMNS = 20;
 
 const BinaryRainOverlay: React.FC = () => {
   const [rect, setRect] = useState<Rect | null>(null);
-  const [gapPx, setGapPx] = useState<number>(40);
   const roRef = useRef<ResizeObserver | null>(null);
 
   const updateRect = () => {
     const container = document.querySelector('.terminal-container > div:first-child') as HTMLElement | null;
     if (!container) return;
     const r = container.getBoundingClientRect();
-    setRect({ top: r.top, bottom: r.bottom, left: r.left, right: r.right });
+    const left = Math.max(r.left, 0);
+    const right = Math.min(r.right, window.innerWidth);
+    const top = Math.max(r.top, 0);
+    const bottom = Math.min(r.bottom, window.innerHeight);
+    setRect({ top, bottom, left, right });
   };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     // Initial measure
     updateRect();
-    // Compute ~5 columns gap using monospaced width
-    const charWidth = measureMonoCharWidth();
-    setGapPx(charWidth * 5);
 
     // Observe size changes of the terminal wrapper and window resizes
     const target = document.querySelector('.terminal-container > div:first-child') as HTMLElement | null;
@@ -50,11 +39,7 @@ const BinaryRainOverlay: React.FC = () => {
       roRef.current.observe(target);
     }
     const onScroll = () => updateRect();
-    const onResize = () => {
-      updateRect();
-      const cw = measureMonoCharWidth();
-      setGapPx(cw * 5);
-    };
+    const onResize = () => updateRect();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     return () => {
@@ -67,40 +52,46 @@ const BinaryRainOverlay: React.FC = () => {
 
   const styleLeft = useMemo<React.CSSProperties>(() => {
     if (!rect) return { display: 'none' };
+    const width = `var(--side-width, ${SIDE_WIDTH_VW}vw)`;
     return {
       position: 'fixed',
-      top: rect.top,
-      bottom: Math.max(window.innerHeight - rect.bottom, 0),
-      right: Math.max(window.innerWidth - rect.left + gapPx, 0),
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width,
+      maxWidth: `${MAX_SIDE_WIDTH_VW}vw`,
+      '--side-width': `${SIDE_WIDTH_VW}vw`,
       pointerEvents: 'none'
     } as React.CSSProperties;
-  }, [rect, gapPx]);
+  }, [rect]);
 
   const styleRight = useMemo<React.CSSProperties>(() => {
     if (!rect) return { display: 'none' };
+    const width = `var(--side-width, ${SIDE_WIDTH_VW}vw)`;
     return {
       position: 'fixed',
-      top: rect.top,
-      bottom: Math.max(window.innerHeight - rect.bottom, 0),
-      left: rect.right + gapPx,
+      top: 0,
+      bottom: 0,
+      right: 0,
+      width,
+      maxWidth: `${MAX_SIDE_WIDTH_VW}vw`,
+      '--side-width': `${SIDE_WIDTH_VW}vw`,
       pointerEvents: 'none'
     } as React.CSSProperties;
-  }, [rect, gapPx]);
+  }, [rect]);
 
   if (!rect) return null;
 
   return (
-    <div className="binary-rain-overlay" aria-hidden>
+    <div className="binary-rain-overlay" aria-hidden="true">
       <div className="binary-rain-stack" style={styleLeft}>
-        <BinaryRain leftColumns={10} rightColumns={0} />
+        <BinaryRain leftColumns={SIDE_COLUMNS} rightColumns={0} sideWidthVw={SIDE_WIDTH_VW} />
       </div>
       <div className="binary-rain-stack" style={styleRight}>
-        <BinaryRain leftColumns={0} rightColumns={10} />
+        <BinaryRain leftColumns={0} rightColumns={SIDE_COLUMNS} sideWidthVw={SIDE_WIDTH_VW} />
       </div>
     </div>
   );
 };
 
 export default BinaryRainOverlay;
-
-

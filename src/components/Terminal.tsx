@@ -4,7 +4,7 @@ import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
-import { RHINO_ART, printRhinoArt } from './RhinoArt';
+import { RHINO_ART } from './RhinoArt';
 import TypewriterHyperlink from './TypewriterHyperlink';
 import TerminalTooltip from './TerminalTooltip';
 import { tokenizeCommandInput } from '../utils/commandParsing';
@@ -180,6 +180,7 @@ const Terminal: React.FC = () => {
       root.style.setProperty('--terminal-bg', theme.background);
       root.style.setProperty('--terminal-fg', theme.foreground);
       root.style.setProperty('--binary-rain-color', theme.binaryRain);
+      root.style.setProperty('--rhino-art-color', theme.ansi.brightGreen || theme.foreground);
       root.style.setProperty('--scrollbar-thumb', theme.ansi.brightBlack); // Using brightBlack as a neutral scrollbar color
       root.style.setProperty('--scrollbar-track', theme.background);
     }
@@ -291,10 +292,6 @@ const Terminal: React.FC = () => {
         // Fit the terminal to the container and enforce column limit
         const customFit = () => {
           fitAddon.fit();
-          // Enforce maximum columns limit
-          if (terminal.cols < 200) {
-            terminal.resize(152, terminal.rows);
-          }
         };
         
         customFit();
@@ -473,7 +470,7 @@ const Terminal: React.FC = () => {
   const printBannerAndWelcome = () => {
     if (!xtermRef.current) return;
     if (asciiEnabled) {
-      printRhinoArt(xtermRef.current);
+      // Rhino art rendered above terminal; no spacer lines needed.
     }
     // Print banner and welcome lines with colored "help" 
     // Directory color = ANSI Green (32)
@@ -963,8 +960,15 @@ const Terminal: React.FC = () => {
     prevAsciiEnabledRef.current = asciiEnabled;
   }, [asciiEnabled, isInitialized]);
 
+  const rhinoArtText = RHINO_ART.join('\n');
+
   return (
     <div className="terminal-container">
+      {asciiEnabled && (
+        <div className="rhino-art-viewport" aria-hidden="true">
+          <pre className="rhino-art-text">{rhinoArtText}</pre>
+        </div>
+      )}
       <div ref={terminalRef} className="xterm-wrapper" />
       {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
       {subTerminalVisible && (

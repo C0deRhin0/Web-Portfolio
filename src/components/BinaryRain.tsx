@@ -19,9 +19,9 @@ const generateBinaryString = (length: number) => {
   return result;
 };
 
-const MIN_LENGTH = 5;
-const MAX_LENGTH = 20;
-const MIN_PX_PER_SECOND = 10;
+const MIN_LENGTH = 6;
+const MAX_LENGTH = 18;
+const MIN_PX_PER_SECOND = 25;
 
 const useColumns = (count: number, seed: number, basePxPerSecond: number) => {
   return useMemo<ColumnConfig[]>(() => {
@@ -153,8 +153,8 @@ const BinarySide: React.FC<{
 };
 
 const BinaryRain: React.FC<{ leftColumns?: number; rightColumns?: number; sideWidthVw?: number; pxPerSecond?: number }> = ({
-  leftColumns = 200,
-  rightColumns = 200,
+  leftColumns = 140,
+  rightColumns = 140,
   sideWidthVw = 10,
   pxPerSecond = 200
 }) => {

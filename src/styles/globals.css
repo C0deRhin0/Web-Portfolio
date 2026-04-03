@@ -30,19 +30,39 @@ html, body {
   justify-content: flex-start; /* Align to top */
 
   /* Only allow horizontal scroll if content exceeds viewport */
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;  /* smooth scrolling on iOS */
 }
 
+.rhino-art-viewport {
+  width: min(1200px, 100vw);
+  padding: 16px 20px 0;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.rhino-art-text {
+  margin: 0;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10px;
+  line-height: 1.05;
+  color: var(--rhino-art-color, var(--terminal-fg));
+  white-space: pre;
+  user-select: none;
+}
+
 /* Terminal wrapper to constrain width and center */
-.terminal-container > div:first-child {
-  width: 90vw;
-  max-width: 1200px;
+.xterm-wrapper {
+  width: min(1200px, 100vw);
   height: 100%;
   padding: 0 20px 20px;
   margin: 0 auto;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  flex: 1;
 }
 
 /* Make sure xterm itself fits within its container */
@@ -51,6 +71,7 @@ html, body {
   height: 100% !important;
   white-space: nowrap !important;
   max-width: 100% !important;
+  margin: 0 auto !important;
 }
 
 /* Viewport: scroll only horizontally */
@@ -59,6 +80,11 @@ html, body {
   overflow-y: hidden !important;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-gutter: stable both-edges;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  height: 0;
 }
 
 /* Screen: no internal clipping */
@@ -116,17 +142,30 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 10;
+  overflow: hidden;
+}
+
+.binary-rain-stack {
+  width: var(--side-width, 10vw);
+  max-width: 15vw;
+  overflow: hidden;
+  height: 100%;
 }
 
 .binary-rain {
   display: flex;
-  gap: 6px; /* tighter column spacing */
+  gap: 12px;
+  width: 100%;
+  height: 100%;
 }
 
 .binary-side {
   display: flex;
   flex-direction: row;
-  gap: 6px; /* tighter inter-column gap */
+  gap: 12px;
+  width: 100%;
+  overflow: hidden;
+  height: 100%;
 }
 
 .binary-side.left { direction: rtl; }
@@ -141,19 +180,23 @@ html, body {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: transform;
+  height: 100%;
 }
 
 .binary-column > span {
   display: block;
-  line-height: 1.15; /* denser vertical stream */
+  line-height: 1.1;
   user-select: none;
   /* Stack long vertical text to allow smooth continuous scroll */
   writing-mode: vertical-rl;
   text-orientation: upright;
-  letter-spacing: 0.5px; /* closer digits */
+  letter-spacing: 0.6px;
 }
 
 @keyframes binary-scroll {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
+}
+.xterm-wrapper {
+  align-self: stretch;
 }
