@@ -160,6 +160,21 @@ const Terminal: React.FC = () => {
   }, [asciiEnabled]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const storedTheme = window.localStorage.getItem('terminalTheme');
+      if (storedTheme === '1' || storedTheme === '2' || storedTheme === '3') {
+        setCurrentTheme(storedTheme);
+      }
+    } catch (error) {
+      // Ignore persistence errors
+    }
+  }, []);
+
+  useEffect(() => {
     currentThemeRef.current = currentTheme;
     
     // Update xterm theme if initialized
@@ -183,6 +198,14 @@ const Terminal: React.FC = () => {
       root.style.setProperty('--rhino-art-color', theme.ansi.brightGreen || theme.foreground);
       root.style.setProperty('--scrollbar-thumb', theme.ansi.brightBlack); // Using brightBlack as a neutral scrollbar color
       root.style.setProperty('--scrollbar-track', theme.background);
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem('terminalTheme', currentTheme);
+      } catch (error) {
+        // Ignore persistence errors
+      }
     }
   }, [currentTheme]);
 

@@ -35,6 +35,56 @@ html, body {
   -webkit-overflow-scrolling: touch;  /* smooth scrolling on iOS */
 }
 
+.boot-sequence {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  box-sizing: border-box;
+  font-family: 'Source Code Pro', monospace;
+  letter-spacing: 0.02em;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.boot-sequence--fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-sequence__header {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: var(--terminal-fg);
+}
+
+.boot-sequence__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.boot-sequence__line {
+  white-space: pre-wrap;
+}
+
+.boot-sequence.theme-1 .boot-sequence__header {
+  color: #0dbc79;
+}
+
+.boot-sequence.theme-2 .boot-sequence__header {
+  color: #ff0055;
+}
+
+.boot-sequence.theme-3 .boot-sequence__header {
+  color: #88c0d0;
+}
+
 .rhino-art-viewport {
   width: min(1200px, 100vw);
   padding: 16px 20px 0;
@@ -46,7 +96,7 @@ html, body {
 .rhino-art-text {
   margin: 0;
   font-family: 'Source Code Pro', monospace;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.05;
   color: var(--rhino-art-color, var(--terminal-fg));
   white-space: pre;

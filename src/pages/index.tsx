@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Terminal from '../components/Terminal';
 import dynamic from 'next/dynamic';
+import BootSequence from '../components/BootSequence';
 const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'), { ssr: false });
 // import '../styles/globals.css';
 
@@ -10,6 +11,24 @@ const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'
  * Single-page application that renders the interactive terminal
  */
 const Home: React.FC = () => {
+  const [bootComplete, setBootComplete] = useState(false);
+  const [theme, setTheme] = useState<'1' | '2' | '3'>('1');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const storedTheme = window.localStorage.getItem('terminalTheme');
+      if (storedTheme === '1' || storedTheme === '2' || storedTheme === '3') {
+        setTheme(storedTheme);
+      }
+    } catch (error) {
+      // Ignore storage errors
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -34,6 +53,12 @@ const Home: React.FC = () => {
       </Head>
       
       <main>
+        {!bootComplete && (
+          <BootSequence
+            theme={theme}
+            onComplete={() => setBootComplete(true)}
+          />
+        )}
         <BinaryRainOverlay />
         <Terminal />
       </main>
