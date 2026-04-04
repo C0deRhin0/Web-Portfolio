@@ -20,7 +20,7 @@ const getInitialSetting = (): boolean => {
 };
 
 export const useKeyboardSounds = () => {
-  const [enabled, setEnabled] = useState(getInitialSetting);
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
     preloadKeyboardSounds();

@@ -50,6 +50,7 @@ const Terminal: React.FC = () => {
   const currentLineBuffer = useRef<string>('');
   const ghostSuggestionRef = useRef<string>('');
   const ghostRenderedLengthRef = useRef<number>(0);
+  const cursorIndexRef = useRef<number>(0);
   const isTypingRef = useRef<boolean>(false); // Use ref for event handler access
   const isFetchingRef = useRef<boolean>(false); // Use ref for fetching state
   const isClearingRef = useRef<boolean>(false); // Use ref for clearing state
@@ -84,6 +85,9 @@ const Terminal: React.FC = () => {
   const [crtEnabled, setCrtEnabled] = useState(true);
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const { enabled: keyboardSoundsEnabled, setEnabled: setKeyboardSoundsEnabled, play: playKeyboardSound } = useKeyboardSounds();
+  const crtEnabledRef = useRef(true);
+  const glitchEnabledRef = useRef(true);
+  const keyboardSoundsEnabledRef = useRef(true);
 
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
@@ -102,7 +106,13 @@ const Terminal: React.FC = () => {
       'effects',
       'effects crt',
       'effects glitch',
-      'effects sounds'
+      'effects sounds',
+      'effects crt on',
+      'effects crt off',
+      'effects glitch on',
+      'effects glitch off',
+      'effects sounds on',
+      'effects sounds off'
     ];
     const deduped = Array.from(new Set([...commandList, ...baseCommands]));
 
@@ -150,6 +160,14 @@ const Terminal: React.FC = () => {
     ghostSuggestionRef.current = remainingText;
   };
 
+  const updateGhostIfAtEnd = () => {
+    if (cursorIndexRef.current !== currentLineBuffer.current.length) {
+      return;
+    }
+    updateGhostSuggestion();
+    renderGhostSuggestion();
+  };
+
   const renderGhostSuggestion = () => {
     if (!xtermRef.current) return;
     const suggestion = ghostSuggestionRef.current;
@@ -191,10 +209,21 @@ const Terminal: React.FC = () => {
       return;
     }
 
-    const settings = loadVisualEffectsSettings();
-    setCrtEnabled(settings.crtEnabled);
-    setGlitchEnabled(settings.glitchEnabled);
+    setCrtEnabled(true);
+    setGlitchEnabled(true);
   }, []);
+
+  useEffect(() => {
+    crtEnabledRef.current = crtEnabled;
+  }, [crtEnabled]);
+
+  useEffect(() => {
+    glitchEnabledRef.current = glitchEnabled;
+  }, [glitchEnabled]);
+
+  useEffect(() => {
+    keyboardSoundsEnabledRef.current = keyboardSoundsEnabled;
+  }, [keyboardSoundsEnabled]);
 
   useEffect(() => {
     currentThemeRef.current = currentTheme;
@@ -381,7 +410,7 @@ const Terminal: React.FC = () => {
             return;
           }
 
-          if (keyboardSoundsEnabled) {
+          if (keyboardSoundsEnabledRef.current) {
             playKeyboardSound();
           }
 
@@ -389,24 +418,32 @@ const Terminal: React.FC = () => {
 
           switch (domEvent.key) {
             case 'Enter':
+              clearGhostSuggestion();
+              ghostSuggestionRef.current = '';
+              ghostRenderedLengthRef.current = 0;
               terminal.write('\r\n');
               handleCommand(currentLineBuffer.current.trim());
               historyIndex.current = commandHistory.current.length;
               currentLineBuffer.current = '';
-              ghostSuggestionRef.current = '';
+              cursorIndexRef.current = 0;
               clearGhostSuggestion();
               break;
             case 'Backspace':
-              if (currentLineBuffer.current.length > 0) {
+              if (cursorIndexRef.current > 0) {
                 clearGhostSuggestion();
-                currentLineBuffer.current = currentLineBuffer.current.slice(0, -1);
-                terminal.write('\b \b');
-                if (currentLineBuffer.current.length === 0) {
-                  ghostSuggestionRef.current = '';
+                const removeIndex = cursorIndexRef.current - 1;
+                const before = currentLineBuffer.current.slice(0, removeIndex);
+                const after = currentLineBuffer.current.slice(cursorIndexRef.current);
+                currentLineBuffer.current = `${before}${after}`;
+                cursorIndexRef.current = removeIndex;
+                terminal.write('\b');
+                terminal.write(`${after} `);
+                if (after.length > 0) {
+                  terminal.write(`\x1b[${after.length + 1}D`);
                 } else {
-                  updateGhostSuggestion();
+                  terminal.write('\b');
                 }
-                renderGhostSuggestion();
+                updateGhostIfAtEnd();
               }
               break;
             case 'Tab':
@@ -415,11 +452,12 @@ const Terminal: React.FC = () => {
               if (currentLineBuffer.current.trim().length === 0) {
                 break;
               }
-              if (currentLineBuffer.current.includes(' ')) {
+              const trimmedInput = currentLineBuffer.current.trim();
+              if (currentLineBuffer.current.includes(' ') && !trimmedInput.startsWith('effects ')) {
                 break;
               }
               ghostSuggestionRef.current = '';
-              const currentInput = currentLineBuffer.current.trim();
+              const currentInput = trimmedInput;
               const candidates = getCompletionCandidates(availableCommands, currentInput);
               if (!candidates.length) {
                 break;
@@ -430,9 +468,9 @@ const Terminal: React.FC = () => {
                   terminal.write('\b \b');
                 }
                 currentLineBuffer.current = commonPrefix;
+                cursorIndexRef.current = commonPrefix.length;
                 terminal.write(commonPrefix);
-                updateGhostSuggestion();
-                renderGhostSuggestion();
+                updateGhostIfAtEnd();
                 break;
               }
               if (candidates.length > 1) {
@@ -451,9 +489,9 @@ const Terminal: React.FC = () => {
                   historyIndex.current--;
                 }
                 currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+                cursorIndexRef.current = currentLineBuffer.current.length;
                 terminal.write(currentLineBuffer.current);
-                updateGhostSuggestion();
-                renderGhostSuggestion();
+                updateGhostIfAtEnd();
               }
               break;
             case 'ArrowDown':
@@ -466,21 +504,42 @@ const Terminal: React.FC = () => {
                   historyIndex.current++;
                   currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
                   terminal.write(currentLineBuffer.current);
+                  cursorIndexRef.current = currentLineBuffer.current.length;
                 } else {
                   historyIndex.current = commandHistory.current.length;
                   currentLineBuffer.current = '';
+                  cursorIndexRef.current = 0;
                 }
-                updateGhostSuggestion();
-                renderGhostSuggestion();
+                updateGhostIfAtEnd();
+              }
+              break;
+            case 'ArrowLeft':
+              if (cursorIndexRef.current > 0) {
+                clearGhostSuggestion();
+                cursorIndexRef.current -= 1;
+                terminal.write('\x1b[D');
+              }
+              break;
+            case 'ArrowRight':
+              if (cursorIndexRef.current < currentLineBuffer.current.length) {
+                clearGhostSuggestion();
+                cursorIndexRef.current += 1;
+                terminal.write('\x1b[C');
+                updateGhostIfAtEnd();
               }
               break;
             default:
               if (printable && domEvent.key.length === 1) {
                 clearGhostSuggestion();
-                currentLineBuffer.current += key;
-                terminal.write(key);
-                updateGhostSuggestion();
-                renderGhostSuggestion();
+                const before = currentLineBuffer.current.slice(0, cursorIndexRef.current);
+                const after = currentLineBuffer.current.slice(cursorIndexRef.current);
+                currentLineBuffer.current = `${before}${key}${after}`;
+                cursorIndexRef.current += 1;
+                terminal.write(key + after);
+                if (after.length > 0) {
+                  terminal.write(`\x1b[${after.length}D`);
+                }
+                updateGhostIfAtEnd();
                 // Auto-scroll to bottom if user is not at the bottom
                 const viewport = terminal.element?.querySelector('.xterm-viewport');
                 if (viewport && viewport.scrollTop + viewport.clientHeight < viewport.scrollHeight - 2) {
@@ -885,7 +944,7 @@ const Terminal: React.FC = () => {
     }
 
     // Handle effects command
-    if (cmd === 'effects' || cmd.startsWith('effects ')) {
+    if (cmd === 'effects') {
       const arg = args.join(' ').trim();
       if (!arg) {
         displayCommandOutput([
@@ -894,7 +953,7 @@ const Terminal: React.FC = () => {
         return;
       }
 
-      const [target, value] = arg.split(/\s+/).length > 1 ? arg.split(/\s+/) : [arg, ''];
+      const [target = '', value = ''] = arg.split(/\s+/);
       const normalizedValue = value.toLowerCase();
       const isToggle = normalizedValue === 'on' || normalizedValue === 'off';
 
@@ -907,6 +966,10 @@ const Terminal: React.FC = () => {
 
       if (target === 'crt') {
         const next = normalizedValue === 'on';
+        if (next === crtEnabledRef.current) {
+          displayCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          return;
+        }
         setCrtEnabled(next);
         saveVisualEffectsSettings({ crtEnabled: next, glitchEnabled });
         displayCommandOutput([`CRT overlay ${next ? 'enabled' : 'disabled'}.`], 'success');
@@ -914,6 +977,10 @@ const Terminal: React.FC = () => {
       }
       if (target === 'glitch') {
         const next = normalizedValue === 'on';
+        if (next === glitchEnabledRef.current) {
+          displayCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          return;
+        }
         setGlitchEnabled(next);
         saveVisualEffectsSettings({ crtEnabled, glitchEnabled: next });
         displayCommandOutput([`Glitch effects ${next ? 'enabled' : 'disabled'}.`], 'success');
@@ -921,6 +988,10 @@ const Terminal: React.FC = () => {
       }
       if (target === 'sounds') {
         const next = normalizedValue === 'on';
+        if (next === keyboardSoundsEnabledRef.current) {
+          displayCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          return;
+        }
         setKeyboardSoundsEnabled(next);
         displayCommandOutput([`Keyboard sounds ${next ? 'enabled' : 'disabled'}.`], 'success');
         return;
