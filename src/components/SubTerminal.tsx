@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import styles from "../styles/SubTerminal.module.css";
 import clueContent from "../data/clue.sh.json";
 import secretContent from "../data/secret.sh.json";
+import hiddenFlagContent from "../data/.hidden_flag.json";
 import { TERMINAL_CONFIG } from "../config/terminalConfig";
 import { createPackageInstallEffect, playAudio } from "../utils/packageInstallEffect";
 import BlackoutOverlay from './BlackoutOverlay';
@@ -26,6 +27,8 @@ const SubTerminal: React.FC<SubTerminalProps> = ({ file, onClose }) => {
         return clueContent.outputLines;
       case 'secret.sh':
         return secretContent.outputLines;
+      case '.hidden_flag':
+        return hiddenFlagContent.outputLines;
       default:
         return ['File not found'];
     }

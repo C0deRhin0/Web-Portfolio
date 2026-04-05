@@ -1,0 +1,15 @@
+{
+  "outputLines": [
+    "#!/bin/bash",
+    "",
+    "# .HIDDEN_FLAG – The Sleuth's Prize",
+    "#",
+    "# You asked for all, and the shadows answered.",
+    "# The quiet file yields its truth to patient eyes.",
+    "#",
+    "# FLAG{h1dd3n_f1l3_m4st3r}",
+    "#",
+    "# Keep digging. The system rewards the curious.",
+    "#"
+  ]
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import commandsData from '../data/commands.json';
+import whoamiExtra from '../data/whoami.extra.json';
 import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
@@ -654,6 +655,11 @@ const Terminal: React.FC = () => {
   // Display command output with typewriter effect and color support
   const displayCommandOutput = (lines: string[], type: 'normal' | 'error' | 'success' | 'warning' | 'info' = 'normal') => {
     if (!xtermRef.current) return;
+
+    if (typewriterTimeout) {
+      clearTimeout(typewriterTimeout);
+      setTypewriterTimeout(null);
+    }
     
     isTypingRef.current = true;
     setIsTyping(true);
@@ -719,11 +725,23 @@ const Terminal: React.FC = () => {
     if (type === 'command') {
       const commandData = (commandsData as any[]).find(c => c.cmd === command);
       if (commandData && commandData.outputLines && xtermRef.current) {
+        if (typewriterTimeout) {
+          clearTimeout(typewriterTimeout);
+          setTypewriterTimeout(null);
+        }
+        isTypingRef.current = true;
+        setIsTyping(true);
         const term = xtermRef.current;
+        const extraLines = commandData.cmd === 'whoami'
+          ? (Array.isArray(whoamiExtra.outputLines) ? whoamiExtra.outputLines : [])
+          : [];
+        const outputLines = [...commandData.outputLines, ...extraLines];
         let lineNum = term.buffer.active.baseY + term.buffer.active.cursorY + 1;
         const hyperlinks = commandData.hyperlinks || [];
         const writeLine = (index: number) => {
-          if (index >= commandData.outputLines.length) {
+          if (index >= outputLines.length) {
+            isTypingRef.current = false;
+            setIsTyping(false);
             term.write('\r\n');
             // Register the global link provider if not already
             if (hyperlinks.length > 0 && term.registerLinkProvider && !globalLinkProviderRef.current) {
@@ -758,15 +776,15 @@ const Terminal: React.FC = () => {
             writePrompt();
             return;
           }
-          const line = commandData.outputLines[index];
+          const line = outputLines[index];
           let charIdx = 0;
           const thisLine = lineNum;
           const typeChar = () => {
-            if (charIdx < line.length) {
-              term.write(line[charIdx]);
-              charIdx++;
-              setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
-            } else {
+          if (charIdx < line.length) {
+            term.write(line[charIdx]);
+            charIdx++;
+            setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
+          } else {
               // Check for hyperlinks in this line
               hyperlinks.forEach((link: { text: string; url: string }) => {
                 const col = line.indexOf(link.text);
@@ -780,11 +798,12 @@ const Terminal: React.FC = () => {
                   });
                 }
               });
-              term.write('\r\n');
-              lineNum++;
-              setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
-            }
-          };
+            term.write('\r\n');
+            lineNum++;
+            const timeout = setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
+            setTypewriterTimeout(timeout);
+          }
+        };
           typeChar();
         };
         //term.write('\r\n');
@@ -796,7 +815,12 @@ const Terminal: React.FC = () => {
     if (type === 'command') {
       const commandData = (commandsData as Command[]).find(c => c.cmd === command);
       if (commandData) {
-        displayCommandOutput(commandData.outputLines);
+        if (commandData.cmd === 'whoami') {
+          const extraLines = Array.isArray(whoamiExtra.outputLines) ? whoamiExtra.outputLines : [];
+          displayCommandOutput([...commandData.outputLines, ...extraLines]);
+        } else {
+          displayCommandOutput(commandData.outputLines);
+        }
       }
     } else if (type === 'run') {
       setSubTerminalFile(param || '');
@@ -1003,25 +1027,46 @@ const Terminal: React.FC = () => {
 
     
     // Directory commands (no fetching) - only navigation commands
-    const directoryCommands = ['cd', 'ls', 'ls -a', 'pwd'];
-    const isDirectoryCommand = directoryCommands.includes(cmd) || cmd.startsWith('cd ') || (cmd === 'run' || cmd.startsWith('run '));
+    const directoryCommands = ['cd', 'ls', 'pwd', 'run'];
+    const isDirectoryCommand = directoryCommands.includes(cmd);
     
     if (isDirectoryCommand) {
       // Handle directory commands immediately (no fetching)
       if (cmd === 'cd') {
-        // Handle cd command with no arguments - go to default directory
-        if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
-          currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
-          setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-          // No output, just prompt
-          writePrompt();
-        } else {
-          // If already in default directory, just write the prompt
-          writePrompt();
-        }
-      } else if (cmd.startsWith('cd ')) {
-        // Handle cd command with directory argument
         const newDir = args.join(' ').trim();
+        if (!newDir) {
+          // Handle cd command with no arguments - go to default directory
+          if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
+            currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
+            setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
+            writePrompt();
+          } else {
+            writePrompt();
+          }
+          return;
+        }
+        if (newDir === '~' || newDir === '$HOME') {
+          displayCommandOutput(['Permission denied'], 'error');
+          return;
+        }
+        if (newDir === '..') {
+          if (currentDirectoryRef.current === 'secret') {
+            currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
+            setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
+            writePrompt();
+          } else {
+            displayCommandOutput(['Permission denied'], 'error');
+          }
+          return;
+        }
+        if (
+          newDir.startsWith('~/')
+          || newDir.startsWith('/Users')
+          || newDir.startsWith('~/Users')
+        ) {
+          displayCommandOutput(['Permission denied'], 'error');
+          return;
+        }
         // Define valid directories (only actual directories, not commands)
         const validDirectories = ['c0derhin0-wp.com', 'secret'];
         if (validDirectories.includes(newDir)) {
@@ -1038,39 +1083,24 @@ const Terminal: React.FC = () => {
           displayCommandOutput([`Directory not found: ${newDir}`], 'error');
         }
       } else if (cmd === 'ls') {
-        // Handle ls command - directory-specific content
-        let lsOutput: string[] = [];
-        
-        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-          lsOutput = [
-            'clue.sh'
-          ];
-        } else if (currentDirectoryRef.current === 'secret') {
-          lsOutput = [
-            //'easter-egg.md'
-          ];
-        } 
-        
-        // Only display output if there's content, otherwise just show prompt
-        if (lsOutput.length > 0) {
-          displayCommandOutput(lsOutput, 'normal');
-        } else {
-          writePrompt();
+        const hasArgs = args.length > 0;
+        const isAll = hasArgs && args.length === 1 && args[0] === '-a';
+        if (hasArgs && !isAll) {
+          displayCommandOutput(['Usage: ls [-a]'], 'error');
+          return;
         }
-      } else if (cmd === 'ls -a') {
-        // Handle 'ls -a' command - like ls, but in 'secret' directory, add 'secret.sh'
+
         let lsOutput: string[] = [];
         if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
           lsOutput = [
             'clue.sh'
           ];
         } else if (currentDirectoryRef.current === 'secret') {
-          lsOutput = [
-            //'easter-egg.md',
-            'secret.sh'
-          ];
-        } 
-        // Only display output if there's content, otherwise just show prompt
+          lsOutput = isAll
+            ? ['secret.sh', '.hidden_flag']
+            : [];
+        }
+
         if (lsOutput.length > 0) {
           displayCommandOutput(lsOutput, 'normal');
         } else {
@@ -1088,7 +1118,7 @@ const Terminal: React.FC = () => {
           validFiles.push('clue.sh');
         }
         if (currentDirectoryRef.current === 'secret') {
-          validFiles.push('secret.sh');
+          validFiles.push('secret.sh', '.hidden_flag');
         }
         if (!param) {
           displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');

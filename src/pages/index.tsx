@@ -19,6 +19,15 @@ const Home: React.FC = () => {
       return;
     }
 
+    console.log(
+      '%c 🚩 FLAG{C0NS0L3_M4ST3R} ',
+      'background: #00ff00; color: #000000; font-size: 18px; font-weight: bold; padding: 8px 12px; border: 2px solid #00ff00;'
+    );
+    console.log(
+      '%cYou found the DevTools flag! 🎉',
+      'color: #00ff00; font-size: 12px; font-weight: 600;'
+    );
+
     try {
       const storedTheme = window.localStorage.getItem('terminalTheme');
       if (storedTheme === '1' || storedTheme === '2' || storedTheme === '3') {
@@ -52,6 +61,7 @@ const Home: React.FC = () => {
         <meta name="twitter:description" content="Interactive hacker-terminal web portfolio" />
       </Head>
       
+      {/* FLAG{S0URC3_H4CK3R} */}
       <main>
         {!bootComplete && (
           <BootSequence
