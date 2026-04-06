@@ -119,7 +119,12 @@ const Terminal: React.FC = () => {
       'effects sounds on',
       'effects sounds off',
       'neofetch',
-      'screenfetch'
+      'screenfetch',
+      'top',
+      'htop',
+      'sudo',
+      'matrix',
+      'matrix --init'
     ];
     const deduped = Array.from(new Set([...commandList, ...baseCommands]));
 
