@@ -15,6 +15,7 @@ import GlitchEffect from './effects/GlitchEffect';
 import { useKeyboardSounds } from '../hooks/useKeyboardSounds';
 import { loadVisualEffectsSettings, saveVisualEffectsSettings } from '../utils/visualEffectsStorage';
 import JumpscareOverlay from './JumpscareOverlay';
+import { buildSystemMonitorLines, createSystemSnapshot } from '../utils/systemMonitor';
 
 interface Command {
   cmd: string;
@@ -918,6 +919,13 @@ const Terminal: React.FC = () => {
       ];
 
       displayCommandOutput(overviewLines, 'info');
+      return;
+    }
+
+    if (cmd === 'top' || cmd === 'htop') {
+      const snapshot = createSystemSnapshot(Date.now());
+      const monitorLines = buildSystemMonitorLines(snapshot);
+      displayCommandOutput(monitorLines, 'normal');
       return;
     }
     

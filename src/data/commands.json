@@ -199,5 +199,17 @@
     "desc": "System overview",
     "category": "System",
     "outputLines": []
+  },
+  {
+    "cmd": "top",
+    "desc": "System monitor",
+    "category": "System",
+    "outputLines": []
+  },
+  {
+    "cmd": "htop",
+    "desc": "System monitor",
+    "category": "System",
+    "outputLines": []
   }
 ] 
