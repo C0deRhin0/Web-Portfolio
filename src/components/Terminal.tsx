@@ -113,7 +113,9 @@ const Terminal: React.FC = () => {
       'effects glitch on',
       'effects glitch off',
       'effects sounds on',
-      'effects sounds off'
+      'effects sounds off',
+      'neofetch',
+      'screenfetch'
     ];
     const deduped = Array.from(new Set([...commandList, ...baseCommands]));
 
@@ -890,6 +892,30 @@ const Terminal: React.FC = () => {
         }
       });
       displayCommandOutput(helpLines, 'normal');
+      return;
+    }
+
+    if (cmd === 'neofetch' || cmd === 'screenfetch') {
+      const overviewLines = [
+        '      __      __          ______      __      ',
+        '     / /___ _/ /_____    / ____/___ _/ /_____ ',
+        '    / / __ `/ __/ __ \\  / /   / __ `/ __/ __ \\',
+        '   / / /_/ / /_/ /_/ / / /___/ /_/ / /_/ /_/ /',
+        '  /_/\\__,_/\\__/\\____/  \\____/\\__,_/\\__/\\____/ ',
+        '',
+        '   CODERHINO OS :: terminal interface',
+        '   User: guest@c0derhin0-wp.com',
+        '   Uptime: 00:42:13',
+        '   Shell: rhino-sh 6.1',
+        '   Theme: neon-green',
+        '   Kernel: 6.1.0-21-rhino',
+        '   Memory: 4096MiB / 8192MiB',
+        '   CPU: RhinoCore i9 (8) @ 4.2GHz',
+        '   GPU: C0DE-RH1N0 Integrated',
+        '   Net: tunnel:encrypted :: status=stable'
+      ];
+
+      displayCommandOutput(overviewLines, 'info');
       return;
     }
     

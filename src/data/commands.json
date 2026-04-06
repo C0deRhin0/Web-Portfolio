@@ -183,5 +183,21 @@
     "desc": "Toggle CRT overlay, glitch, or keyboard sounds",
     "category": "Additional",
     "outputLines": []
+  },
+  {
+    "type": "label",
+    "label": "System tools:"
+  },
+  {
+    "cmd": "neofetch",
+    "desc": "System overview",
+    "category": "System",
+    "outputLines": []
+  },
+  {
+    "cmd": "screenfetch",
+    "desc": "System overview",
+    "category": "System",
+    "outputLines": []
   }
 ] 
