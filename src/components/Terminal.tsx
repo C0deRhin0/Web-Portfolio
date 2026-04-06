@@ -922,6 +922,23 @@ const Terminal: React.FC = () => {
       return;
     }
 
+    if (cmd === 'sudo') {
+      const arg = args.join(' ').trim();
+      if (!arg) {
+        displayCommandOutput(['usage: sudo <command>'], 'error');
+        return;
+      }
+      const responseLines = [
+        '[sudo] password for visitor:',
+        '',
+        'Sorry, try again.',
+        `sudo: ${arg}: command not found`,
+        'Hint: There is no password prompt in a browser.'
+      ];
+      displayCommandOutput(responseLines, 'warning');
+      return;
+    }
+
     if (cmd === 'top' || cmd === 'htop') {
       const snapshot = createSystemSnapshot(Date.now());
       const monitorLines = buildSystemMonitorLines(snapshot);
