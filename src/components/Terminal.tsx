@@ -14,6 +14,7 @@ import CRTEffect from './effects/CRTEffect';
 import GlitchEffect from './effects/GlitchEffect';
 import { useKeyboardSounds } from '../hooks/useKeyboardSounds';
 import { loadVisualEffectsSettings, saveVisualEffectsSettings } from '../utils/visualEffectsStorage';
+import JumpscareOverlay from './JumpscareOverlay';
 
 interface Command {
   cmd: string;
@@ -89,6 +90,7 @@ const Terminal: React.FC = () => {
   const crtEnabledRef = useRef(true);
   const glitchEnabledRef = useRef(true);
   const keyboardSoundsEnabledRef = useRef(true);
+  const [showJumpscare, setShowJumpscare] = useState(false);
 
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
@@ -1150,6 +1152,11 @@ const Terminal: React.FC = () => {
           displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
           return;
         }
+        if (param === 'viral_strain.sh') {
+          displayCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
+          setShowJumpscare(true);
+          return;
+        }
         if (!validFiles.includes(param)) {
           displayCommandOutput([`No file found with name ${param}`], 'error');
           return;
@@ -1199,6 +1206,9 @@ const Terminal: React.FC = () => {
     <GlitchEffect triggerKey={glitchTriggerKey} enabled={glitchEnabled} intensity="normal">
       <div className="terminal-container">
         <CRTEffect enabled={crtEnabled} />
+        {showJumpscare && (
+          <JumpscareOverlay onComplete={() => setShowJumpscare(false)} />
+        )}
         {asciiEnabled && (
           <div className="rhino-art-viewport" aria-hidden="true">
             <pre className="rhino-art-text">{rhinoArtText}</pre>

@@ -227,6 +227,44 @@ html, body {
   }
 }
 
+.jumpscare-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.95) 70%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Source Code Pro', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #ff3b3b;
+  animation: jumpscarePulse 0.2s infinite;
+}
+
+.jumpscare-overlay__message {
+  font-size: clamp(24px, 6vw, 64px);
+  font-weight: 700;
+}
+
+.jumpscare-overlay__subtext {
+  margin-top: 12px;
+  font-size: clamp(12px, 2.2vw, 18px);
+  color: #ffd6d6;
+}
+
+@keyframes jumpscarePulse {
+  0% {
+    transform: scale(1);
+    filter: blur(0);
+  }
+  100% {
+    transform: scale(1.02);
+    filter: blur(1px);
+  }
+}
+
 .rhino-art-viewport {
   width: min(1200px, 100vw);
   padding: 16px 20px 0;
