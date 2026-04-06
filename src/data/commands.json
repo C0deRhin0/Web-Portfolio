@@ -217,5 +217,11 @@
     "desc": "Simulate privilege escalation",
     "category": "System",
     "outputLines": []
+  },
+  {
+    "cmd": "matrix",
+    "desc": "Enter matrix mode",
+    "category": "System",
+    "outputLines": []
   }
 ] 

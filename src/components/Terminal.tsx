@@ -92,6 +92,7 @@ const Terminal: React.FC = () => {
   const glitchEnabledRef = useRef(true);
   const keyboardSoundsEnabledRef = useRef(true);
   const [showJumpscare, setShowJumpscare] = useState(false);
+  const [matrixEnabled, setMatrixEnabled] = useState(false);
 
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
@@ -267,6 +268,21 @@ const Terminal: React.FC = () => {
 
     setGlitchTriggerKey((prev) => prev + 1);
   }, [currentTheme]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const root = document.documentElement;
+    if (matrixEnabled) {
+      root.classList.add('matrix-mode');
+      root.style.setProperty('--binary-rain-color', '#00ff41');
+      root.style.setProperty('--terminal-fg', '#7dff9f');
+    } else {
+      root.classList.remove('matrix-mode');
+    }
+  }, [matrixEnabled]);
 
   // Helper function to convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -936,6 +952,20 @@ const Terminal: React.FC = () => {
         'Hint: There is no password prompt in a browser.'
       ];
       displayCommandOutput(responseLines, 'warning');
+      return;
+    }
+
+    if (cmd === 'matrix') {
+      const arg = args.join(' ').trim();
+      if (arg === '--init') {
+        setMatrixEnabled(true);
+        displayCommandOutput([
+          'Matrix mode enabled.',
+          'Binary rain synced to green phosphor.'
+        ], 'success');
+      } else {
+        displayCommandOutput(['Usage: matrix --init'], 'error');
+      }
       return;
     }
 
