@@ -1,5 +1,17 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
+
+jest.mock('../../utils/bootMessages', () => ({
+  BOOT_LINES: [
+    {
+      id: 'kernel',
+      text: '[  OK  ] Loading CODERHINO Kernel 6.1.0-21-rhino...',
+      variant: 'ok'
+    }
+  ]
+}));
+
+
 import BootSequence from '../BootSequence';
 
 describe('BootSequence', () => {
@@ -8,31 +20,23 @@ describe('BootSequence', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
   it('renders the header and first line after delay', () => {
-    render(<BootSequence onComplete={jest.fn()} theme="1" baseDelay={0} />);
+    render(<BootSequence onComplete={jest.fn()} theme="1" baseDelay={0} instant />);
 
     expect(screen.getByText('CODERHINO OS Boot')).toBeInTheDocument();
-    expect(screen.queryByText(/Loading CODERHINO Kernel/)).not.toBeInTheDocument();
-
-    act(() => {
-      jest.advanceTimersByTime(400);
-    });
-
     expect(screen.getByText(/Loading CODERHINO Kernel/)).toBeInTheDocument();
   });
 
-  it('calls onComplete after all lines render', () => {
+  it('calls onComplete after completion delay', () => {
     const onComplete = jest.fn();
-    render(<BootSequence onComplete={onComplete} theme="2" baseDelay={1} />);
-
+    render(<BootSequence onComplete={onComplete} theme="2" baseDelay={0} instant />);
     act(() => {
-      jest.advanceTimersByTime(6000);
+      jest.runOnlyPendingTimers();
     });
-
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 

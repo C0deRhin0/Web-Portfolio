@@ -27,6 +27,9 @@ const loadAudioBuffer = async (context: AudioContext, url: string): Promise<Audi
     const arrayBuffer = await response.arrayBuffer();
     return await context.decodeAudioData(arrayBuffer);
   } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to load audio buffer:', url, error);
+    }
     return null;
   }
 };

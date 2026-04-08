@@ -87,11 +87,15 @@ export const playAudio = (audioPath: string, loop: boolean = false) => {
     const audio = new Audio(audioPath);
     audio.loop = loop;
     audio.play().catch(error => {
-      console.warn('Audio playback failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Audio playback failed:', error);
+      }
     });
     return audio;
   } catch (error) {
-    console.warn('Audio creation failed:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Audio creation failed:', error);
+    }
     return null;
   }
-}; 
+};

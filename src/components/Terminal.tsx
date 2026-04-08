@@ -6,7 +6,6 @@ import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
 import { RHINO_ART } from './RhinoArt';
-import TypewriterHyperlink from './TypewriterHyperlink';
 import TerminalTooltip from './TerminalTooltip';
 import { tokenizeCommandInput } from '../utils/commandParsing';
 import { getCommonPrefix, getCompletionCandidates } from '../utils/commandCompletion';
@@ -16,27 +15,8 @@ import { useKeyboardSounds } from '../hooks/useKeyboardSounds';
 import { loadVisualEffectsSettings, saveVisualEffectsSettings } from '../utils/visualEffectsStorage';
 import JumpscareOverlay from './JumpscareOverlay';
 import { buildSystemMonitorLines, createSystemSnapshot } from '../utils/systemMonitor';
+import { createTerminalCommandHandlers } from './terminal/terminalCommandHandlers';
 
-interface Command {
-  cmd: string;
-  desc: string;
-  outputLines: string[];
-}
-
-// User's custom rhino ASCII art and CODERHINO block
-const WELCOME_LINES = [
-  "Hi there! Welcome to my Web Portfolio",
-  '',
-  "     *I have hidden a flag somewhere in this portfolio. Can you find it?",
-  "     *For best experience, please use a desktop browser and have your volume MAXED out",
-  '',
-  '=====',
-  '',
-  "Type 'help' for available commands",
-  '',
-  '=====',
-  ''
-];
 
 /**
  * Main Terminal component that handles the interactive terminal interface
@@ -172,6 +152,147 @@ const Terminal: React.FC = () => {
     ghostSuggestionRef.current = remainingText;
   };
 
+  const handleEnterKey = () => {
+    if (!xtermRef.current) return;
+    clearGhostSuggestion();
+    ghostSuggestionRef.current = '';
+    ghostRenderedLengthRef.current = 0;
+    xtermRef.current.write('\r\n');
+    handleCommand(currentLineBuffer.current.trim());
+    historyIndex.current = commandHistory.current.length;
+    currentLineBuffer.current = '';
+    cursorIndexRef.current = 0;
+    clearGhostSuggestion();
+  };
+
+  const handleBackspaceKey = () => {
+    if (!xtermRef.current) return;
+    if (cursorIndexRef.current > 0) {
+      clearGhostSuggestion();
+      const removeIndex = cursorIndexRef.current - 1;
+      const before = currentLineBuffer.current.slice(0, removeIndex);
+      const after = currentLineBuffer.current.slice(cursorIndexRef.current);
+      currentLineBuffer.current = `${before}${after}`;
+      cursorIndexRef.current = removeIndex;
+      xtermRef.current.write('\b');
+      xtermRef.current.write(`${after} `);
+      if (after.length > 0) {
+        xtermRef.current.write(`\x1b[${after.length + 1}D`);
+      } else {
+        xtermRef.current.write('\b');
+      }
+      updateGhostIfAtEnd();
+    }
+  };
+
+  const handleTabKey = (domEvent: KeyboardEvent) => {
+    if (!xtermRef.current) return;
+    domEvent.preventDefault();
+    clearGhostSuggestion();
+    if (currentLineBuffer.current.trim().length === 0) {
+      return;
+    }
+    const trimmedInput = currentLineBuffer.current.trim();
+    if (currentLineBuffer.current.includes(' ') && !trimmedInput.startsWith('effects ')) {
+      return;
+    }
+    ghostSuggestionRef.current = '';
+    const currentInput = trimmedInput;
+    const candidates = getCompletionCandidates(availableCommands, currentInput);
+    if (!candidates.length) {
+      return;
+    }
+    const commonPrefix = getCommonPrefix(candidates);
+    if (commonPrefix && commonPrefix.length > currentInput.length) {
+      for (let index = 0; index < currentLineBuffer.current.length; index += 1) {
+        xtermRef.current.write('\b \b');
+      }
+      currentLineBuffer.current = commonPrefix;
+      cursorIndexRef.current = commonPrefix.length;
+      xtermRef.current.write(commonPrefix);
+      updateGhostIfAtEnd();
+      return;
+    }
+    if (candidates.length > 1) {
+      xtermRef.current.write('\r\n');
+      displayCommandOutput(candidates, 'info');
+    }
+  };
+
+  const handleHistoryNavigation = (direction: 'up' | 'down') => {
+    if (!xtermRef.current || !commandHistory.current.length) {
+      return;
+    }
+    clearGhostSuggestion();
+    for (let i = 0; i < currentLineBuffer.current.length; i++) {
+      xtermRef.current.write('\b \b');
+    }
+
+    if (direction === 'up') {
+      if (historyIndex.current > 0) {
+        historyIndex.current -= 1;
+      }
+      currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+      cursorIndexRef.current = currentLineBuffer.current.length;
+      xtermRef.current.write(currentLineBuffer.current);
+      updateGhostIfAtEnd();
+      return;
+    }
+
+    if (historyIndex.current < commandHistory.current.length - 1) {
+      historyIndex.current += 1;
+      currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
+      xtermRef.current.write(currentLineBuffer.current);
+      cursorIndexRef.current = currentLineBuffer.current.length;
+    } else {
+      historyIndex.current = commandHistory.current.length;
+      currentLineBuffer.current = '';
+      cursorIndexRef.current = 0;
+    }
+    updateGhostIfAtEnd();
+  };
+
+  const handleArrowLeftKey = () => {
+    if (!xtermRef.current) return;
+    if (cursorIndexRef.current > 0) {
+      clearGhostSuggestion();
+      cursorIndexRef.current -= 1;
+      xtermRef.current.write('\x1b[D');
+    }
+  };
+
+  const handleArrowRightKey = () => {
+    if (!xtermRef.current) return;
+    if (cursorIndexRef.current < currentLineBuffer.current.length) {
+      clearGhostSuggestion();
+      cursorIndexRef.current += 1;
+      xtermRef.current.write('\x1b[C');
+      updateGhostIfAtEnd();
+    }
+  };
+
+  const handlePrintableKey = (key: string, domEvent: KeyboardEvent) => {
+    if (!xtermRef.current) return;
+    const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
+    if (!printable || domEvent.key.length !== 1) {
+      return;
+    }
+    clearGhostSuggestion();
+    const before = currentLineBuffer.current.slice(0, cursorIndexRef.current);
+    const after = currentLineBuffer.current.slice(cursorIndexRef.current);
+    currentLineBuffer.current = `${before}${key}${after}`;
+    cursorIndexRef.current += 1;
+    xtermRef.current.write(key + after);
+    if (after.length > 0) {
+      xtermRef.current.write(`\x1b[${after.length}D`);
+    }
+    updateGhostIfAtEnd();
+    const viewport = xtermRef.current.element?.querySelector('.xterm-viewport');
+    if (viewport && viewport.scrollTop + viewport.clientHeight < viewport.scrollHeight - 2) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
+  };
+
   const updateGhostIfAtEnd = () => {
     if (cursorIndexRef.current !== currentLineBuffer.current.length) {
       return;
@@ -195,6 +316,18 @@ const Terminal: React.FC = () => {
     const moveLeft = `\x1b[${suggestion.length}D`;
     xtermRef.current.write(`${hideCursor}${dimColor}${suggestion}${resetColor}${moveLeft}${showCursor}`);
     ghostRenderedLengthRef.current = suggestion.length;
+  };
+
+  const handleTerminalInitializationError = (error: unknown) => {
+    console.error('Failed to initialize terminal:', error);
+    if (terminalRef.current) {
+      terminalRef.current.innerHTML = `
+        <div style="color: #ff5555; padding: 16px; font-family: Source Code Pro, monospace;">
+          Terminal initialization failed. Please refresh the page.
+          If the problem persists, try clearing your browser cache.
+        </div>
+      `;
+    }
   };
 
   useEffect(() => {
@@ -221,8 +354,9 @@ const Terminal: React.FC = () => {
       return;
     }
 
-    setCrtEnabled(true);
-    setGlitchEnabled(true);
+    const settings = loadVisualEffectsSettings();
+    setCrtEnabled(settings.crtEnabled);
+    setGlitchEnabled(settings.glitchEnabled);
   }, []);
 
   useEffect(() => {
@@ -288,16 +422,6 @@ const Terminal: React.FC = () => {
       root.classList.remove('matrix-mode');
     }
   }, [matrixEnabled]);
-
-  // Helper function to convert hex to RGB
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
-  };
 
   // Initialize fetching loader when terminal is ready
   useEffect(() => {
@@ -432,7 +556,6 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
-          // Disable input during typewriter effect, fetching, or clearing using refs
           if (isTypingRef.current || isFetchingRef.current || isClearingRef.current) {
             return;
           }
@@ -441,138 +564,30 @@ const Terminal: React.FC = () => {
             playKeyboardSound();
           }
 
-          const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
-
           switch (domEvent.key) {
             case 'Enter':
-              clearGhostSuggestion();
-              ghostSuggestionRef.current = '';
-              ghostRenderedLengthRef.current = 0;
-              terminal.write('\r\n');
-              handleCommand(currentLineBuffer.current.trim());
-              historyIndex.current = commandHistory.current.length;
-              currentLineBuffer.current = '';
-              cursorIndexRef.current = 0;
-              clearGhostSuggestion();
+              handleEnterKey();
               break;
             case 'Backspace':
-              if (cursorIndexRef.current > 0) {
-                clearGhostSuggestion();
-                const removeIndex = cursorIndexRef.current - 1;
-                const before = currentLineBuffer.current.slice(0, removeIndex);
-                const after = currentLineBuffer.current.slice(cursorIndexRef.current);
-                currentLineBuffer.current = `${before}${after}`;
-                cursorIndexRef.current = removeIndex;
-                terminal.write('\b');
-                terminal.write(`${after} `);
-                if (after.length > 0) {
-                  terminal.write(`\x1b[${after.length + 1}D`);
-                } else {
-                  terminal.write('\b');
-                }
-                updateGhostIfAtEnd();
-              }
+              handleBackspaceKey();
               break;
             case 'Tab':
-              domEvent.preventDefault();
-              clearGhostSuggestion();
-              if (currentLineBuffer.current.trim().length === 0) {
-                break;
-              }
-              const trimmedInput = currentLineBuffer.current.trim();
-              if (currentLineBuffer.current.includes(' ') && !trimmedInput.startsWith('effects ')) {
-                break;
-              }
-              ghostSuggestionRef.current = '';
-              const currentInput = trimmedInput;
-              const candidates = getCompletionCandidates(availableCommands, currentInput);
-              if (!candidates.length) {
-                break;
-              }
-              const commonPrefix = getCommonPrefix(candidates);
-              if (commonPrefix && commonPrefix.length > currentInput.length) {
-                for (let index = 0; index < currentLineBuffer.current.length; index += 1) {
-                  terminal.write('\b \b');
-                }
-                currentLineBuffer.current = commonPrefix;
-                cursorIndexRef.current = commonPrefix.length;
-                terminal.write(commonPrefix);
-                updateGhostIfAtEnd();
-                break;
-              }
-              if (candidates.length > 1) {
-                terminal.write('\r\n');
-                displayCommandOutput(candidates, 'info');
-              }
+              handleTabKey(domEvent);
               break;
             case 'ArrowUp':
-              if (commandHistory.current.length) {
-                clearGhostSuggestion();
-                // Clear current line
-                for (let i = 0; i < currentLineBuffer.current.length; i++) {
-                  terminal.write('\b \b');
-                }
-                if (historyIndex.current > 0) {
-                  historyIndex.current--;
-                }
-                currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
-                cursorIndexRef.current = currentLineBuffer.current.length;
-                terminal.write(currentLineBuffer.current);
-                updateGhostIfAtEnd();
-              }
+              handleHistoryNavigation('up');
               break;
             case 'ArrowDown':
-              if (commandHistory.current.length) {
-                clearGhostSuggestion();
-                for (let i = 0; i < currentLineBuffer.current.length; i++) {
-                  terminal.write('\b \b');
-                }
-                if (historyIndex.current < commandHistory.current.length - 1) {
-                  historyIndex.current++;
-                  currentLineBuffer.current = commandHistory.current[historyIndex.current] || '';
-                  terminal.write(currentLineBuffer.current);
-                  cursorIndexRef.current = currentLineBuffer.current.length;
-                } else {
-                  historyIndex.current = commandHistory.current.length;
-                  currentLineBuffer.current = '';
-                  cursorIndexRef.current = 0;
-                }
-                updateGhostIfAtEnd();
-              }
+              handleHistoryNavigation('down');
               break;
             case 'ArrowLeft':
-              if (cursorIndexRef.current > 0) {
-                clearGhostSuggestion();
-                cursorIndexRef.current -= 1;
-                terminal.write('\x1b[D');
-              }
+              handleArrowLeftKey();
               break;
             case 'ArrowRight':
-              if (cursorIndexRef.current < currentLineBuffer.current.length) {
-                clearGhostSuggestion();
-                cursorIndexRef.current += 1;
-                terminal.write('\x1b[C');
-                updateGhostIfAtEnd();
-              }
+              handleArrowRightKey();
               break;
             default:
-              if (printable && domEvent.key.length === 1) {
-                clearGhostSuggestion();
-                const before = currentLineBuffer.current.slice(0, cursorIndexRef.current);
-                const after = currentLineBuffer.current.slice(cursorIndexRef.current);
-                currentLineBuffer.current = `${before}${key}${after}`;
-                cursorIndexRef.current += 1;
-                terminal.write(key + after);
-                if (after.length > 0) {
-                  terminal.write(`\x1b[${after.length}D`);
-                }
-                updateGhostIfAtEnd();
-                // Auto-scroll to bottom if user is not at the bottom
-                const viewport = terminal.element?.querySelector('.xterm-viewport');
-                if (viewport && viewport.scrollTop + viewport.clientHeight < viewport.scrollHeight - 2) {
-                  viewport.scrollTop = viewport.scrollHeight;
-                }
-              }
+              handlePrintableKey(key, domEvent);
           }
         });
 
@@ -584,7 +599,7 @@ const Terminal: React.FC = () => {
           }
         };
       } catch (error) {
-        console.error('Failed to initialize terminal:', error);
+        handleTerminalInitializationError(error);
       }
     })();
   }, [isInitialized]); // Only depend on isInitialized
@@ -603,662 +618,69 @@ const Terminal: React.FC = () => {
     }
   };
 
-  // Print banner and welcome message, side by side
-  const printBannerAndWelcome = () => {
-    if (!xtermRef.current) return;
-    if (asciiEnabled) {
-      // Rhino art rendered above terminal; no spacer lines needed.
-    }
-    // Print banner and welcome lines with colored "help" 
-    // Directory color = ANSI Green (32)
-    WELCOME_LINES.forEach(line => {
-      if (line.includes("help")) {
-        const parts = line.split("help");
-        const coloredLine = `${parts[0]}\x1b[32mhelp\x1b[0m${parts[1]}\r\n`;
-        xtermRef.current.write(coloredLine);
-      } else {
-        xtermRef.current.write(line + '\r\n');
-      }
-    });
-  };
 
-  // Write the terminal prompt with color
-  const writePrompt = () => {
-    if (!xtermRef.current) return;
-    
-    // Build the colored prompt: [host]@[directory]:~$ 
-    // Host = Bright Yellow (93), Directory = Green (32), Separators = White (37)
-    let coloredPrompt = '';
-    
-    // Host 
-    coloredPrompt += `\x1b[93m${TERMINAL_CONFIG.appearance.host}\x1b[0m`;
-    
-    // @ separator
-    coloredPrompt += `\x1b[37m@\x1b[0m`;
-    
-    // Directory
-    coloredPrompt += `\x1b[32m${currentDirectoryRef.current}\x1b[0m`;
-    
-    // :~$ terminator
-    coloredPrompt += `\x1b[37m:~$ \x1b[0m`;
-    
-    xtermRef.current.write(coloredPrompt);
-  };
+  const {
+    printBannerAndWelcome,
+    writePrompt,
+    clearTerminal,
+    displayCommandOutput,
+    executePendingCommand,
+    handleCommand
+  } = createTerminalCommandHandlers({
+    asciiEnabled,
+    asciiEnabledRef,
+    commandHistory,
+    commandsData: commandsData as any[],
+    crtEnabled,
+    crtEnabledRef,
+    currentDirectoryRef,
+    currentThemeRef,
+    fetchingLoaderRef,
+    clearingLoaderRef,
+    glitchEnabled,
+    glitchEnabledRef,
+    globalLinkMeta,
+    globalLinkProviderRef,
+    historyIndex,
+    isClearingRef,
+    isFetchingRef,
+    isTypingRef,
+    keyboardSoundsEnabled,
+    keyboardSoundsEnabledRef,
+    maxHistoryLength: MAX_HISTORY_LENGTH,
+    pendingCommandRef,
+    projectLinksProviderRef,
+    setAsciiEnabled,
+    setCrtEnabled,
+    setCurrentDirectory,
+    setCurrentTheme,
+    setGlitchEnabled,
+    setGlitchTriggerKey,
+    setIsClearing,
+    setIsFetching,
+    setIsTyping,
+    setKeyboardSoundsEnabled,
+    setMatrixEnabled,
+    setShowJumpscare,
+    setSubTerminalFile,
+    setSubTerminalVisible,
+    setTooltip,
+    setTypewriterTimeout,
+    typewriterTimeout,
+    whoamiExtra,
+    xtermRef,
+    buildSystemMonitorLines,
+    createSystemSnapshot,
+    saveVisualEffectsSettings,
+    tokenizeCommandInput
+  });
 
-  // Update clearTerminal to dispose of project links provider
-  const clearTerminal = (asciiOverride?: boolean) => {
-    if (!xtermRef.current) return;
-    // Dispose of project links provider if it exists
-    if (projectLinksProviderRef.current) {
-      projectLinksProviderRef.current.dispose();
-      projectLinksProviderRef.current = null;
-    }
-    // Dispose of global link provider if it exists
-    if (globalLinkProviderRef.current) {
-      globalLinkProviderRef.current.dispose();
-      globalLinkProviderRef.current = null;
-    }
-    globalLinkMeta.current = [];
-    xtermRef.current.clear();
-    const showAscii = typeof asciiOverride === 'boolean' ? asciiOverride : asciiEnabledRef.current;
-    if (showAscii) {
-      printBannerAndWelcome();
-    } else {
-      // Print only the welcome lines (without ASCII art)
-      WELCOME_LINES.forEach(line => {
-        if (line.includes("help")) {
-          const parts = line.split("help");
-          const coloredLine = `${parts[0]}\x1b[32mhelp\x1b[0m${parts[1]}\r\n`;
-          xtermRef.current.write(coloredLine);
-        } else {
-          xtermRef.current.write(line + '\r\n');
-        }
-      });
-    }
-    writePrompt();
-  };
-
-  // Display command output with typewriter effect and color support
-  const displayCommandOutput = (lines: string[], type: 'normal' | 'error' | 'success' | 'warning' | 'info' = 'normal') => {
-    if (!xtermRef.current) return;
-
-    if (typewriterTimeout) {
-      clearTimeout(typewriterTimeout);
-      setTypewriterTimeout(null);
-    }
-    
-    isTypingRef.current = true;
-    setIsTyping(true);
-    
-    let currentLineIndex = 0;
-    let currentCharIndex = 0;
-    
-    const typeNextChar = () => {
-      if (currentLineIndex >= lines.length) {
-        isTypingRef.current = false;
-        setIsTyping(false);
-        setTypewriterTimeout(null);
-        xtermRef.current!.write('\r\n');
-        writePrompt();
-        return;
-      }
-      
-      const currentLine = lines[currentLineIndex];
-      
-      if (currentCharIndex < currentLine.length) {
-        // Apply ANSI color based on type
-        let colorCode = '\x1b[37m'; // Default White (37)
-        switch (type) {
-          case 'error':
-            colorCode = '\x1b[31m'; // Red (31)
-            break;
-          case 'success':
-            colorCode = '\x1b[92m'; // Bright Green (92)
-            break;
-          case 'warning':
-            colorCode = '\x1b[33m'; // Yellow (33)
-            break;
-          case 'info':
-            colorCode = '\x1b[36m'; // Cyan (36)
-            break;
-          default:
-            colorCode = '\x1b[37m';
-        }
-        
-        xtermRef.current!.write(colorCode + currentLine[currentCharIndex]);
-        currentCharIndex++;
-        const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.charDelay);
-        setTypewriterTimeout(timeout);
-      } else {
-        xtermRef.current!.write('\x1b[0m\r\n'); // Reset color and new line
-        currentLineIndex++;
-        currentCharIndex = 0;
-        const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.lineDelay);
-        setTypewriterTimeout(timeout);
-      }
-    };
-    
-    typeNextChar();
-  };
-
-  const executePendingCommand = () => {
-    if (!pendingCommandRef.current) return;
-    
-    const { command, type, param } = pendingCommandRef.current;
-    pendingCommandRef.current = null;
-    
-    // Generic hyperlinks support for any command
-    if (type === 'command') {
-      const commandData = (commandsData as any[]).find(c => c.cmd === command);
-      if (commandData && commandData.outputLines && xtermRef.current) {
-        if (typewriterTimeout) {
-          clearTimeout(typewriterTimeout);
-          setTypewriterTimeout(null);
-        }
-        isTypingRef.current = true;
-        setIsTyping(true);
-        const term = xtermRef.current;
-        const extraLines = commandData.cmd === 'whoami'
-          ? (Array.isArray(whoamiExtra.outputLines) ? whoamiExtra.outputLines : [])
-          : [];
-        const outputLines = [...commandData.outputLines, ...extraLines];
-        let lineNum = term.buffer.active.baseY + term.buffer.active.cursorY + 1;
-        const hyperlinks = commandData.hyperlinks || [];
-        const writeLine = (index: number) => {
-          if (index >= outputLines.length) {
-            isTypingRef.current = false;
-            setIsTyping(false);
-            term.write('\r\n');
-            // Register the global link provider if not already
-            if (hyperlinks.length > 0 && term.registerLinkProvider && !globalLinkProviderRef.current) {
-              globalLinkProviderRef.current = term.registerLinkProvider({
-                provideLinks: (y: number, callback: Function) => {
-                  const links = globalLinkMeta.current
-                    .filter(meta => meta.y === y)
-                    .map(meta => ({
-                      text: meta.text,
-                      range: {
-                        start: { x: meta.start, y },
-                        end: { x: meta.end, y }
-                      },
-                      activate: () => window.open(meta.url, '_blank'),
-                      // Show custom tooltip on hover
-                      hover: (event: MouseEvent, link: any) => {
-                        // Get bounding rect of terminal
-                        const rect = term.element.getBoundingClientRect();
-                        // Position tooltip below mouse
-                        setTooltip({
-                          text: meta.url,
-                          x: event.clientX,
-                          y: event.clientY + 12
-                        });
-                      },
-                      leave: () => setTooltip(null)
-                    }));
-                  callback(links);
-                }
-              });
-            }
-            writePrompt();
-            return;
-          }
-          const line = outputLines[index];
-          let charIdx = 0;
-          const thisLine = lineNum;
-          const typeChar = () => {
-          if (charIdx < line.length) {
-            term.write(line[charIdx]);
-            charIdx++;
-            setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
-          } else {
-              // Check for hyperlinks in this line
-              hyperlinks.forEach((link: { text: string; url: string }) => {
-                const col = line.indexOf(link.text);
-                if (col !== -1) {
-                  globalLinkMeta.current.push({
-                    y: thisLine,
-                    start: col + 1,
-                    end: col + link.text.length,
-                    url: link.url,
-                    text: link.text
-                  });
-                }
-              });
-            term.write('\r\n');
-            lineNum++;
-            const timeout = setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
-            setTypewriterTimeout(timeout);
-          }
-        };
-          typeChar();
-        };
-        //term.write('\r\n');
-        writeLine(0);
-        return;
-      }
-    }
-    // Default: Execute the actual command as before
-    if (type === 'command') {
-      const commandData = (commandsData as Command[]).find(c => c.cmd === command);
-      if (commandData) {
-        if (commandData.cmd === 'whoami') {
-          const extraLines = Array.isArray(whoamiExtra.outputLines) ? whoamiExtra.outputLines : [];
-          displayCommandOutput([...commandData.outputLines, ...extraLines]);
-        } else {
-          displayCommandOutput(commandData.outputLines);
-        }
-      }
-    } else if (type === 'run') {
-      setSubTerminalFile(param || '');
-      writePrompt();
-      setSubTerminalVisible(true);
-    }
-  };
-
-  // Handle command execution
-  const handleCommand = (command: string) => {
-    if (!xtermRef.current) return;
-    
-    // Add command to history
-    if (command.trim()) {
-      const lastCommand = commandHistory.current[commandHistory.current.length - 1];
-      if (lastCommand !== command) {
-        const nextHistory = [...commandHistory.current, command];
-        commandHistory.current = nextHistory.slice(-MAX_HISTORY_LENGTH);
-        try {
-          window.localStorage.setItem('terminalCommandHistory', JSON.stringify(commandHistory.current));
-        } catch (error) {
-          // Ignore persistence errors
-        }
-      }
-    }
-    
-    const { cmd, args } = tokenizeCommandInput(command);
-    
-    // For ascii on/off, only skip newline if the command will trigger a clear (state change). For errors, always write the newline.
-    let isAsciiOn = cmd === 'ascii on';
-    let isAsciiOff = cmd === 'ascii off';
-    if (isAsciiOn || isAsciiOff) {
-      // Determine if this will be an error or a state change
-      if ((isAsciiOn && asciiEnabledRef.current) || (isAsciiOff && !asciiEnabledRef.current)) {
-        xtermRef.current.write('\r\n'); // Error case: always write newline
-      }
-      // Otherwise, skip newline (will clear)
-    } else {
-      xtermRef.current.write('\r\n');
-    }
-    
-    if (!cmd) {
-      writePrompt();
-      return;
-    }
-  
-    if (glitchEnabled) {
-      setGlitchTriggerKey((prev) => prev + 1);
-    }
-
-    if (cmd === 'help') {
-      // New help logic: group commands by label/category from commandsData
-      const helpLines: string[] = [];
-      let currentLabel: string | null = null;
-      (commandsData as any[]).forEach((item) => {
-        if (item.type === 'label') {
-          // Print a blank line before each label except the first
-          if (helpLines.length > 0) helpLines.push('');
-          helpLines.push(item.label);
-          currentLabel = item.label;
-        } else if (item.cmd && item.desc) {
-          // Only show commands that are not hidden and have a category
-          // Indent commands under their label
-          const paddingCount = Math.max(1, 17 - item.cmd.length);
-          const padding = ' '.repeat(paddingCount);
-          helpLines.push(`  ${item.cmd}${padding}- ${item.desc}`);
-        }
-      });
-      displayCommandOutput(helpLines, 'normal');
-      return;
-    }
-
-    if (cmd === 'neofetch' || cmd === 'screenfetch') {
-      const overviewLines = [
-        '      __      __          ______      __      ',
-        '     / /___ _/ /_____    / ____/___ _/ /_____ ',
-        '    / / __ `/ __/ __ \\  / /   / __ `/ __/ __ \\',
-        '   / / /_/ / /_/ /_/ / / /___/ /_/ / /_/ /_/ /',
-        '  /_/\\__,_/\\__/\\____/  \\____/\\__,_/\\__/\\____/ ',
-        '',
-        '   CODERHINO OS :: terminal interface',
-        '   User: guest@c0derhin0-wp.com',
-        '   Uptime: 00:42:13',
-        '   Shell: rhino-sh 6.1',
-        '   Theme: neon-green',
-        '   Kernel: 6.1.0-21-rhino',
-        '   Memory: 4096MiB / 8192MiB',
-        '   CPU: RhinoCore i9 (8) @ 4.2GHz',
-        '   GPU: C0DE-RH1N0 Integrated',
-        '   Net: tunnel:encrypted :: status=stable'
-      ];
-
-      displayCommandOutput(overviewLines, 'info');
-      return;
-    }
-
-    if (cmd === 'sudo') {
-      const arg = args.join(' ').trim();
-      if (!arg) {
-        displayCommandOutput(['usage: sudo <command>'], 'error');
-        return;
-      }
-      const responseLines = [
-        '[sudo] password for visitor:',
-        '',
-        'Sorry, try again.',
-        `sudo: ${arg}: command not found`,
-        'Hint: There is no password prompt in a browser.'
-      ];
-      displayCommandOutput(responseLines, 'warning');
-      return;
-    }
-
-    if (cmd === 'matrix') {
-      const arg = args.join(' ').trim();
-      if (arg === '--init') {
-        setMatrixEnabled(true);
-        displayCommandOutput([
-          'Matrix mode enabled.',
-          'Binary rain synced to green phosphor.'
-        ], 'success');
-      } else {
-        displayCommandOutput(['Usage: matrix --init'], 'error');
-      }
-      return;
-    }
-
-    if (cmd === 'top' || cmd === 'htop') {
-      const snapshot = createSystemSnapshot(Date.now());
-      const monitorLines = buildSystemMonitorLines(snapshot);
-      displayCommandOutput(monitorLines, 'normal');
-      return;
-    }
-    
-    // Clear command - use clearing loader
-    if (cmd === 'clear') {
-      isClearingRef.current = true;
-      setIsClearing(true);
-      if (clearingLoaderRef.current) {
-        clearingLoaderRef.current.start();
-      }
-      return;
-    }
-
-    // Handle ascii command
-    if (cmd === 'ascii' || cmd.startsWith('ascii ')) {
-      const arg = args.join(' ').trim();
-      if (!arg) {
-        displayCommandOutput([
-          "ascii requires an argument. Usage: ascii [on/off]"
-        ], 'error');
-        return;
-      }
-      if (arg === 'on') {
-        if (asciiEnabledRef.current) {
-          displayCommandOutput(["ASCII art is already enabled."], 'error');
-        } else {
-          setAsciiEnabled(true);
-        }
-        return;
-      }
-      if (arg === 'off') {
-        if (!asciiEnabledRef.current) {
-          displayCommandOutput(["ASCII art is already disabled."], 'error');
-        } else {
-          setAsciiEnabled(false);
-        }
-        return;
-      }
-      // Invalid usage
-      displayCommandOutput([
-        "Usage: ascii [on/off]"
-      ], 'error');
-      return;
-    }
-
-    // Handle theme command
-    if (cmd === 'theme' || cmd.startsWith('theme ')) {
-      const arg = args.join(' ').trim();
-      if (!arg) {
-        displayCommandOutput([
-          "theme requires an argument. Usage: theme [1/2/3]"
-        ], 'error');
-        return;
-      }
-      
-      const validThemes = ['1', '2', '3'];
-      if (validThemes.includes(arg)) {
-        if (currentThemeRef.current === arg) {
-          displayCommandOutput([`Theme ${arg} is already active.`], 'error');
-        } else {
-          setCurrentTheme(arg);
-          // Show feedback without clearing. The xterm theme update will refresh colors.
-          setTimeout(() => {
-            const activeTheme = (TERMINAL_CONFIG as any).themes[arg];
-            displayCommandOutput([`Successfully changed theme to ${activeTheme.name}`], 'success');
-          }, 50);
-        }
-        return;
-      }
-      
-      // Invalid usage
-      displayCommandOutput([
-        "Invalid theme. Usage: theme [1/2/3]"
-      ], 'error');
-      return;
-    }
-
-    // Handle effects command
-    if (cmd === 'effects') {
-      const arg = args.join(' ').trim();
-      if (!arg) {
-        displayCommandOutput([
-          `effects status: crt=${crtEnabled ? 'on' : 'off'}, glitch=${glitchEnabled ? 'on' : 'off'}, sounds=${keyboardSoundsEnabled ? 'on' : 'off'}`
-        ], 'info');
-        return;
-      }
-
-      const [target = '', value = ''] = arg.split(/\s+/);
-      const normalizedValue = value.toLowerCase();
-      const isToggle = normalizedValue === 'on' || normalizedValue === 'off';
-
-      if (!value || !isToggle) {
-        displayCommandOutput([
-          'Usage: effects [crt|glitch|sounds] [on/off]'
-        ], 'error');
-        return;
-      }
-
-      if (target === 'crt') {
-        const next = normalizedValue === 'on';
-        if (next === crtEnabledRef.current) {
-          displayCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
-          return;
-        }
-        setCrtEnabled(next);
-        saveVisualEffectsSettings({ crtEnabled: next, glitchEnabled });
-        displayCommandOutput([`CRT overlay ${next ? 'enabled' : 'disabled'}.`], 'success');
-        return;
-      }
-      if (target === 'glitch') {
-        const next = normalizedValue === 'on';
-        if (next === glitchEnabledRef.current) {
-          displayCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
-          return;
-        }
-        setGlitchEnabled(next);
-        saveVisualEffectsSettings({ crtEnabled, glitchEnabled: next });
-        displayCommandOutput([`Glitch effects ${next ? 'enabled' : 'disabled'}.`], 'success');
-        return;
-      }
-      if (target === 'sounds') {
-        const next = normalizedValue === 'on';
-        if (next === keyboardSoundsEnabledRef.current) {
-          displayCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
-          return;
-        }
-        setKeyboardSoundsEnabled(next);
-        displayCommandOutput([`Keyboard sounds ${next ? 'enabled' : 'disabled'}.`], 'success');
-        return;
-      }
-
-      displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
-      return;
-    }
-
-    
-    // Directory commands (no fetching) - only navigation commands
-    const directoryCommands = ['cd', 'ls', 'pwd', 'run'];
-    const isDirectoryCommand = directoryCommands.includes(cmd);
-    
-    if (isDirectoryCommand) {
-      // Handle directory commands immediately (no fetching)
-      if (cmd === 'cd') {
-        const newDir = args.join(' ').trim();
-        if (!newDir) {
-          // Handle cd command with no arguments - go to default directory
-          if (currentDirectoryRef.current !== TERMINAL_CONFIG.appearance.defaultDirectory) {
-            currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
-            setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-            writePrompt();
-          } else {
-            writePrompt();
-          }
-          return;
-        }
-        if (newDir === '~' || newDir === '$HOME') {
-          displayCommandOutput(['Permission denied'], 'error');
-          return;
-        }
-        if (newDir === '..') {
-          if (currentDirectoryRef.current === 'secret') {
-            currentDirectoryRef.current = TERMINAL_CONFIG.appearance.defaultDirectory;
-            setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
-            writePrompt();
-          } else {
-            displayCommandOutput(['Permission denied'], 'error');
-          }
-          return;
-        }
-        if (
-          newDir.startsWith('~/')
-          || newDir.startsWith('/Users')
-          || newDir.startsWith('~/Users')
-        ) {
-          displayCommandOutput(['Permission denied'], 'error');
-          return;
-        }
-        // Define valid directories (only actual directories, not commands)
-        const validDirectories = ['c0derhin0-wp.com', 'secret'];
-        if (validDirectories.includes(newDir)) {
-          if (currentDirectoryRef.current !== newDir) {
-            currentDirectoryRef.current = newDir;
-            setCurrentDirectory(newDir);
-            // No output, just prompt
-            writePrompt();
-          } else {
-            // If already in the target directory, just write the prompt
-            writePrompt();
-          }
-        } else {
-          displayCommandOutput([`Directory not found: ${newDir}`], 'error');
-        }
-      } else if (cmd === 'ls') {
-        const hasArgs = args.length > 0;
-        const isAll = hasArgs && args.length === 1 && args[0] === '-a';
-        if (hasArgs && !isAll) {
-          displayCommandOutput(['Usage: ls [-a]'], 'error');
-          return;
-        }
-
-        let lsOutput: string[] = [];
-        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-          lsOutput = [
-            'clue.sh'
-          ];
-        } else if (currentDirectoryRef.current === 'secret') {
-          lsOutput = isAll
-            ? ['secret.sh', '.hidden_flag']
-            : [];
-        }
-
-        if (lsOutput.length > 0) {
-          displayCommandOutput(lsOutput, 'normal');
-        } else {
-          writePrompt();
-        }
-      } else if (cmd === 'pwd') {
-        // Handle pwd command
-        const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
-        displayCommandOutput([pwdOutput], 'normal');
-      } else if (cmd === 'run' || cmd.startsWith('run ')) {
-        const param = args.join(' ').trim();
-        // Only allow in default dir
-        const validFiles = [];
-        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
-          validFiles.push('clue.sh');
-        }
-        if (currentDirectoryRef.current === 'secret') {
-          validFiles.push('secret.sh', '.hidden_flag');
-        }
-        if (!param) {
-          displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
-          return;
-        }
-        if (param === 'viral_strain.sh') {
-          displayCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
-          setShowJumpscare(true);
-          return;
-        }
-        if (!validFiles.includes(param)) {
-          displayCommandOutput([`No file found with name ${param}`], 'error');
-          return;
-        }
-        
-        // Valid run command - show fetching loader first, then subterminal
-        isFetchingRef.current = true;
-        setIsFetching(true);
-        pendingCommandRef.current = { command, type: 'run', param };
-        if (fetchingLoaderRef.current) {
-          fetchingLoaderRef.current.start();
-        }
-      }
-      return;
-    }
-  
-    // Check if it's a social/link command (whoami, stack, github, etc.)
-    const socialCommand = (commandsData as any[]).find(c => c.cmd === cmd);
-    if (socialCommand) {
-      isFetchingRef.current = true;
-      setIsFetching(true);
-      pendingCommandRef.current = { command: cmd, type: 'command' };
-      if (fetchingLoaderRef.current) {
-        fetchingLoaderRef.current.start();
-      }
-      if (glitchEnabled) {
-        setGlitchTriggerKey((prev) => prev + 1);
-      }
-      return;
-    }
-  
-    // Unknown command
-    displayCommandOutput([`Command not found: ${cmd}`], 'error');
-  };
-
-  // Sync asciiEnabled with cleared terminal if it changes independently
   useEffect(() => {
     if (isInitialized && prevAsciiEnabledRef.current !== asciiEnabled) {
       clearTerminal(asciiEnabled);
     }
     prevAsciiEnabledRef.current = asciiEnabled;
-  }, [asciiEnabled, isInitialized]);
+  }, [asciiEnabled, clearTerminal, isInitialized]);
 
   const rhinoArtText = RHINO_ART.join('\n');
 

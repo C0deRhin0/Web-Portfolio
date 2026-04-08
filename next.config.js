@@ -5,8 +5,7 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  devIndicators: false, // disables the bottom-left "compiling/ready" UI
-  //allowedDevOrigins: ["192.168.119.1"],
+  devIndicators: false // disables the bottom-left "compiling/ready" UI
 };
 
 module.exports = nextConfig; 

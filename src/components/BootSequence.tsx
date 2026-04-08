@@ -6,6 +6,7 @@ interface BootSequenceProps {
   onComplete: () => void;
   theme: '1' | '2' | '3';
   baseDelay?: number;
+  instant?: boolean;
 }
 
 const THEME_CLASSES: Record<'1' | '2' | '3', string> = {
@@ -14,18 +15,26 @@ const THEME_CLASSES: Record<'1' | '2' | '3', string> = {
   '3': 'boot-sequence theme-3'
 };
 
-const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDelay = 100 }) => {
+const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDelay = 100, instant = false }) => {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   const completionDelay = Math.max(baseDelay, 0) + 120;
-  const frames = useMemo(
-    () => buildBootFrames(BOOT_LINES, currentLineIndex, currentCharIndex),
-    [currentLineIndex, currentCharIndex]
-  );
+  const frames = useMemo(() => {
+    if (instant) {
+      return BOOT_LINES.map((line) => ({ id: line.id, content: line.text }));
+    }
+    return buildBootFrames(BOOT_LINES, currentLineIndex, currentCharIndex);
+  }, [currentLineIndex, currentCharIndex, instant]);
 
   useEffect(() => {
+    if (instant) {
+      setIsComplete(true);
+      const timeout = setTimeout(() => onComplete(), 0);
+      return () => clearTimeout(timeout);
+    }
+
     if (currentLineIndex >= BOOT_LINES.length) {
       const completionTimeout = setTimeout(() => {
         setIsComplete(true);
@@ -52,7 +61,7 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDela
       setCurrentCharIndex(0);
     }, lineDelay);
     return () => clearTimeout(timeout);
-  }, [currentLineIndex, currentCharIndex, baseDelay, onComplete, completionDelay]);
+  }, [currentLineIndex, currentCharIndex, baseDelay, onComplete, completionDelay, instant]);
 
   return (
     <div

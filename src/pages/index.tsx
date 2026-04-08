@@ -19,6 +19,7 @@ const Home: React.FC = () => {
       return;
     }
 
+    // INTENTIONAL: Console flag for CTF challenge - do not remove.
     console.log(
       '%c 🚩 FLAG{C0NS0L3_M4ST3R} ',
       'background: #00ff00; color: #000000; font-size: 18px; font-weight: bold; padding: 8px 12px; border: 2px solid #00ff00;'
