@@ -439,3 +439,13 @@ html, body {
 .xterm-wrapper {
   align-self: stretch;
 }
+
+/* Mobile responsiveness for constrained bin rain layout */
+@media (max-width: 768px) {
+  .binary-rain-overlay {
+    display: none !important;
+  }
+  .terminal-container {
+    padding: 0;
+  }
+}
