@@ -10,59 +10,200 @@
     "outputLines": [
       "                  .----.",
       "      .---------. | == |",
-      "      |.-\"\"\"\"\"-.| |----|   Hi! I am Wilfredo Paulo A. Perez III, a BS Computer Science undergraduate with over three years of exposure",
-      "      ||       || | == |   in cybersecurity, honing expertise in offensive and defensive security, system administration, network analysis,",
-      "      ||       || |----|   cloud computing, blockchain technology, and vulnerability assessment through competitive cybersecurity,",
-      "      |'-.....-'| |::::|   projects and hands‑on labs, while extending my skills in scripting, automation, and infrastructure dev,",
-      "     `\"\"\")---(\"\"` |___.|   focused on strengthening security posture and advanced exploitation techniques.",
+      "      |.-\"\"\"\"\"-.| |----|   Wilfredo Paulo A. Perez III — Computer Science for Magna Cum Laude at Ateneo de Naga University.",
+      "      ||       || | == |   I work at the intersection of cybersecurity, applied AI, and cloud infrastructure, building systems that",
+      "      ||       || |----|   automate security operations, harden networks, and keep sensitive workflows local-first when needed.",
+      "      |'-.....-'| |::::|   Current work spans LLM data pipelines, LAN and email security, compliance, SIEM deployments, RAG systems,",
+      "     `\"\"\")---(\"\"` |___.|   and AI orchestration for production operations.",
       "     /:::::::::::\\\" _  \"",
       "    /:::=======:::\\`\\`\\",
       "    `\"\"\"\"\"\"\"\"\"\"\"\"\"`  '-'"
     ]
   },
   {
+    "cmd": "whoami --short",
+    "desc": "Short profile summary",
+    "category": "Portfolio",
+    "outputLines": []
+  },
+  {
     "cmd": "projects",
     "desc": "My projects",
     "category": "Portfolio",
     "outputLines": [
-      "• Python multi-threaded port scanner",
-      "• Offensive Python scripts demonstrating MITRE ATT&CK tactics",
-      "• Automated system security logging (Bash & PowerShell)",
-      "• AdNU CEVAS – LAMP-based certificate validation platform",
-      "• Vulnerable smart contract demo with reentrancy exploit",
-      "• AWS Cloud DevSecOps pipeline",
-      "• Home-lab software-defined firewall (in progress)"
+      "• Web-Portfolio",
+      "• ai-centric-email-security",
+      "• LED-entropy",
+      "• receipt-hybrid-ocr",
+      "• n8n-rag-chatbot",
+      "• oncall-notification-public",
+      "• forensic-security-analysis-suite",
+      "• keylogger-py",
+      "• offensive-python-scripts",
+      "• langgraph-research-pilot",
+      "• whisper-local",
+      "• adnu-cevas-lamp",
+      "• corp-mind-ai",
+      "• vector-mind-ai",
+      "• opencode-cheatscale",
+      "• automated-system-logging",
+      "• vulnerable-smart-contract",
+      "• simple-port-scanner",
+      "• aws-cloud-devsecops",
+      "• HybridRF-IoT-IDS",
+      "• juiceshop-penetration",
+      "• oncall-notification-local",
+      "• new-trashtrackr (fork)"
     ],
     "hyperlinks": [
-      { "text": "Python multi-threaded port scanner", "url": "https://google.com" },
-      { "text": "Offensive Python scripts demonstrating MITRE ATT&CK tactics", "url": "https://google.com" },
-      { "text": "Automated system security logging (Bash & PowerShell)", "url": "https://google.com" },
-      { "text": "AdNU CEVAS – LAMP-based certificate validation platform", "url": "https://google.com" },
-      { "text": "Vulnerable smart contract demo with reentrancy exploit", "url": "https://google.com" },
-      { "text": "AWS Cloud DevSecOps pipeline", "url": "https://google.com" },
-      { "text": "Home-lab software-defined firewall (in progress)", "url": "https://google.com" }
+      {
+        "text": "Web-Portfolio",
+        "url": "https://github.com/C0deRhin0/Web-Portfolio"
+      },
+      {
+        "text": "ai-centric-email-security",
+        "url": "https://github.com/C0deRhin0/ai-centric-email-security"
+      },
+      {
+        "text": "LED-entropy",
+        "url": "https://github.com/C0deRhin0/LED-entropy"
+      },
+      {
+        "text": "receipt-hybrid-ocr",
+        "url": "https://github.com/C0deRhin0/receipt-hybrid-ocr"
+      },
+      {
+        "text": "n8n-rag-chatbot",
+        "url": "https://github.com/C0deRhin0/n8n-rag-chatbot"
+      },
+      {
+        "text": "oncall-notification-public",
+        "url": "https://github.com/C0deRhin0/oncall-notification-public"
+      },
+      {
+        "text": "forensic-security-analysis-suite",
+        "url": "https://github.com/C0deRhin0/forensic-security-analysis-suite"
+      },
+      {
+        "text": "keylogger-py",
+        "url": "https://github.com/C0deRhin0/keylogger-py"
+      },
+      {
+        "text": "offensive-python-scripts",
+        "url": "https://github.com/C0deRhin0/offensive-python-scripts"
+      },
+      {
+        "text": "langgraph-research-pilot",
+        "url": "https://github.com/C0deRhin0/langgraph-research-pilot"
+      },
+      {
+        "text": "whisper-local",
+        "url": "https://github.com/C0deRhin0/whisper-local"
+      },
+      {
+        "text": "adnu-cevas-lamp",
+        "url": "https://github.com/C0deRhin0/adnu-cevas-lamp"
+      },
+      {
+        "text": "corp-mind-ai",
+        "url": "https://github.com/C0deRhin0/corp-mind-ai"
+      },
+      {
+        "text": "vector-mind-ai",
+        "url": "https://github.com/C0deRhin0/vector-mind-ai"
+      },
+      {
+        "text": "opencode-cheatscale",
+        "url": "https://github.com/C0deRhin0/opencode-cheatscale"
+      },
+      {
+        "text": "automated-system-logging",
+        "url": "https://github.com/C0deRhin0/automated-system-logging"
+      },
+      {
+        "text": "vulnerable-smart-contract",
+        "url": "https://github.com/C0deRhin0/vulnerable-smart-contract"
+      },
+      {
+        "text": "simple-port-scanner",
+        "url": "https://github.com/C0deRhin0/simple-port-scanner"
+      },
+      {
+        "text": "aws-cloud-devsecops",
+        "url": "https://github.com/C0deRhin0/aws-cloud-devsecops"
+      },
+      {
+        "text": "HybridRF-IoT-IDS",
+        "url": "https://github.com/C0deRhin0/HybridRF-IoT-IDS"
+      },
+      {
+        "text": "juiceshop-penetration",
+        "url": "https://github.com/C0deRhin0/juiceshop-penetration"
+      },
+      {
+        "text": "oncall-notification-local",
+        "url": "https://github.com/C0deRhin0/oncall-notification-local"
+      },
+      {
+        "text": "new-trashtrackr",
+        "url": "https://github.com/C0deRhin0/new-trashtrackr"
+      }
     ]
+  },
+  {
+    "cmd": "project [name]",
+    "desc": "Project details",
+    "category": "Portfolio",
+    "outputLines": []
+  },
+  {
+    "cmd": "resume",
+    "desc": "Resume summary",
+    "category": "Portfolio",
+    "outputLines": []
   },
   {
     "cmd": "experiences",
     "desc": "Work & Internships",
     "category": "Portfolio",
-    "outputLines": []
+    "outputLines": [
+      "Mindrift | AI Engineer (Task-Based, Flexible) — LLM Training & Data | Remote | Nov 2025 - Apr 2026",
+      "• Delivered 3,200+ annotated data samples across multiple LLM training task batches.",
+      "• Built an automated Python/BeautifulSoup/Selenium scraping pipeline that reduced per-task manual work by ~85%.",
+      "• Maintained a 94% task acceptance rate while managing concurrent professional obligations.",
+      "",
+      "Nueca Technologies Inc. | Cybersecurity Associate (Part-Time) | Onsite | Sep 2025 - Apr 2026",
+      "• Administered internal LAN services for 55 employees across 5 departments with segmentation, access control, and 99%+ uptime.",
+      "• Managed an additive email security layer that blocked 100+ malicious emails and reduced estimated phishing exposure by ~70%.",
+      "• Delivered 3 company-wide cybersecurity orientations covering 100% of staff.",
+      "• Appointed Compliance Officer for Privacy and led NPC Seal of Registration submission.",
+      "• Provided compensated security consulting for 2 partner organizations with formal risk reports.",
+      "• Architected AI orchestration and internal ERP systems for Engineering, Operations, IAM, HR, and asset workflows.",
+      "",
+      "Nueca Technologies Inc. | Network and Cloud Security Analyst Intern | Onsite | May 2025 - Jul 2025",
+      "• Audited legacy infrastructure, found 12 segmentation and visibility gaps, and proposed a funded Layer 3 redesign.",
+      "• Scanned 3 network segments with Nmap and OpenVAS; delivered a CVSS-prioritized remediation plan for 20+ risks.",
+      "• Raised 15 macOS workstations to 82% CIS Benchmark compliance within a 2-week cycle.",
+      "• Deployed Wazuh SIEM/HIDS in lab and Kubernetes production environments, supporting logs across 8 nodes.",
+      "• Migrated 3 services to Kubernetes with Deployments, Services, RBAC, ConfigMaps, Secrets, probes, HPA, and Ingress.",
+      "• Fixed SPF, DKIM, and DMARC DNS gaps and delivered a macOS spyware simulation for 20+ engineering staff."
+    ]
   },
   {
     "cmd": "skills",
     "desc": "Technical skills",
     "category": "Portfolio",
     "outputLines": [
-      "Cloud Computing         : AWS (EC2, S3, Lambda, IAM)",
-      "Smart Contracts         : Solidity, Truffle, Hardhat",
-      "IDS/IPS                 : Wazuh, Suricata",
-      "Network Security        : Wireshark, nmap, tcpdump, pfSense, iptables",
-      "Vulnerability Assessment: Nessus",
-      "Incident Response       : MITRE ATT&CK & SHIELD",
-      "Scripting               : Bash, PowerShell, Python, AWK/GAWK",
-      "OSINT                   : TweetDeck, Maltego, Google Dorking",
-      "Programming             : C, C++, Java, Python"
+      "Programming Languages : C, C++, Python, Java, React, TypeScript, JavaScript, Ruby",
+      "AI & Automation       : AI Harness, n8n, Qdrant, Ollama, Whisper, FastAPI, RAG, LLM data pipelines",
+      "Cloud & Infrastructure: AWS, DigitalOcean, Docker, Kubernetes, GitHub Actions, IaC, CI/CD",
+      "Security Operations   : Wazuh SIEM, Suricata, Nmap, OpenVAS, Nessus, Wireshark, TCPdump, pfSense",
+      "Security Frameworks   : MITRE ATT&CK, CIS Benchmarks, CVSS, SPF, DKIM, DMARC, IAM, NAC",
+      "Scripting & Shells    : Bash, PowerShell, Linux shells, AWK/GAWK",
+      "OSINT & Analysis      : Maltego, Google Dorking",
+      "Blockchain            : Solidity, Ethereum, Hardhat",
+      "Languages             : English (B2 Upper-Intermediate), Tagalog (Native)",
+      "Soft Skills           : Data-driven strategic planning, organization, time management, professionalism, cooperation"
     ]
   },
   {
@@ -77,8 +218,14 @@
       "Location: Naga City, Camarines Sur, Philippines"
     ],
     "hyperlinks": [
-      { "text": "C0deRhin0", "url": "https://github.com/C0deRhin0" },
-      { "text": "wppereziii", "url": "https://linkedin.com/in/wppereziii" }
+      {
+        "text": "C0deRhin0",
+        "url": "https://github.com/C0deRhin0"
+      },
+      {
+        "text": "wppereziii",
+        "url": "https://linkedin.com/in/wppereziii"
+      }
     ]
   },
   {
@@ -86,11 +233,13 @@
     "desc": "Certifications",
     "category": "Portfolio",
     "outputLines": [
+      "ISC² Certified in Cybersecurity (CC)",
       "AWS Certified Cloud Security Practitioner (CCSP-AWS)",
       "Certified Network Security Practitioner (CNSP)",
       "Blue Team Level 0, Junior Analyst (BTL0)",
-      "ISC² Candidate",
-      "Smartbooks and Power BI (FIT-SM)"
+      "FIT-SM",
+      "In Progress: Google Cybersecurity Professional Certificate",
+      "In Progress: CompTIA Security+"
     ]
   },
   {
@@ -116,10 +265,13 @@
     "desc": "Education",
     "category": "Portfolio",
     "outputLines": [
-      "2022 - 2026",
-      "ATENEO DE NAGA UNIVERSITY",
-      "Bachelor of Science in Computer Science Candidate for Magna Cum Laude",
-      "Consistent President’s Lister & DOST scholar Current QPI: 3.64"
+      "Ateneo de Naga University | Naga City, Camarines Sur | 2022 - 2026",
+      "Bachelor of Science in Computer Science — Magna Cum Laude",
+      "QPI: 3.63 | Consistent President's Lister | DOST Scholar",
+      "",
+      "Thesis:",
+      "A Vendor-Agnostic, Resource-Aware, Explainable Software-Defined Intrusion Prevention System",
+      "for SOHO Networks using PPO, Policy Distillation, and TreeSHAP-IQ"
     ]
   },
   {
@@ -224,4 +376,4 @@
     "category": "System",
     "outputLines": []
   }
-] 
+]
