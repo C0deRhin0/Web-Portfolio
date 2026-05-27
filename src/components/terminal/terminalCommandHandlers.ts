@@ -8,6 +8,14 @@ interface Command {
   outputLines: string[];
 }
 
+interface ProjectDetail {
+  title: string;
+  aliases: string[];
+  link: string;
+  stack: string;
+  lines: string[];
+}
+
 const WELCOME_LINES = [
   'Hi there! Welcome to my Web Portfolio',
   '',
@@ -21,6 +29,123 @@ const WELCOME_LINES = [
   '=====',
   ''
 ];
+
+const WHOAMI_SHORT_LINES = [
+  'Wilfredo Paulo A. Perez III',
+  'Cybersecurity practitioner and AI systems builder focused on secure infrastructure, local-first RAG, LLM automation, and cloud security.',
+  'Current focus: SIEM/SOAR workflows, network hardening, AI orchestration, and production-grade internal tooling.'
+];
+
+const RESUME_LINES = [
+  'Resume summary',
+  '',
+  'Wilfredo Paulo A. Perez III',
+  'Naga City, Camarines Sur, Philippines',
+  'Email   : pauloperez9754@gmail.com',
+  'GitHub  : https://github.com/C0deRhin0',
+  'LinkedIn: https://www.linkedin.com/in/wppereziii',
+  '',
+  'Education',
+  '• Ateneo de Naga University — BS Computer Science, Candidate for Magna Cum Laude (2022 - 2026)',
+  '• Current QPI: 3.64 | Consistent President\'s Lister | DOST Scholar',
+  '',
+  'Experience',
+  '• Mindrift — AI Engineer, LLM Training & Data (Nov 2025 - Apr 2026)',
+  '• Nueca Technologies — Cybersecurity Associate, Part-Time (Sep 2025 - Apr 2026)',
+  '• Nueca Technologies — Network and Cloud Security Analyst Intern (May 2025 - Jul 2025)',
+  '',
+  'Core strengths',
+  '• Cybersecurity operations, network segmentation, SIEM/HIDS, vulnerability assessment, and compliance',
+  '• Applied AI systems, RAG, LLM data pipelines, n8n automation, Qdrant, Ollama, and FastAPI',
+  '• Cloud and infrastructure with AWS, DigitalOcean, Docker, Kubernetes, and GitHub Actions',
+  '',
+  'Use: experiences, skills, certifications, education, projects'
+];
+
+const PROJECT_DETAILS: ProjectDetail[] = [
+  {
+    title: 'Vector-Mind-AI — Multi-Agent Research Orchestrator',
+    aliases: ['vector-mind-ai', 'vector'],
+    link: 'https://github.com/C0deRhin0/vector-mind-ai',
+    stack: 'Ollama, Qdrant, FastAPI, React, OpenAI, Anthropic API',
+    lines: [
+      'Built a 6-agent wave-based research platform: Planner -> Researcher -> Analyst -> Writer -> Critic -> Fact Checker.',
+      'Supports local and cloud LLM backends with persistent RAG and cross-session knowledge graph visualization.',
+      'Generates research briefs, blogs, executive summaries, presentation scripts, and social content from a single query.'
+    ]
+  },
+  {
+    title: 'Corp-Mind-AI — On-Premise HR Knowledge Assistant',
+    aliases: ['corp-mind-ai', 'corp'],
+    link: 'https://github.com/C0deRhin0/corp-mind-ai',
+    stack: 'FastAPI, Qdrant, Ollama, React, Vite, sentence-transformers',
+    lines: [
+      'Architected a fully on-premise RAG HR assistant with hybrid semantic + BM25 search via Qdrant RRF fusion.',
+      'Returns source-cited answers with page-level document traceability while keeping employee data inside the network.',
+      'Added a 2-hour TTL answer cache, admin ingestion panel, and service health diagnostics.'
+    ]
+  },
+  {
+    title: 'NuecAI Whisper Local — Offline Meeting Transcriber',
+    aliases: ['whisper-local', 'whisper'],
+    link: 'https://github.com/C0deRhin0/whisper-local',
+    stack: 'whisper.cpp, Ollama, pyannote.audio, React, Python',
+    lines: [
+      'Built a 100% offline meeting transcription and record-extraction system with Metal GPU acceleration.',
+      'Handles 60+ minute recordings using silence-based chunking and neural speaker diarization.',
+      'Exports structured speaker-labeled output and reduces post-meeting documentation time by an estimated ~75%.'
+    ]
+  },
+  {
+    title: 'CheatScale — Enterprise AI Development Orchestration',
+    aliases: ['opencode-cheatscale', 'cheatscale'],
+    link: 'https://github.com/C0deRhin0/opencode-cheatscale',
+    stack: 'OpenCode, Python, Obsidian',
+    lines: [
+      'Built an AI development orchestration system with 24 specialized agents across a 3-tier architecture.',
+      'Uses wave-based task routing, graph-linked documentation, and automated roadmap generation.',
+      'Enforces 80%+ unit test coverage by separating domain logic from rendering layers.'
+    ]
+  },
+  {
+    title: 'AI-Centric Email Security Responder',
+    aliases: ['ai-centric-email-security', 'email-security'],
+    link: 'https://github.com/C0deRhin0/ai-centric-email-security',
+    stack: 'Power Automate, n8n, LLM API',
+    lines: [
+      'Automated email security response drafting with Power Automate and n8n orchestration.',
+      'Generates context-aware security replies using an LLM API.',
+      'Reduced average response drafting time by ~76% across 3 monitored mailboxes.'
+    ]
+  },
+  {
+    title: 'LED-Entropy — Hardware True Random Number Generator',
+    aliases: ['led-entropy', 'entropy'],
+    link: 'https://github.com/C0deRhin0/LED-entropy',
+    stack: 'Raspberry Pi, Python, Cryptography, Electronics',
+    lines: [
+      'Engineered a hardware entropy source using analog noise, photoresistor sensing, and chaotic LED patterns.',
+      'Acts as a miniaturized analogue of Cloudflare\'s LavaLamp entropy approach.',
+      'Generates 2,400+ cryptographically-useful random bits per second with ~38% lower entropy bias than software PRNGs.'
+    ]
+  },
+  {
+    title: 'AWS Cloud DevSecOps Pipeline',
+    aliases: ['aws-cloud-devsecops', 'aws'],
+    link: 'https://github.com/C0deRhin0/aws-cloud-devsecops',
+    stack: 'AWS, GitHub Actions, IaC',
+    lines: [
+      'Provisioned CI/CD across S3, EC2, IAM, CodeArtifact, CodeBuild, CodeDeploy, and CodePipeline.',
+      'Reduced deployment steps from 14 to 2 and cut build-to-deploy cycle time by ~72%.',
+      'Enforced least-privilege IAM across 4 roles with zero standing admin access.'
+    ]
+  }
+];
+
+const findProjectDetail = (name: string): ProjectDetail | undefined => {
+  const normalizedName = name.trim().toLowerCase();
+  return PROJECT_DETAILS.find((project) => project.aliases.includes(normalizedName));
+};
 
 export interface TerminalCommandContext {
   maxHistoryLength: number;
@@ -395,6 +520,52 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         }
       });
       displayCommandOutput(helpLines, 'normal');
+      return;
+    }
+
+    if (cmd === 'whoami' && args.length > 0) {
+      const arg = args.join(' ').trim();
+      if (arg === '--short') {
+        displayCommandOutput(WHOAMI_SHORT_LINES, 'normal');
+        return;
+      }
+      displayCommandOutput(['Usage: whoami [--short]'], 'error');
+      return;
+    }
+
+    if (cmd === 'resume') {
+      if (args.length > 0) {
+        displayCommandOutput(['Usage: resume'], 'error');
+        return;
+      }
+      displayCommandOutput(RESUME_LINES, 'normal');
+      return;
+    }
+
+    if (cmd === 'project') {
+      const projectName = args.join(' ').trim();
+      if (!projectName) {
+        displayCommandOutput(['Usage: project [name]'], 'error');
+        return;
+      }
+
+      const projectDetail = findProjectDetail(projectName);
+      if (!projectDetail) {
+        displayCommandOutput([
+          `Project not found: ${projectName}`,
+          'Try: project vector-mind-ai',
+          'Available: vector-mind-ai, corp-mind-ai, whisper-local, opencode-cheatscale, ai-centric-email-security, led-entropy, aws-cloud-devsecops'
+        ], 'error');
+        return;
+      }
+
+      displayCommandOutput([
+        projectDetail.title,
+        `Stack: ${projectDetail.stack}`,
+        `Link : ${projectDetail.link}`,
+        '',
+        ...projectDetail.lines.map((line) => `• ${line}`)
+      ], 'normal');
       return;
     }
 
