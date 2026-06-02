@@ -158,7 +158,7 @@
   },
   {
     "cmd": "resume",
-    "desc": "Resume summary",
+    "desc": "Open resume PDF",
     "category": "Portfolio",
     "outputLines": []
   },
