@@ -41,6 +41,7 @@ const Terminal: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [typewriterTimeout, setTypewriterTimeout] = useState<NodeJS.Timeout | null>(null);
+  const typewriterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [currentDirectory, setCurrentDirectory] = useState(TERMINAL_CONFIG.appearance.defaultDirectory);
   const [subTerminalVisible, setSubTerminalVisible] = useState(false);
   const [subTerminalFile, setSubTerminalFile] = useState('');
@@ -77,7 +78,7 @@ const Terminal: React.FC = () => {
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
       .map((item) => item.cmd)
-      .filter((cmd) => typeof cmd === 'string') as string[];
+      .filter((cmd) => typeof cmd === 'string' && !cmd.includes('[') && !cmd.includes(']')) as string[];
     const baseCommands = [
       'cd',
       'ls',
@@ -139,8 +140,8 @@ const Terminal: React.FC = () => {
     if (!xtermRef.current) return;
 
     ghostSuggestionRef.current = '';
-    const currentInput = currentLineBuffer.current.trim();
-    if (!currentInput) {
+    const currentInput = currentLineBuffer.current.trimStart();
+    if (!currentInput.trim()) {
       return;
     }
 
@@ -202,12 +203,8 @@ const Terminal: React.FC = () => {
     if (currentLineBuffer.current.trim().length === 0) {
       return;
     }
-    const trimmedInput = currentLineBuffer.current.trim();
-    if (currentLineBuffer.current.includes(' ') && !trimmedInput.startsWith('effects ')) {
-      return;
-    }
     ghostSuggestionRef.current = '';
-    const currentInput = trimmedInput;
+    const currentInput = currentLineBuffer.current.trimStart();
     const candidates = getCompletionCandidates(availableCommands, currentInput);
     if (!candidates.length) {
       return;
@@ -226,6 +223,8 @@ const Terminal: React.FC = () => {
     if (candidates.length > 1) {
       xtermRef.current.write('\r\n');
       displayCommandOutput(candidates, 'info');
+      currentLineBuffer.current = '';
+      cursorIndexRef.current = 0;
     }
   };
 
@@ -326,6 +325,41 @@ const Terminal: React.FC = () => {
     const moveLeft = `\x1b[${suggestion.length}D`;
     xtermRef.current.write(`${hideCursor}${dimColor}${suggestion}${resetColor}${moveLeft}${showCursor}`);
     ghostRenderedLengthRef.current = suggestion.length;
+  };
+
+  const interruptActiveCommand = () => {
+    if (!xtermRef.current) return;
+
+    clearGhostSuggestion();
+    ghostSuggestionRef.current = '';
+    ghostRenderedLengthRef.current = 0;
+    currentLineBuffer.current = '';
+    cursorIndexRef.current = 0;
+
+    if (typewriterTimeoutRef.current) {
+      clearTimeout(typewriterTimeoutRef.current);
+      typewriterTimeoutRef.current = null;
+      setTypewriterTimeout(null);
+    }
+
+    if (fetchingLoaderRef.current && isFetchingRef.current) {
+      fetchingLoaderRef.current.stop();
+    }
+
+    if (clearingLoaderRef.current && isClearingRef.current) {
+      clearingLoaderRef.current.stop();
+    }
+
+    pendingCommandRef.current = null;
+    isTypingRef.current = false;
+    isFetchingRef.current = false;
+    isClearingRef.current = false;
+    setIsTyping(false);
+    setIsFetching(false);
+    setIsClearing(false);
+
+    xtermRef.current.write('\x1b[0m^C\r\n');
+    writePrompt();
   };
 
   const handleTerminalInitializationError = (error: unknown) => {
@@ -566,6 +600,11 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
+          if (domEvent.ctrlKey && domEvent.key.toLowerCase() === 'c') {
+            interruptActiveCommand();
+            return;
+          }
+
           if (isTypingRef.current || isFetchingRef.current || isClearingRef.current) {
             return;
           }
@@ -676,6 +715,7 @@ const Terminal: React.FC = () => {
     setSubTerminalVisible,
     setTooltip,
     setTypewriterTimeout,
+    typewriterTimeoutRef,
     typewriterTimeout,
     whoamiExtra,
     xtermRef,
