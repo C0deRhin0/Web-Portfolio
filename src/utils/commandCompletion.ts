@@ -1,10 +1,10 @@
 export const getCompletionCandidates = (commands: string[], input: string) => {
-  const trimmed = input.trim();
-  if (!trimmed) {
+  const normalizedInput = input.trimStart();
+  if (!normalizedInput.trim()) {
     return [] as string[];
   }
 
-  const loweredInput = trimmed.toLowerCase();
+  const loweredInput = normalizedInput.toLowerCase();
   const candidates = commands
     .filter((cmd) => cmd.toLowerCase().startsWith(loweredInput))
     .sort();
