@@ -16,6 +16,8 @@ interface ProjectDetail {
   lines: string[];
 }
 
+type OutputType = 'normal' | 'error' | 'success' | 'warning' | 'info';
+
 const WELCOME_LINES = [
   'Hi there! Welcome to my Web Portfolio',
   '',
@@ -30,36 +32,12 @@ const WELCOME_LINES = [
   ''
 ];
 
+const RESUME_PDF_PATH = '/Perez_CV.pdf';
+
 const WHOAMI_SHORT_LINES = [
   'Wilfredo Paulo A. Perez III',
   'Cybersecurity practitioner and AI systems builder focused on secure infrastructure, local-first RAG, LLM automation, and cloud security.',
   'Current focus: SIEM/SOAR workflows, network hardening, AI orchestration, and production-grade internal tooling.'
-];
-
-const RESUME_LINES = [
-  'Resume summary',
-  '',
-  'Wilfredo Paulo A. Perez III',
-  'Naga City, Camarines Sur, Philippines',
-  'Email   : pauloperez9754@gmail.com',
-  'GitHub  : https://github.com/C0deRhin0',
-  'LinkedIn: https://www.linkedin.com/in/wppereziii',
-  '',
-  'Education',
-  '• Ateneo de Naga University — BS Computer Science, Candidate for Magna Cum Laude (2022 - 2026)',
-  '• Current QPI: 3.64 | Consistent President\'s Lister | DOST Scholar',
-  '',
-  'Experience',
-  '• Mindrift — AI Engineer, LLM Training & Data (Nov 2025 - Apr 2026)',
-  '• Nueca Technologies — Cybersecurity Associate, Part-Time (Sep 2025 - Apr 2026)',
-  '• Nueca Technologies — Network and Cloud Security Analyst Intern (May 2025 - Jul 2025)',
-  '',
-  'Core strengths',
-  '• Cybersecurity operations, network segmentation, SIEM/HIDS, vulnerability assessment, and compliance',
-  '• Applied AI systems, RAG, LLM data pipelines, n8n automation, Qdrant, Ollama, and FastAPI',
-  '• Cloud and infrastructure with AWS, DigitalOcean, Docker, Kubernetes, and GitHub Actions',
-  '',
-  'Use: experiences, skills, certifications, education, projects'
 ];
 
 const PROJECT_DETAILS: ProjectDetail[] = [
@@ -169,7 +147,7 @@ export interface TerminalCommandContext {
   isTypingRef: React.MutableRefObject<boolean>;
   keyboardSoundsEnabled: boolean;
   keyboardSoundsEnabledRef: React.MutableRefObject<boolean>;
-  pendingCommandRef: React.MutableRefObject<{ command: string; type: string; param?: string } | null>;
+  pendingCommandRef: React.MutableRefObject<any>;
   projectLinksProviderRef: React.MutableRefObject<any>;
   setAsciiEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   setCrtEnabled: React.Dispatch<React.SetStateAction<boolean>>;
@@ -188,6 +166,7 @@ export interface TerminalCommandContext {
   setTooltip: React.Dispatch<React.SetStateAction<{ text: string; x: number; y: number } | null>>;
   setTypewriterTimeout: React.Dispatch<React.SetStateAction<NodeJS.Timeout | null>>;
   typewriterTimeout: NodeJS.Timeout | null;
+  typewriterTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
   whoamiExtra: { outputLines?: string[] };
   xtermRef: React.MutableRefObject<any>;
   buildSystemMonitorLines: (snapshot: any) => string[];
@@ -238,6 +217,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     setTooltip,
     setTypewriterTimeout,
     typewriterTimeout,
+    typewriterTimeoutRef,
     whoamiExtra,
     xtermRef,
     buildSystemMonitorLines,
@@ -303,13 +283,17 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
 
   const displayCommandOutput = (
     lines: string[],
-    type: 'normal' | 'error' | 'success' | 'warning' | 'info' = 'normal'
+    type: OutputType = 'normal'
   ) => {
     if (!xtermRef.current) return;
 
     if (typewriterTimeout) {
       clearTimeout(typewriterTimeout);
       setTypewriterTimeout(null);
+    }
+    if (typewriterTimeoutRef.current) {
+      clearTimeout(typewriterTimeoutRef.current);
+      typewriterTimeoutRef.current = null;
     }
 
     isTypingRef.current = true;
@@ -323,6 +307,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         isTypingRef.current = false;
         setIsTyping(false);
         setTypewriterTimeout(null);
+        typewriterTimeoutRef.current = null;
         xtermRef.current!.write('\r\n');
         writePrompt();
         return;
@@ -352,12 +337,14 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         xtermRef.current!.write(colorCode + currentLine[currentCharIndex]);
         currentCharIndex++;
         const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.charDelay);
+        typewriterTimeoutRef.current = timeout;
         setTypewriterTimeout(timeout);
       } else {
         xtermRef.current!.write('\x1b[0m\r\n');
         currentLineIndex++;
         currentCharIndex = 0;
         const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.lineDelay);
+        typewriterTimeoutRef.current = timeout;
         setTypewriterTimeout(timeout);
       }
     };
@@ -365,11 +352,45 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     typeNextChar();
   };
 
+  const queueCommandOutput = (
+    lines: string[],
+    outputType: OutputType = 'normal',
+    onBeforeOutput?: () => void
+  ) => {
+    if (!xtermRef.current) return;
+
+    if (!fetchingLoaderRef.current) {
+      if (onBeforeOutput) {
+        onBeforeOutput();
+      }
+      displayCommandOutput(lines, outputType);
+      return;
+    }
+
+    pendingCommandRef.current = {
+      type: 'output',
+      lines,
+      outputType,
+      onBeforeOutput
+    };
+    isFetchingRef.current = true;
+    setIsFetching(true);
+    fetchingLoaderRef.current.start();
+  };
+
   const executePendingCommand = () => {
     if (!pendingCommandRef.current) return;
 
-    const { command, type, param } = pendingCommandRef.current;
+    const { command, type, param, lines, outputType, onBeforeOutput } = pendingCommandRef.current;
     pendingCommandRef.current = null;
+
+    if (type === 'output') {
+      if (onBeforeOutput) {
+        onBeforeOutput();
+      }
+      displayCommandOutput(lines || [], outputType || 'normal');
+      return;
+    }
 
     if (type === 'command') {
       const commandData = (commandsData as any[]).find((c) => c.cmd === command);
@@ -377,6 +398,10 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         if (typewriterTimeout) {
           clearTimeout(typewriterTimeout);
           setTypewriterTimeout(null);
+        }
+        if (typewriterTimeoutRef.current) {
+          clearTimeout(typewriterTimeoutRef.current);
+          typewriterTimeoutRef.current = null;
         }
         isTypingRef.current = true;
         setIsTyping(true);
@@ -391,6 +416,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           if (index >= outputLines.length) {
             isTypingRef.current = false;
             setIsTyping(false);
+            typewriterTimeoutRef.current = null;
             term.write('\r\n');
             if (hyperlinks.length > 0 && term.registerLinkProvider && !globalLinkProviderRef.current) {
               globalLinkProviderRef.current = term.registerLinkProvider({
@@ -427,7 +453,9 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             if (charIdx < line.length) {
               term.write(line[charIdx]);
               charIdx++;
-              setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
+              const timeout = setTimeout(typeChar, TERMINAL_CONFIG.typewriter.charDelay || 30);
+              typewriterTimeoutRef.current = timeout;
+              setTypewriterTimeout(timeout);
             } else {
               hyperlinks.forEach((link: { text: string; url: string }) => {
                 const col = line.indexOf(link.text);
@@ -444,6 +472,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
               term.write('\r\n');
               lineNum++;
               const timeout = setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
+              typewriterTimeoutRef.current = timeout;
               setTypewriterTimeout(timeout);
             }
           };
@@ -519,39 +548,45 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           helpLines.push(`  ${item.cmd}${padding}- ${item.desc}`);
         }
       });
-      displayCommandOutput(helpLines, 'normal');
+      queueCommandOutput(helpLines, 'normal');
       return;
     }
 
     if (cmd === 'whoami' && args.length > 0) {
       const arg = args.join(' ').trim();
       if (arg === '--short') {
-        displayCommandOutput(WHOAMI_SHORT_LINES, 'normal');
+        queueCommandOutput(WHOAMI_SHORT_LINES, 'normal');
         return;
       }
-      displayCommandOutput(['Usage: whoami [--short]'], 'error');
+      queueCommandOutput(['Usage: whoami [--short]'], 'error');
       return;
     }
 
     if (cmd === 'resume') {
       if (args.length > 0) {
-        displayCommandOutput(['Usage: resume'], 'error');
+        queueCommandOutput(['Usage: resume'], 'error');
         return;
       }
-      displayCommandOutput(RESUME_LINES, 'normal');
+      if (typeof window !== 'undefined') {
+        window.open(RESUME_PDF_PATH, '_blank', 'noopener,noreferrer');
+      }
+      queueCommandOutput([
+        'Opening resume PDF...',
+        `Direct URL: ${RESUME_PDF_PATH}`
+      ], 'success');
       return;
     }
 
     if (cmd === 'project') {
       const projectName = args.join(' ').trim();
       if (!projectName) {
-        displayCommandOutput(['Usage: project [name]'], 'error');
+        queueCommandOutput(['Usage: project [name]'], 'error');
         return;
       }
 
       const projectDetail = findProjectDetail(projectName);
       if (!projectDetail) {
-        displayCommandOutput([
+        queueCommandOutput([
           `Project not found: ${projectName}`,
           'Try: project vector-mind-ai',
           'Available: vector-mind-ai, corp-mind-ai, whisper-local, opencode-cheatscale, ai-centric-email-security, led-entropy, aws-cloud-devsecops'
@@ -559,7 +594,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         return;
       }
 
-      displayCommandOutput([
+      queueCommandOutput([
         projectDetail.title,
         `Stack: ${projectDetail.stack}`,
         `Link : ${projectDetail.link}`,
@@ -589,14 +624,14 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         '   Net: tunnel:encrypted :: status=stable'
       ];
 
-      displayCommandOutput(overviewLines, 'info');
+      queueCommandOutput(overviewLines, 'info');
       return;
     }
 
     if (cmd === 'sudo') {
       const arg = args.join(' ').trim();
       if (!arg) {
-        displayCommandOutput(['usage: sudo <command>'], 'error');
+        queueCommandOutput(['usage: sudo <command>'], 'error');
         return;
       }
       const responseLines = [
@@ -606,7 +641,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         `sudo: ${arg}: command not found`,
         'Hint: There is no password prompt in a browser.'
       ];
-      displayCommandOutput(responseLines, 'warning');
+      queueCommandOutput(responseLines, 'warning');
       return;
     }
 
@@ -614,12 +649,12 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       const arg = args.join(' ').trim();
       if (arg === '--init') {
         setMatrixEnabled(true);
-        displayCommandOutput([
+        queueCommandOutput([
           'Matrix mode enabled.',
           'Binary rain synced to green phosphor.'
         ], 'success');
       } else {
-        displayCommandOutput(['Usage: matrix --init'], 'error');
+        queueCommandOutput(['Usage: matrix --init'], 'error');
       }
       return;
     }
@@ -627,7 +662,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     if (cmd === 'top' || cmd === 'htop') {
       const snapshot = createSystemSnapshot(Date.now());
       const monitorLines = buildSystemMonitorLines(snapshot);
-      displayCommandOutput(monitorLines, 'normal');
+      queueCommandOutput(monitorLines, 'normal');
       return;
     }
 
@@ -643,12 +678,12 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     if (cmd === 'ascii' || cmd.startsWith('ascii ')) {
       const arg = args.join(' ').trim();
       if (!arg) {
-        displayCommandOutput(['ascii requires an argument. Usage: ascii [on/off]'], 'error');
+        queueCommandOutput(['ascii requires an argument. Usage: ascii [on/off]'], 'error');
         return;
       }
       if (arg === 'on') {
         if (asciiEnabledRef.current) {
-          displayCommandOutput(['ASCII art is already enabled.'], 'error');
+          queueCommandOutput(['ASCII art is already enabled.'], 'error');
         } else {
           setAsciiEnabled(true);
         }
@@ -656,45 +691,43 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       }
       if (arg === 'off') {
         if (!asciiEnabledRef.current) {
-          displayCommandOutput(['ASCII art is already disabled.'], 'error');
+          queueCommandOutput(['ASCII art is already disabled.'], 'error');
         } else {
           setAsciiEnabled(false);
         }
         return;
       }
-      displayCommandOutput(['Usage: ascii [on/off]'], 'error');
+      queueCommandOutput(['Usage: ascii [on/off]'], 'error');
       return;
     }
 
     if (cmd === 'theme' || cmd.startsWith('theme ')) {
       const arg = args.join(' ').trim();
       if (!arg) {
-        displayCommandOutput(['theme requires an argument. Usage: theme [1/2/3]'], 'error');
+        queueCommandOutput(['theme requires an argument. Usage: theme [1/2/3]'], 'error');
         return;
       }
 
       const validThemes = ['1', '2', '3'];
       if (validThemes.includes(arg)) {
         if (currentThemeRef.current === arg) {
-          displayCommandOutput([`Theme ${arg} is already active.`], 'error');
+          queueCommandOutput([`Theme ${arg} is already active.`], 'error');
         } else {
           setCurrentTheme(arg);
-          setTimeout(() => {
-            const activeTheme = (TERMINAL_CONFIG as any).themes[arg];
-            displayCommandOutput([`Successfully changed theme to ${activeTheme.name}`], 'success');
-          }, 50);
+          const activeTheme = (TERMINAL_CONFIG as any).themes[arg];
+          queueCommandOutput([`Successfully changed theme to ${activeTheme.name}`], 'success');
         }
         return;
       }
 
-      displayCommandOutput(['Invalid theme. Usage: theme [1/2/3]'], 'error');
+      queueCommandOutput(['Invalid theme. Usage: theme [1/2/3]'], 'error');
       return;
     }
 
     if (cmd === 'effects') {
       const arg = args.join(' ').trim();
       if (!arg) {
-        displayCommandOutput([
+        queueCommandOutput([
           `effects status: crt=${crtEnabled ? 'on' : 'off'}, glitch=${glitchEnabled ? 'on' : 'off'}, sounds=${keyboardSoundsEnabled ? 'on' : 'off'}`
         ], 'info');
         return;
@@ -705,44 +738,44 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       const isToggle = normalizedValue === 'on' || normalizedValue === 'off';
 
       if (!value || !isToggle) {
-        displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
+        queueCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
         return;
       }
 
       if (target === 'crt') {
         const next = normalizedValue === 'on';
         if (next === crtEnabledRef.current) {
-          displayCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          queueCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setCrtEnabled(next);
         saveVisualEffectsSettings({ crtEnabled: next, glitchEnabled });
-        displayCommandOutput([`CRT overlay ${next ? 'enabled' : 'disabled'}.`], 'success');
+        queueCommandOutput([`CRT overlay ${next ? 'enabled' : 'disabled'}.`], 'success');
         return;
       }
       if (target === 'glitch') {
         const next = normalizedValue === 'on';
         if (next === glitchEnabledRef.current) {
-          displayCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          queueCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setGlitchEnabled(next);
         saveVisualEffectsSettings({ crtEnabled, glitchEnabled: next });
-        displayCommandOutput([`Glitch effects ${next ? 'enabled' : 'disabled'}.`], 'success');
+        queueCommandOutput([`Glitch effects ${next ? 'enabled' : 'disabled'}.`], 'success');
         return;
       }
       if (target === 'sounds') {
         const next = normalizedValue === 'on';
         if (next === keyboardSoundsEnabledRef.current) {
-          displayCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          queueCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setKeyboardSoundsEnabled(next);
-        displayCommandOutput([`Keyboard sounds ${next ? 'enabled' : 'disabled'}.`], 'success');
+        queueCommandOutput([`Keyboard sounds ${next ? 'enabled' : 'disabled'}.`], 'success');
         return;
       }
 
-      displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
+      queueCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
       return;
     }
 
@@ -763,7 +796,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           return;
         }
         if (newDir === '~' || newDir === '$HOME') {
-          displayCommandOutput(['Permission denied'], 'error');
+          queueCommandOutput(['Permission denied'], 'error');
           return;
         }
         if (newDir === '..') {
@@ -772,7 +805,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
             writePrompt();
           } else {
-            displayCommandOutput(['Permission denied'], 'error');
+            queueCommandOutput(['Permission denied'], 'error');
           }
           return;
         }
@@ -781,7 +814,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           || newDir.startsWith('/Users')
           || newDir.startsWith('~/Users')
         ) {
-          displayCommandOutput(['Permission denied'], 'error');
+          queueCommandOutput(['Permission denied'], 'error');
           return;
         }
         const validDirectories = ['c0derhin0-wp.com', 'secret'];
@@ -794,13 +827,13 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             writePrompt();
           }
         } else {
-          displayCommandOutput([`Directory not found: ${newDir}`], 'error');
+          queueCommandOutput([`Directory not found: ${newDir}`], 'error');
         }
       } else if (cmd === 'ls') {
         const hasArgs = args.length > 0;
         const isAll = hasArgs && args.length === 1 && args[0] === '-a';
         if (hasArgs && !isAll) {
-          displayCommandOutput(['Usage: ls [-a]'], 'error');
+          queueCommandOutput(['Usage: ls [-a]'], 'error');
           return;
         }
 
@@ -814,13 +847,13 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         }
 
         if (lsOutput.length > 0) {
-          displayCommandOutput(lsOutput, 'normal');
+          queueCommandOutput(lsOutput, 'normal');
         } else {
           writePrompt();
         }
       } else if (cmd === 'pwd') {
         const pwdOutput = `/Users/${TERMINAL_CONFIG.appearance.host}/Internet/${currentDirectoryRef.current}`;
-        displayCommandOutput([pwdOutput], 'normal');
+        queueCommandOutput([pwdOutput], 'normal');
       } else if (cmd === 'run' || cmd.startsWith('run ')) {
         const param = args.join(' ').trim();
         const validFiles: string[] = [];
@@ -831,16 +864,16 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           validFiles.push('secret.sh', '.hidden_flag');
         }
         if (!param) {
-          displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
+          queueCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
           return;
         }
         if (param === 'viral_strain.sh') {
-          displayCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
+          queueCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
           setShowJumpscare(true);
           return;
         }
         if (!validFiles.includes(param)) {
-          displayCommandOutput([`No file found with name ${param}`], 'error');
+          queueCommandOutput([`No file found with name ${param}`], 'error');
           return;
         }
 
@@ -856,6 +889,10 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
 
     const socialCommand = (commandsData as any[]).find((c) => c.cmd === cmd);
     if (socialCommand) {
+      if (args.length > 0) {
+        queueCommandOutput([`Usage: ${cmd}`], 'error');
+        return;
+      }
       isFetchingRef.current = true;
       setIsFetching(true);
       pendingCommandRef.current = { command: cmd, type: 'command' };
@@ -868,7 +905,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       return;
     }
 
-    displayCommandOutput([`Command not found: ${cmd}`], 'error');
+    queueCommandOutput([`Command not found: ${cmd}`], 'error');
   };
 
   return {
