@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BOOT_LINES } from '../utils/bootMessages';
 import { buildBootFrames } from '../utils/bootSequenceUtils';
 
@@ -19,8 +19,38 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDela
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const hasCompletedRef = useRef(false);
+  const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const completionDelay = Math.max(baseDelay, 0) + 120;
+  const completeBoot = useCallback((delay = 400) => {
+    if (hasCompletedRef.current) {
+      return;
+    }
+
+    hasCompletedRef.current = true;
+    setIsComplete(true);
+    completionTimeoutRef.current = setTimeout(() => {
+      onComplete();
+    }, delay);
+  }, [onComplete]);
+
+  useEffect(() => () => {
+    if (completionTimeoutRef.current) {
+      clearTimeout(completionTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (instant) {
+      return;
+    }
+
+    const handleSkip = () => completeBoot(0);
+    window.addEventListener('keydown', handleSkip);
+    return () => window.removeEventListener('keydown', handleSkip);
+  }, [completeBoot, instant]);
+
   const frames = useMemo(() => {
     if (instant) {
       return BOOT_LINES.map((line) => ({ id: line.id, content: line.text }));
@@ -30,16 +60,17 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDela
 
   useEffect(() => {
     if (instant) {
-      setIsComplete(true);
-      const timeout = setTimeout(() => onComplete(), 0);
-      return () => clearTimeout(timeout);
+      completeBoot(0);
+      return undefined;
+    }
+
+    if (hasCompletedRef.current) {
+      return undefined;
     }
 
     if (currentLineIndex >= BOOT_LINES.length) {
       const completionTimeout = setTimeout(() => {
-        setIsComplete(true);
-        const fadeTimeout = setTimeout(() => onComplete(), 400);
-        return () => clearTimeout(fadeTimeout);
+        completeBoot(400);
       }, completionDelay);
       return () => clearTimeout(completionTimeout);
     }
@@ -61,7 +92,7 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDela
       setCurrentCharIndex(0);
     }, lineDelay);
     return () => clearTimeout(timeout);
-  }, [currentLineIndex, currentCharIndex, baseDelay, onComplete, completionDelay, instant]);
+  }, [currentLineIndex, currentCharIndex, baseDelay, completionDelay, instant, completeBoot]);
 
   return (
     <div
@@ -70,6 +101,7 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, theme, baseDela
       aria-live="polite"
     >
       <div className="boot-sequence__header">CODERHINO OS Boot</div>
+      <div className="boot-sequence__skip">Press any key to skip</div>
       <div className="boot-sequence__body">
         {frames.map((line) => (
           <div key={line.id} className="boot-sequence__line">
