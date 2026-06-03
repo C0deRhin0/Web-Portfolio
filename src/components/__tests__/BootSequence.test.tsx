@@ -45,4 +45,18 @@ describe('BootSequence', () => {
     expect(container.firstChild).toHaveClass('boot-sequence');
     expect(container.firstChild).toHaveClass('theme-3');
   });
+
+  it('allows visitors to skip boot with any key', () => {
+    const onComplete = jest.fn();
+    render(<BootSequence onComplete={onComplete} theme="1" baseDelay={100} />);
+
+    expect(screen.getByText('Press any key to skip')).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
 });
