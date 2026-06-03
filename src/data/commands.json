@@ -163,6 +163,12 @@
     "outputLines": []
   },
   {
+    "cmd": "man [command]",
+    "desc": "Show command manual",
+    "category": "Portfolio",
+    "outputLines": []
+  },
+  {
     "cmd": "experiences",
     "desc": "Work & Internships",
     "category": "Portfolio",
