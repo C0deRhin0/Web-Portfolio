@@ -1,6 +1,7 @@
 import type React from 'react';
 import { TERMINAL_CONFIG } from '../../config/terminalConfig';
 import type { VisualEffectsSettings } from '../../utils/visualEffectsStorage';
+import { findProjectDetail, PROJECT_DETAILS } from '../../data/projectDetails';
 
 interface Command {
   cmd: string;
@@ -8,15 +9,12 @@ interface Command {
   outputLines: string[];
 }
 
-interface ProjectDetail {
-  title: string;
-  aliases: string[];
-  link: string;
-  stack: string;
-  lines: string[];
-}
-
 type OutputType = 'normal' | 'error' | 'success' | 'warning' | 'info';
+
+interface TerminalHyperlink {
+  text: string;
+  url: string;
+}
 
 const WELCOME_LINES = [
   'Hi there! Welcome to my Web Portfolio',
@@ -40,90 +38,82 @@ const WHOAMI_SHORT_LINES = [
   'Current focus: SIEM/SOAR workflows, network hardening, AI orchestration, and production-grade internal tooling.'
 ];
 
-const PROJECT_DETAILS: ProjectDetail[] = [
-  {
-    title: 'Vector-Mind-AI — Multi-Agent Research Orchestrator',
-    aliases: ['vector-mind-ai', 'vector'],
-    link: 'https://github.com/C0deRhin0/vector-mind-ai',
-    stack: 'Ollama, Qdrant, FastAPI, React, OpenAI, Anthropic API',
-    lines: [
-      'Built a 6-agent wave-based research platform: Planner -> Researcher -> Analyst -> Writer -> Critic -> Fact Checker.',
-      'Supports local and cloud LLM backends with persistent RAG and cross-session knowledge graph visualization.',
-      'Generates research briefs, blogs, executive summaries, presentation scripts, and social content from a single query.'
-    ]
-  },
-  {
-    title: 'Corp-Mind-AI — On-Premise HR Knowledge Assistant',
-    aliases: ['corp-mind-ai', 'corp'],
-    link: 'https://github.com/C0deRhin0/corp-mind-ai',
-    stack: 'FastAPI, Qdrant, Ollama, React, Vite, sentence-transformers',
-    lines: [
-      'Architected a fully on-premise RAG HR assistant with hybrid semantic + BM25 search via Qdrant RRF fusion.',
-      'Returns source-cited answers with page-level document traceability while keeping employee data inside the network.',
-      'Added a 2-hour TTL answer cache, admin ingestion panel, and service health diagnostics.'
-    ]
-  },
-  {
-    title: 'NuecAI Whisper Local — Offline Meeting Transcriber',
-    aliases: ['whisper-local', 'whisper'],
-    link: 'https://github.com/C0deRhin0/whisper-local',
-    stack: 'whisper.cpp, Ollama, pyannote.audio, React, Python',
-    lines: [
-      'Built a 100% offline meeting transcription and record-extraction system with Metal GPU acceleration.',
-      'Handles 60+ minute recordings using silence-based chunking and neural speaker diarization.',
-      'Exports structured speaker-labeled output and reduces post-meeting documentation time by an estimated ~75%.'
-    ]
-  },
-  {
-    title: 'CheatScale — Enterprise AI Development Orchestration',
-    aliases: ['opencode-cheatscale', 'cheatscale'],
-    link: 'https://github.com/C0deRhin0/opencode-cheatscale',
-    stack: 'OpenCode, Python, Obsidian',
-    lines: [
-      'Built an AI development orchestration system with 24 specialized agents across a 3-tier architecture.',
-      'Uses wave-based task routing, graph-linked documentation, and automated roadmap generation.',
-      'Enforces 80%+ unit test coverage by separating domain logic from rendering layers.'
-    ]
-  },
-  {
-    title: 'AI-Centric Email Security Responder',
-    aliases: ['ai-centric-email-security', 'email-security'],
-    link: 'https://github.com/C0deRhin0/ai-centric-email-security',
-    stack: 'Power Automate, n8n, LLM API',
-    lines: [
-      'Automated email security response drafting with Power Automate and n8n orchestration.',
-      'Generates context-aware security replies using an LLM API.',
-      'Reduced average response drafting time by ~76% across 3 monitored mailboxes.'
-    ]
-  },
-  {
-    title: 'LED-Entropy — Hardware True Random Number Generator',
-    aliases: ['led-entropy', 'entropy'],
-    link: 'https://github.com/C0deRhin0/LED-entropy',
-    stack: 'Raspberry Pi, Python, Cryptography, Electronics',
-    lines: [
-      'Engineered a hardware entropy source using analog noise, photoresistor sensing, and chaotic LED patterns.',
-      'Acts as a miniaturized analogue of Cloudflare\'s LavaLamp entropy approach.',
-      'Generates 2,400+ cryptographically-useful random bits per second with ~38% lower entropy bias than software PRNGs.'
-    ]
-  },
-  {
-    title: 'AWS Cloud DevSecOps Pipeline',
-    aliases: ['aws-cloud-devsecops', 'aws'],
-    link: 'https://github.com/C0deRhin0/aws-cloud-devsecops',
-    stack: 'AWS, GitHub Actions, IaC',
-    lines: [
-      'Provisioned CI/CD across S3, EC2, IAM, CodeArtifact, CodeBuild, CodeDeploy, and CodePipeline.',
-      'Reduced deployment steps from 14 to 2 and cut build-to-deploy cycle time by ~72%.',
-      'Enforced least-privilege IAM across 4 roles with zero standing admin access.'
-    ]
-  }
-];
+const PROJECT_SLUGS = PROJECT_DETAILS.map((project) => project.slug).join(', ');
 
-const findProjectDetail = (name: string): ProjectDetail | undefined => {
-  const normalizedName = name.trim().toLowerCase();
-  return PROJECT_DETAILS.find((project) => project.aliases.includes(normalizedName));
+const MAN_PAGES: Record<string, string[]> = {
+  commands: [
+    'COMMANDS(1)',
+    '',
+    'Usage: help',
+    '       man [command]',
+    '',
+    'The help command lists available commands. The man command prints focused command usage notes.',
+    '',
+    'Useful pages:',
+    '  man resume',
+    '  man project',
+    '  man projects',
+    '  man effects',
+    '  man ctf'
+  ],
+  resume: [
+    'RESUME(1)',
+    '',
+    'Usage: resume',
+    '',
+    'Opens the resume PDF in a new browser tab.',
+    `Direct URL: ${RESUME_PDF_PATH}`,
+    '',
+    'The PDF is stored under public assets so Vercel serves it at the same path in production.'
+  ],
+  project: [
+    'PROJECT(1)',
+    '',
+    'Usage: project [name]',
+    '',
+    'Prints stack, repository link, and a concise implementation summary for one project.',
+    '',
+    'Examples:',
+    '  project vector-mind-ai',
+    '  project corp-mind-ai',
+    '  project web-portfolio',
+    '',
+    `Available: ${PROJECT_SLUGS}`
+  ],
+  projects: [
+    'PROJECTS(1)',
+    '',
+    'Usage: projects',
+    '',
+    'Lists public repositories and portfolio projects with clickable GitHub links.',
+    'Use project [name] to inspect one project in more detail.'
+  ],
+  effects: [
+    'EFFECTS(1)',
+    '',
+    'Usage: effects',
+    '       effects [crt|glitch|sounds] [on/off]',
+    '',
+    'Controls terminal visual and audio effects.',
+    '',
+    'Examples:',
+    '  effects',
+    '  effects crt off',
+    '  effects sounds on'
+  ],
+  ctf: [
+    'CTF(1)',
+    '',
+    'Usage: explore the terminal and browser',
+    '',
+    'This portfolio includes hidden flags across source, console, and simulated filesystem paths.',
+    '',
+    'Hints:',
+    '  Try ls, cd, run, and DevTools.',
+    '  Some files are hidden unless listed carefully.'
+  ]
 };
+
 
 export interface TerminalCommandContext {
   maxHistoryLength: number;
@@ -252,6 +242,62 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     xtermRef.current.write(coloredPrompt);
   };
 
+  const ensureGlobalLinkProvider = () => {
+    const term = xtermRef.current;
+    if (!term || !term.registerLinkProvider || globalLinkProviderRef.current) {
+      return;
+    }
+
+    globalLinkProviderRef.current = term.registerLinkProvider({
+      provideLinks: (y: number, callback: Function) => {
+        const links = globalLinkMeta.current
+          .filter((meta) => meta.y === y)
+          .map((meta) => ({
+            text: meta.text,
+            range: {
+              start: { x: meta.start, y },
+              end: { x: meta.end, y }
+            },
+            activate: () => window.open(meta.url, '_blank'),
+            hover: (event: MouseEvent) => {
+              setTooltip({
+                text: meta.url,
+                x: event.clientX,
+                y: event.clientY + 12
+              });
+            },
+            leave: () => setTooltip(null)
+          }));
+        callback(links);
+      }
+    });
+  };
+
+  const registerLineHyperlinks = (
+    line: string,
+    y: number,
+    hyperlinks: TerminalHyperlink[] = []
+  ) => {
+    if (!hyperlinks.length) {
+      return;
+    }
+
+    hyperlinks.forEach((link) => {
+      const col = line.indexOf(link.text);
+      if (col !== -1) {
+        globalLinkMeta.current.push({
+          y,
+          start: col + 1,
+          end: col + link.text.length,
+          url: link.url,
+          text: link.text
+        });
+      }
+    });
+
+    ensureGlobalLinkProvider();
+  };
+
   const clearTerminal = (asciiOverride?: boolean) => {
     if (!xtermRef.current) return;
     if (projectLinksProviderRef.current) {
@@ -283,7 +329,8 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
 
   const displayCommandOutput = (
     lines: string[],
-    type: OutputType = 'normal'
+    type: OutputType = 'normal',
+    hyperlinks: TerminalHyperlink[] = []
   ) => {
     if (!xtermRef.current) return;
 
@@ -301,6 +348,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
 
     let currentLineIndex = 0;
     let currentCharIndex = 0;
+    let lineNum = xtermRef.current.buffer.active.baseY + xtermRef.current.buffer.active.cursorY + 1;
 
     const typeNextChar = () => {
       if (currentLineIndex >= lines.length) {
@@ -340,9 +388,11 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         typewriterTimeoutRef.current = timeout;
         setTypewriterTimeout(timeout);
       } else {
+        registerLineHyperlinks(currentLine, lineNum, hyperlinks);
         xtermRef.current!.write('\x1b[0m\r\n');
         currentLineIndex++;
         currentCharIndex = 0;
+        lineNum++;
         const timeout = setTimeout(typeNextChar, TERMINAL_CONFIG.typewriter.lineDelay);
         typewriterTimeoutRef.current = timeout;
         setTypewriterTimeout(timeout);
@@ -355,15 +405,12 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
   const queueCommandOutput = (
     lines: string[],
     outputType: OutputType = 'normal',
-    onBeforeOutput?: () => void
+    hyperlinks: TerminalHyperlink[] = []
   ) => {
     if (!xtermRef.current) return;
 
     if (!fetchingLoaderRef.current) {
-      if (onBeforeOutput) {
-        onBeforeOutput();
-      }
-      displayCommandOutput(lines, outputType);
+      displayCommandOutput(lines, outputType, hyperlinks);
       return;
     }
 
@@ -371,7 +418,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       type: 'output',
       lines,
       outputType,
-      onBeforeOutput
+      hyperlinks
     };
     isFetchingRef.current = true;
     setIsFetching(true);
@@ -381,14 +428,11 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
   const executePendingCommand = () => {
     if (!pendingCommandRef.current) return;
 
-    const { command, type, param, lines, outputType, onBeforeOutput } = pendingCommandRef.current;
+    const { command, type, param, lines, outputType, hyperlinks } = pendingCommandRef.current;
     pendingCommandRef.current = null;
 
     if (type === 'output') {
-      if (onBeforeOutput) {
-        onBeforeOutput();
-      }
-      displayCommandOutput(lines || [], outputType || 'normal');
+      displayCommandOutput(lines || [], outputType || 'normal', hyperlinks || []);
       return;
     }
 
@@ -418,31 +462,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             setIsTyping(false);
             typewriterTimeoutRef.current = null;
             term.write('\r\n');
-            if (hyperlinks.length > 0 && term.registerLinkProvider && !globalLinkProviderRef.current) {
-              globalLinkProviderRef.current = term.registerLinkProvider({
-                provideLinks: (y: number, callback: Function) => {
-                  const links = globalLinkMeta.current
-                    .filter((meta) => meta.y === y)
-                    .map((meta) => ({
-                      text: meta.text,
-                      range: {
-                        start: { x: meta.start, y },
-                        end: { x: meta.end, y }
-                      },
-                      activate: () => window.open(meta.url, '_blank'),
-                      hover: (event: MouseEvent) => {
-                        setTooltip({
-                          text: meta.url,
-                          x: event.clientX,
-                          y: event.clientY + 12
-                        });
-                      },
-                      leave: () => setTooltip(null)
-                    }));
-                  callback(links);
-                }
-              });
-            }
+            ensureGlobalLinkProvider();
             writePrompt();
             return;
           }
@@ -457,18 +477,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
               typewriterTimeoutRef.current = timeout;
               setTypewriterTimeout(timeout);
             } else {
-              hyperlinks.forEach((link: { text: string; url: string }) => {
-                const col = line.indexOf(link.text);
-                if (col !== -1) {
-                  globalLinkMeta.current.push({
-                    y: thisLine,
-                    start: col + 1,
-                    end: col + link.text.length,
-                    url: link.url,
-                    text: link.text
-                  });
-                }
-              });
+              registerLineHyperlinks(line, thisLine, hyperlinks);
               term.write('\r\n');
               lineNum++;
               const timeout = setTimeout(() => writeLine(index + 1), TERMINAL_CONFIG.typewriter.lineDelay || 200);
@@ -558,13 +567,13 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         queueCommandOutput(WHOAMI_SHORT_LINES, 'normal');
         return;
       }
-      queueCommandOutput(['Usage: whoami [--short]'], 'error');
+      displayCommandOutput(['Usage: whoami [--short]'], 'error');
       return;
     }
 
     if (cmd === 'resume') {
       if (args.length > 0) {
-        queueCommandOutput(['Usage: resume'], 'error');
+        displayCommandOutput(['Usage: resume'], 'error');
         return;
       }
       if (typeof window !== 'undefined') {
@@ -573,23 +582,23 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       queueCommandOutput([
         'Opening resume PDF...',
         `Direct URL: ${RESUME_PDF_PATH}`
-      ], 'success');
+      ], 'success', [{ text: RESUME_PDF_PATH, url: RESUME_PDF_PATH }]);
       return;
     }
 
     if (cmd === 'project') {
       const projectName = args.join(' ').trim();
       if (!projectName) {
-        queueCommandOutput(['Usage: project [name]'], 'error');
+        displayCommandOutput(['Usage: project [name]'], 'error');
         return;
       }
 
       const projectDetail = findProjectDetail(projectName);
       if (!projectDetail) {
-        queueCommandOutput([
+        displayCommandOutput([
           `Project not found: ${projectName}`,
           'Try: project vector-mind-ai',
-          'Available: vector-mind-ai, corp-mind-ai, whisper-local, opencode-cheatscale, ai-centric-email-security, led-entropy, aws-cloud-devsecops'
+          `Available: ${PROJECT_SLUGS}`
         ], 'error');
         return;
       }
@@ -600,7 +609,30 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         `Link : ${projectDetail.link}`,
         '',
         ...projectDetail.lines.map((line) => `• ${line}`)
-      ], 'normal');
+      ], 'normal', [{ text: projectDetail.link, url: projectDetail.link }]);
+      return;
+    }
+
+    if (cmd === 'man') {
+      const page = args.join(' ').trim().toLowerCase();
+      if (!page) {
+        displayCommandOutput(['Usage: man [command]'], 'error');
+        return;
+      }
+
+      const manualLines = MAN_PAGES[page];
+      if (!manualLines) {
+        displayCommandOutput([
+          `No manual entry for ${page}`,
+          'Available: commands, resume, project, projects, effects, ctf'
+        ], 'error');
+        return;
+      }
+
+      const manualLinks = page === 'resume'
+        ? [{ text: RESUME_PDF_PATH, url: RESUME_PDF_PATH }]
+        : [];
+      queueCommandOutput(manualLines, 'info', manualLinks);
       return;
     }
 
@@ -631,7 +663,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     if (cmd === 'sudo') {
       const arg = args.join(' ').trim();
       if (!arg) {
-        queueCommandOutput(['usage: sudo <command>'], 'error');
+        displayCommandOutput(['usage: sudo <command>'], 'error');
         return;
       }
       const responseLines = [
@@ -654,7 +686,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           'Binary rain synced to green phosphor.'
         ], 'success');
       } else {
-        queueCommandOutput(['Usage: matrix --init'], 'error');
+        displayCommandOutput(['Usage: matrix --init'], 'error');
       }
       return;
     }
@@ -678,12 +710,12 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     if (cmd === 'ascii' || cmd.startsWith('ascii ')) {
       const arg = args.join(' ').trim();
       if (!arg) {
-        queueCommandOutput(['ascii requires an argument. Usage: ascii [on/off]'], 'error');
+        displayCommandOutput(['ascii requires an argument. Usage: ascii [on/off]'], 'error');
         return;
       }
       if (arg === 'on') {
         if (asciiEnabledRef.current) {
-          queueCommandOutput(['ASCII art is already enabled.'], 'error');
+          displayCommandOutput(['ASCII art is already enabled.'], 'error');
         } else {
           setAsciiEnabled(true);
         }
@@ -691,27 +723,27 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       }
       if (arg === 'off') {
         if (!asciiEnabledRef.current) {
-          queueCommandOutput(['ASCII art is already disabled.'], 'error');
+          displayCommandOutput(['ASCII art is already disabled.'], 'error');
         } else {
           setAsciiEnabled(false);
         }
         return;
       }
-      queueCommandOutput(['Usage: ascii [on/off]'], 'error');
+      displayCommandOutput(['Usage: ascii [on/off]'], 'error');
       return;
     }
 
     if (cmd === 'theme' || cmd.startsWith('theme ')) {
       const arg = args.join(' ').trim();
       if (!arg) {
-        queueCommandOutput(['theme requires an argument. Usage: theme [1/2/3]'], 'error');
+        displayCommandOutput(['theme requires an argument. Usage: theme [1/2/3]'], 'error');
         return;
       }
 
       const validThemes = ['1', '2', '3'];
       if (validThemes.includes(arg)) {
         if (currentThemeRef.current === arg) {
-          queueCommandOutput([`Theme ${arg} is already active.`], 'error');
+          displayCommandOutput([`Theme ${arg} is already active.`], 'error');
         } else {
           setCurrentTheme(arg);
           const activeTheme = (TERMINAL_CONFIG as any).themes[arg];
@@ -720,7 +752,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         return;
       }
 
-      queueCommandOutput(['Invalid theme. Usage: theme [1/2/3]'], 'error');
+      displayCommandOutput(['Invalid theme. Usage: theme [1/2/3]'], 'error');
       return;
     }
 
@@ -738,14 +770,14 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       const isToggle = normalizedValue === 'on' || normalizedValue === 'off';
 
       if (!value || !isToggle) {
-        queueCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
+        displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
         return;
       }
 
       if (target === 'crt') {
         const next = normalizedValue === 'on';
         if (next === crtEnabledRef.current) {
-          queueCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          displayCommandOutput([`CRT overlay is already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setCrtEnabled(next);
@@ -756,7 +788,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       if (target === 'glitch') {
         const next = normalizedValue === 'on';
         if (next === glitchEnabledRef.current) {
-          queueCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          displayCommandOutput([`Glitch effects are already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setGlitchEnabled(next);
@@ -767,7 +799,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       if (target === 'sounds') {
         const next = normalizedValue === 'on';
         if (next === keyboardSoundsEnabledRef.current) {
-          queueCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
+          displayCommandOutput([`Keyboard sounds are already ${next ? 'enabled' : 'disabled'}.`], 'error');
           return;
         }
         setKeyboardSoundsEnabled(next);
@@ -775,7 +807,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         return;
       }
 
-      queueCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
+      displayCommandOutput(['Usage: effects [crt|glitch|sounds] [on/off]'], 'error');
       return;
     }
 
@@ -796,7 +828,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           return;
         }
         if (newDir === '~' || newDir === '$HOME') {
-          queueCommandOutput(['Permission denied'], 'error');
+          displayCommandOutput(['Permission denied'], 'error');
           return;
         }
         if (newDir === '..') {
@@ -805,7 +837,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             setCurrentDirectory(TERMINAL_CONFIG.appearance.defaultDirectory);
             writePrompt();
           } else {
-            queueCommandOutput(['Permission denied'], 'error');
+            displayCommandOutput(['Permission denied'], 'error');
           }
           return;
         }
@@ -814,7 +846,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           || newDir.startsWith('/Users')
           || newDir.startsWith('~/Users')
         ) {
-          queueCommandOutput(['Permission denied'], 'error');
+          displayCommandOutput(['Permission denied'], 'error');
           return;
         }
         const validDirectories = ['c0derhin0-wp.com', 'secret'];
@@ -827,13 +859,13 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
             writePrompt();
           }
         } else {
-          queueCommandOutput([`Directory not found: ${newDir}`], 'error');
+          displayCommandOutput([`Directory not found: ${newDir}`], 'error');
         }
       } else if (cmd === 'ls') {
         const hasArgs = args.length > 0;
         const isAll = hasArgs && args.length === 1 && args[0] === '-a';
         if (hasArgs && !isAll) {
-          queueCommandOutput(['Usage: ls [-a]'], 'error');
+          displayCommandOutput(['Usage: ls [-a]'], 'error');
           return;
         }
 
@@ -864,16 +896,16 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           validFiles.push('secret.sh', '.hidden_flag');
         }
         if (!param) {
-          queueCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
+          displayCommandOutput(['run requires a parameter. Usage: run [file]'], 'error');
           return;
         }
         if (param === 'viral_strain.sh') {
-          queueCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
+          displayCommandOutput(['ACCESS VIOLATION: execution blocked.'], 'error');
           setShowJumpscare(true);
           return;
         }
         if (!validFiles.includes(param)) {
-          queueCommandOutput([`No file found with name ${param}`], 'error');
+          displayCommandOutput([`No file found with name ${param}`], 'error');
           return;
         }
 
@@ -890,7 +922,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     const socialCommand = (commandsData as any[]).find((c) => c.cmd === cmd);
     if (socialCommand) {
       if (args.length > 0) {
-        queueCommandOutput([`Usage: ${cmd}`], 'error');
+        displayCommandOutput([`Usage: ${cmd}`], 'error');
         return;
       }
       isFetchingRef.current = true;
@@ -905,7 +937,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       return;
     }
 
-    queueCommandOutput([`Command not found: ${cmd}`], 'error');
+    displayCommandOutput([`Command not found: ${cmd}`], 'error');
   };
 
   return {
