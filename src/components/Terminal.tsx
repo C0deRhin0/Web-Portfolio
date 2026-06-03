@@ -16,6 +16,7 @@ import { loadVisualEffectsSettings, saveVisualEffectsSettings } from '../utils/v
 import JumpscareOverlay from './JumpscareOverlay';
 import { buildSystemMonitorLines, createSystemSnapshot } from '../utils/systemMonitor';
 import { createTerminalCommandHandlers } from './terminal/terminalCommandHandlers';
+import { PROJECT_COMMANDS } from '../data/projectDetails';
 
 
 /**
@@ -92,13 +93,14 @@ const Terminal: React.FC = () => {
       'theme',
       'whoami --short',
       'project',
-      'project vector-mind-ai',
-      'project corp-mind-ai',
-      'project whisper-local',
-      'project opencode-cheatscale',
-      'project ai-centric-email-security',
-      'project led-entropy',
-      'project aws-cloud-devsecops',
+      ...PROJECT_COMMANDS,
+      'man',
+      'man commands',
+      'man ctf',
+      'man effects',
+      'man project',
+      'man projects',
+      'man resume',
       'effects',
       'effects crt',
       'effects glitch',
