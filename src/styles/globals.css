@@ -66,6 +66,14 @@ html, body {
   color: var(--terminal-fg);
 }
 
+.boot-sequence__skip {
+  position: fixed;
+  right: 28px;
+  bottom: 24px;
+  color: rgba(207, 207, 207, 0.72);
+  font-size: 12px;
+}
+
 .boot-sequence__body {
   display: flex;
   flex-direction: column;
