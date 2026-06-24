@@ -645,7 +645,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         '  /_/\\__,_/\\__/\\____/  \\____/\\__,_/\\__/\\____/ ',
         '',
         '   CODERHINO OS :: terminal interface',
-        '   User: guest@c0derhin0-wp.com',
+        '   User: guest@wpperez.com',
         '   Uptime: 00:42:13',
         '   Shell: rhino-sh 6.1',
         '   Theme: neon-green',
@@ -849,7 +849,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
           displayCommandOutput(['Permission denied'], 'error');
           return;
         }
-        const validDirectories = ['c0derhin0-wp.com', 'secret'];
+        const validDirectories = ['wpperez.com', 'secret'];
         if (validDirectories.includes(newDir)) {
           if (currentDirectoryRef.current !== newDir) {
             currentDirectoryRef.current = newDir;
@@ -870,7 +870,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         }
 
         let lsOutput: string[] = [];
-        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+        if (currentDirectoryRef.current === 'wpperez.com') {
           lsOutput = ['clue.sh'];
         } else if (currentDirectoryRef.current === 'secret') {
           lsOutput = isAll
@@ -889,7 +889,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
       } else if (cmd === 'run' || cmd.startsWith('run ')) {
         const param = args.join(' ').trim();
         const validFiles: string[] = [];
-        if (currentDirectoryRef.current === 'c0derhin0-wp.com') {
+        if (currentDirectoryRef.current === 'wpperez.com') {
           validFiles.push('clue.sh');
         }
         if (currentDirectoryRef.current === 'secret') {

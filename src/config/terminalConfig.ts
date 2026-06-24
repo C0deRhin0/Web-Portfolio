@@ -9,7 +9,7 @@ export const TERMINAL_CONFIG = {
   // Terminal appearance and host defaults
   appearance: {
     host: 'visitor',
-    defaultDirectory: 'c0derhin0-wp.com',
+    defaultDirectory: 'wpperez.com',
   },
 
   // Theme definitions
