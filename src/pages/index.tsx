@@ -46,6 +46,9 @@ const Home: React.FC = () => {
         <meta name="description" content="Interactive hacker-terminal web portfolio of Paulo 'C0DERHIN0' Perez" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicons/portfolio/icon-32x32.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicons/portfolio/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicons/portfolio/icon-192x192.png" />
         <meta name="theme-color" content="#1e1e1e" />
         <meta name="author" content="Paulo 'C0DERHIN0' Perez" />
         <meta name="keywords" content="portfolio, terminal, developer, security, full-stack" />
