@@ -2,6 +2,8 @@
 
 An interactive, highly immersive "hacker-terminal" web portfolio built with Next.js, TypeScript, and xterm.js. Experience a fully functional terminal interface in your browser complete with ASCII art, typewriter effects, CRT scanlines, and an authentic boot sequence.
 
+Live portfolio: [portfolio.wpperez.com](https://portfolio.wpperez.com)
+
 ## 🚀 Features
 
 - **Immersive Boot Sequence**: Authentic Linux-style kernel loading animation.
@@ -75,7 +77,8 @@ The terminal's `help` command automatically picks up new entries defined in the 
 
 - `help` - Shows all available commands dynamically
 - `clear` - Clears the terminal and shows the welcome banner
-- `whoami` / `projects` / `skills` - Portfolio content
+- `whoami` / `projects` / `skills` / `experiences` - Portfolio content
+- `resume` / `contact` / `education` / `certifications` - Recruiter-facing quick info
 - `cd` / `ls` / `run` - Simulated filesystem commands
 - `theme [1/2/3]` - Change terminal color theme
 - `effects [crt|glitch|sounds] [on/off]` - Toggle visual/audio enhancements
@@ -107,9 +110,9 @@ src/
 
 ## 👨‍💻 Author
 
-**Paulo "C0DERHIN0" Perez**
-- Cybersecurity Enthusiast
-- Bicol, Philippines
+**Wilfredo Paulo A. Perez III ("C0deRhin0")**
+- Cybersecurity Engineer · AI Systems Builder · Cloud Security Practitioner
+- Naga City, Camarines Sur, Philippines
 
 ---
 
