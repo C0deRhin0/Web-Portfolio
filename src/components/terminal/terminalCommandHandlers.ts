@@ -34,8 +34,8 @@ const RESUME_PDF_PATH = '/Perez_CV.pdf';
 
 const WHOAMI_SHORT_LINES = [
   'Wilfredo Paulo A. Perez III',
-  'Cybersecurity practitioner and AI systems builder focused on secure infrastructure, local-first RAG, LLM automation, and cloud security.',
-  'Current focus: SIEM/SOAR workflows, network hardening, AI orchestration, and production-grade internal tooling.'
+  'Cybersecurity Engineer, AI Transformation Team Vice Chair, and Compliance Officer for Privacy at Nueca Technologies.',
+  'Current focus: Zero-Trust administration, SIEM workflows, network hardening, local-first RAG, and production-grade AI tooling.'
 ];
 
 const PROJECT_SLUGS = PROJECT_DETAILS.map((project) => project.slug).join(', ');

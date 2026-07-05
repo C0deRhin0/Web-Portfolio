@@ -10,11 +10,11 @@
     "outputLines": [
       "                  .----.",
       "      .---------. | == |",
-      "      |.-\"\"\"\"\"-.| |----|   Wilfredo Paulo A. Perez III — Computer Science for Magna Cum Laude at Ateneo de Naga University.",
-      "      ||       || | == |   I work at the intersection of cybersecurity, applied AI, and cloud infrastructure, building systems that",
-      "      ||       || |----|   automate security operations, harden networks, and keep sensitive workflows local-first when needed.",
-      "      |'-.....-'| |::::|   Current work spans LLM data pipelines, LAN and email security, compliance, SIEM deployments, RAG systems,",
-      "     `\"\"\")---(\"\"` |___.|   and AI orchestration for production operations.",
+      "      |.-\"\"\"\"\"-.| |----|   Wilfredo Paulo A. Perez III — B.S. Computer Science graduate, Magna Cum Laude and Silver Achievement Awardee.",
+      "      ||       || | == |   Cybersecurity Engineer at Nueca Technologies, Vice Chair of the AI Transformation Team, and Compliance",
+      "      ||       || |----|   Officer for Privacy; building secure infrastructure, Zero-Trust operations, and local-first AI systems.",
+      "      |'-.....-'| |::::|   Current work spans Microsoft Entra/M365/Azure administration, SIEM deployments, RAG systems,",
+      "     `\"\"\")---(\"\"` |___.|   production AI tooling, network hardening, compliance, and LLM data pipelines.",
       "     /:::::::::::\\\" _  \"",
       "    /:::=======:::\\`\\`\\",
       "    `\"\"\"\"\"\"\"\"\"\"\"\"\"`  '-'"
@@ -32,6 +32,9 @@
     "category": "Portfolio",
     "outputLines": [
       "• Web-Portfolio",
+      "• privacy-first-agent-harness",
+      "• semantic-chunk-router",
+      "• home-lab-firewall",
       "• ai-centric-email-security",
       "• LED-entropy",
       "• receipt-hybrid-ocr",
@@ -59,6 +62,18 @@
       {
         "text": "Web-Portfolio",
         "url": "https://github.com/C0deRhin0/Web-Portfolio"
+      },
+      {
+        "text": "privacy-first-agent-harness",
+        "url": "https://github.com/C0deRhin0"
+      },
+      {
+        "text": "semantic-chunk-router",
+        "url": "https://github.com/C0deRhin0/semantic-chunk-router"
+      },
+      {
+        "text": "home-lab-firewall",
+        "url": "https://github.com/C0deRhin0"
       },
       {
         "text": "ai-centric-email-security",
@@ -173,12 +188,17 @@
     "desc": "Work & Internships",
     "category": "Portfolio",
     "outputLines": [
+      "Nueca Technologies Inc. | Cybersecurity Engineer, Vice Chair — AI Transformation Team, & Compliance Officer for Privacy | Onsite | Jun 2026 - Present",
+      "• Serve as Global Administrator for Entra ID, Microsoft 365, and Azure environments for 55 users; enforced Zero-Trust controls that reduced privileged-access vulnerabilities by ~80%.",
+      "• Spearheaded a 3-phase AI transformation roadmap across all 5 departments, reaching ~78% AI-assisted workflow adoption among 55 employees within 3 months.",
+      "• Maintain and scale 6+ production AI systems including RAG, hybrid OCR, offline transcription, AI orchestration, HR assistant, and email security responder workflows with zero cloud data exposure where required.",
+      "",
       "Mindrift | AI Engineer (Task-Based, Flexible) — LLM Training & Data | Remote | Nov 2025 - Apr 2026",
       "• Delivered 3,200+ annotated data samples across multiple LLM training task batches.",
       "• Built an automated Python/BeautifulSoup/Selenium scraping pipeline that reduced per-task manual work by ~85%.",
       "• Maintained a 94% task acceptance rate while managing concurrent professional obligations.",
       "",
-      "Nueca Technologies Inc. | Cybersecurity Associate (Part-Time) | Onsite | Sep 2025 - Apr 2026",
+      "Nueca Technologies Inc. | Cybersecurity Associate (Part-Time) | Onsite | Sep 2025 - May 2026",
       "• Administered internal LAN services for 55 employees across 5 departments with segmentation, access control, and 99%+ uptime.",
       "• Managed an additive email security layer that blocked 100+ malicious emails and reduced estimated phishing exposure by ~70%.",
       "• Delivered 3 company-wide cybersecurity orientations covering 100% of staff.",
@@ -201,10 +221,11 @@
     "category": "Portfolio",
     "outputLines": [
       "Programming Languages : C, C++, Python, Java, React, TypeScript, JavaScript, Ruby",
-      "AI & Automation       : AI Harness, n8n, Qdrant, Ollama, Whisper, FastAPI, RAG, LLM data pipelines",
-      "Cloud & Infrastructure: AWS, DigitalOcean, Docker, Kubernetes, GitHub Actions, IaC, CI/CD",
+      "AI & Automation       : AI Harness, n8n, Qdrant, Ollama, Whisper, FastAPI, LangChain, LangGraph, RAG, LLM pipelines",
+      "Cloud & Infrastructure: AWS, Azure, DigitalOcean, Docker, Kubernetes, GitHub Actions, IaC, CI/CD",
+      "Identity & Admin      : Microsoft Entra ID, Microsoft 365, Azure administration, IAM, Zero-Trust access controls",
       "Security Operations   : Wazuh SIEM, Suricata, Nmap, OpenVAS, Nessus, Wireshark, TCPdump, pfSense",
-      "Security Frameworks   : MITRE ATT&CK, CIS Benchmarks, CVSS, SPF, DKIM, DMARC, IAM, NAC",
+      "Security Frameworks   : MITRE ATT&CK, CIS Benchmarks, CVSS, SPF, DKIM, DMARC, NAC",
       "Scripting & Shells    : Bash, PowerShell, Linux shells, AWK/GAWK",
       "OSINT & Analysis      : Maltego, Google Dorking",
       "Blockchain            : Solidity, Ethereum, Hardhat",
@@ -221,6 +242,7 @@
       "Email   : pauloperez9754@gmail.com",
       "GitHub  : C0deRhin0",
       "LinkedIn: wppereziii",
+      "Portfolio: portfolio.wpperez.com",
       "Location: Naga City, Camarines Sur, Philippines"
     ],
     "hyperlinks": [
@@ -231,6 +253,10 @@
       {
         "text": "wppereziii",
         "url": "https://linkedin.com/in/wppereziii"
+      },
+      {
+        "text": "portfolio.wpperez.com",
+        "url": "https://portfolio.wpperez.com"
       }
     ]
   },
@@ -244,18 +270,19 @@
       "Certified Network Security Practitioner (CNSP)",
       "Blue Team Level 0, Junior Analyst (BTL0)",
       "FIT-SM",
+      "TOPCIT Level III",
       "In Progress: Google Cybersecurity Professional Certificate",
       "In Progress: CompTIA Security+"
     ]
   },
   {
     "cmd": "competitions",
-    "desc": "CTF achievements",
+    "desc": "Hack4Gov competition history",
     "category": "Portfolio",
     "outputLines": [
-      "HACK4GOV 3 (AdNU Representative) Nationals - 2nd Place",
-      "HACK4GOV 3 (AdNU Representative) Regionals - 1st Place",
-      "HACK4GOV 2 (AdNU Representative) Regionals - 2nd Place"
+      "3x Hack4Gov Competitor — AdNU School Representative",
+      "Regional Hack4Gov 2 & 3 — Ateneo de Naga University Representative",
+      "National Hack4Gov 3 — Ateneo de Naga University Representative"
     ]
   },
   {
@@ -272,8 +299,8 @@
     "category": "Portfolio",
     "outputLines": [
       "Ateneo de Naga University | Naga City, Camarines Sur | 2022 - 2026",
-      "Bachelor of Science in Computer Science — Magna Cum Laude",
-      "QPI: 3.63 | Consistent President's Lister | DOST Scholar",
+      "Bachelor of Science in Computer Science — Magna Cum Laude, Silver Achievement Awardee",
+      "QPI: 3.64 | Consistent President's Lister | DOST Scholar",
       "",
       "Thesis:",
       "A Vendor-Agnostic, Resource-Aware, Explainable Software-Defined Intrusion Prevention System",
