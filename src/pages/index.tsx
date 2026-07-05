@@ -42,27 +42,28 @@ const Home: React.FC = () => {
   return (
     <>
       <Head>
-        <title>CODERHINO - Terminal Portfolio</title>
-        <meta name="description" content="Interactive hacker-terminal web portfolio of Paulo 'C0DERHIN0' Perez" />
+        <title>Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio</title>
+        <meta name="description" content="Interactive terminal portfolio of Wilfredo Paulo A. Perez III — cybersecurity engineer, AI systems builder, and cloud security practitioner." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicons/portfolio/icon-32x32.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicons/portfolio/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/favicons/portfolio/icon-192x192.png" />
         <meta name="theme-color" content="#1e1e1e" />
-        <meta name="author" content="Paulo 'C0DERHIN0' Perez" />
-        <meta name="keywords" content="portfolio, terminal, developer, security, full-stack" />
+        <meta name="author" content="Wilfredo Paulo A. Perez III" />
+        <meta name="keywords" content="portfolio, terminal, cybersecurity, applied AI, cloud security, DevSecOps, SIEM, RAG, C0deRhin0" />
+        <link rel="canonical" href="https://portfolio.wpperez.com" />
         
         {/* Open Graph tags */}
-        <meta property="og:title" content="CODERHINO - Terminal Portfolio" />
-        <meta property="og:description" content="Interactive hacker-terminal web portfolio of Paulo 'C0DERHIN0' Perez" />
+        <meta property="og:title" content="Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio" />
+        <meta property="og:description" content="Cybersecurity, applied AI, and cloud security work by Wilfredo Paulo A. Perez III." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://c0derhin0.github.io/Web-Portfolio" />
+        <meta property="og:url" content="https://portfolio.wpperez.com" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="CODERHINO - Terminal Portfolio" />
-        <meta name="twitter:description" content="Interactive hacker-terminal web portfolio" />
+        <meta name="twitter:title" content="Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio" />
+        <meta name="twitter:description" content="Interactive terminal portfolio for cybersecurity, AI systems, and cloud security work." />
       </Head>
       
       {/* FLAG{S0URC3_H4CK3R} */}

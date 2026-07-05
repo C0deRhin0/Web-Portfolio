@@ -30,7 +30,7 @@
   "bugs": {
     "url": "https://github.com/C0deRhin0/Web-Portfolio/issues"
   },
-  "homepage": "https://github.com/C0deRhin0/Web-Portfolio#readme",
+  "homepage": "https://portfolio.wpperez.com",
   "dependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
