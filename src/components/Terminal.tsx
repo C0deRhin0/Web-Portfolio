@@ -5,7 +5,6 @@ import { TERMINAL_CONFIG } from '../config/terminalConfig';
 import SubTerminal from './SubTerminal';
 import { createFetchingLoader } from '../utils/fetchingLoader';
 import { createClearingLoader } from '../utils/clearingLoader';
-import { RHINO_ART } from './RhinoArt';
 import TerminalTooltip from './TerminalTooltip';
 import { tokenizeCommandInput } from '../utils/commandParsing';
 import { getCommonPrefix, getCompletionCandidates } from '../utils/commandCompletion';
@@ -18,6 +17,23 @@ import { buildSystemMonitorLines, createSystemSnapshot } from '../utils/systemMo
 import { createTerminalCommandHandlers } from './terminal/terminalCommandHandlers';
 import { PROJECT_COMMANDS } from '../data/projectDetails';
 
+const THEME_BANNER_SRC: Record<string, string> = {
+  '1': '/rhino-banner-theme1.png',
+  '2': '/rhino-banner-theme2.png',
+  '3': '/rhino-banner-theme3.png'
+};
+
+const preloadThemeBanners = (): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  Object.values(THEME_BANNER_SRC).forEach((src) => {
+    const img = new window.Image();
+    img.decoding = 'async';
+    img.src = src;
+  });
+};
 
 /**
  * Main Terminal component that handles the interactive terminal interface
@@ -75,6 +91,7 @@ const Terminal: React.FC = () => {
   const keyboardSoundsEnabledRef = useRef(true);
   const [showJumpscare, setShowJumpscare] = useState(false);
   const [matrixEnabled, setMatrixEnabled] = useState(false);
+  const bannerSrc = THEME_BANNER_SRC[currentTheme] ?? THEME_BANNER_SRC['1'];
 
   const availableCommands = useMemo(() => {
     const commandList = (commandsData as any[])
@@ -393,6 +410,8 @@ const Terminal: React.FC = () => {
     } catch (error) {
       // Ignore persistence errors
     }
+
+    preloadThemeBanners();
   }, []);
 
   useEffect(() => {
@@ -734,8 +753,6 @@ const Terminal: React.FC = () => {
     prevAsciiEnabledRef.current = asciiEnabled;
   }, [asciiEnabled, clearTerminal, isInitialized]);
 
-  const rhinoArtText = RHINO_ART.join('\n');
-
   return (
     <GlitchEffect triggerKey={glitchTriggerKey} enabled={glitchEnabled} intensity="normal">
       <div className="terminal-container">
@@ -745,7 +762,12 @@ const Terminal: React.FC = () => {
         )}
         {asciiEnabled && (
           <div className="rhino-art-viewport" aria-hidden="true">
-            <pre className="rhino-art-text">{rhinoArtText}</pre>
+            <img
+              className="rhino-art-image"
+              src={bannerSrc}
+              alt=""
+              draggable={false}
+            />
           </div>
         )}
         <div ref={terminalRef} className="xterm-wrapper" />

@@ -285,14 +285,12 @@ html, body {
   box-sizing: border-box;
 }
 
-.rhino-art-text {
-  margin: 0;
-  font-family: 'Source Code Pro', monospace;
-  font-size: 12px;
-  line-height: 1.05;
-  color: var(--rhino-art-color, var(--terminal-fg));
-  white-space: pre;
+.rhino-art-image {
+  display: block;
+  width: min(100%, 1080px);
+  height: auto;
   user-select: none;
+  -webkit-user-drag: none;
 }
 
 /* Terminal wrapper to constrain width and center */
