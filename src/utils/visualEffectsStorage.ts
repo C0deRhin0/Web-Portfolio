@@ -3,7 +3,8 @@ export interface VisualEffectsSettings {
   glitchEnabled: boolean;
 }
 
-const STORAGE_KEY = 'terminalVisualEffects';
+// Versioned so visitors with an older saved "CRT off" choice receive the new default once.
+const STORAGE_KEY = 'terminalVisualEffectsV2';
 
 const DEFAULT_SETTINGS: VisualEffectsSettings = {
   crtEnabled: true,

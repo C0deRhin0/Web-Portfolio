@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Terminal from '../components/Terminal';
 import dynamic from 'next/dynamic';
 import BootSequence from '../components/BootSequence';
+import PortfolioDossier from '../components/PortfolioDossier';
 const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'), { ssr: false });
 // import '../styles/globals.css';
 
@@ -13,6 +14,7 @@ const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'
 const Home: React.FC = () => {
   const [bootComplete, setBootComplete] = useState(false);
   const [theme, setTheme] = useState<'1' | '2' | '3'>('1');
+  const [portfolioMode, setPortfolioMode] = useState<'terminal' | 'dossier'>('terminal');
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -42,8 +44,8 @@ const Home: React.FC = () => {
   return (
     <>
       <Head>
-        <title>Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio</title>
-        <meta name="description" content="Interactive terminal portfolio of Wilfredo Paulo A. Perez III — cybersecurity engineer, AI systems builder, and cloud security practitioner." />
+        <title>Wilfredo Paulo Perez III | Cybersecurity & AI Systems</title>
+        <meta name="description" content="Portfolio of Wilfredo Paulo A. Perez III — cybersecurity engineer and builder of privacy-conscious AI systems." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicons/portfolio/icon-32x32.png" />
@@ -55,27 +57,30 @@ const Home: React.FC = () => {
         <link rel="canonical" href="https://portfolio.wpperez.com" />
         
         {/* Open Graph tags */}
-        <meta property="og:title" content="Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio" />
+        <meta property="og:title" content="Wilfredo Paulo Perez III | Cybersecurity & AI Systems" />
         <meta property="og:description" content="Cybersecurity, applied AI, and cloud security work by Wilfredo Paulo A. Perez III." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://portfolio.wpperez.com" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Wilfredo Paulo Perez III - CODERHINO Terminal Portfolio" />
+        <meta name="twitter:title" content="Wilfredo Paulo Perez III | Cybersecurity & AI Systems" />
         <meta name="twitter:description" content="Interactive terminal portfolio for cybersecurity, AI systems, and cloud security work." />
       </Head>
       
       {/* FLAG{S0URC3_H4CK3R} */}
-      <main>
-        {!bootComplete && (
-          <BootSequence
-            theme={theme}
-            onComplete={() => setBootComplete(true)}
-          />
-        )}
-        <BinaryRainOverlay />
-        <Terminal />
+      <main className={`portfolio-shell portfolio-shell--${portfolioMode}`}>
+        <section className="portfolio-shell__terminal" aria-hidden={portfolioMode === 'dossier'}>
+          <button className="terminal-mode-switch" onClick={() => setPortfolioMode('dossier')} type="button">
+            Prefer a scrollable portfolio? <span>View dossier →</span>
+          </button>
+          {!bootComplete && <BootSequence theme={theme} onComplete={() => setBootComplete(true)} />}
+          <BinaryRainOverlay />
+          <Terminal />
+        </section>
+        <section className="portfolio-shell__dossier" aria-hidden={portfolioMode === 'terminal'}>
+          <PortfolioDossier onReturnToTerminal={() => setPortfolioMode('terminal')} />
+        </section>
       </main>
     </>
   );

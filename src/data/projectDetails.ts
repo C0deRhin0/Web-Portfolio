@@ -9,6 +9,30 @@ export interface ProjectDetail {
 
 export const PROJECT_DETAILS: ProjectDetail[] = [
   {
+    title: 'Agent-to-Agent Coordination Lobby Platform',
+    slug: 'a2a-lobby',
+    aliases: ['a2a-lobby', 'agent-to-agent-lobby', 'coordination-lobby'],
+    link: 'https://github.com/C0deRhin0/a2a-lobby',
+    stack: 'TypeScript, Fastify, PostgreSQL, Redis, A2A, MCP, WebSockets',
+    lines: [
+      'Live governed coordination platform for direct, sequenced exchanges between employee AI agents while isolating private sessions, memories, credentials, and local context.',
+      'Implements A2A v1.0.1 and MCP interoperability, durable PostgreSQL messaging, Redis event delivery, hashed invitations, and bilateral human approval bound to immutable agreement versions.',
+      'Validated with a 29-test automated suite covering protocol, authorization, integration, WebSocket, and operational workflows.'
+    ]
+  },
+  {
+    title: 'PII-Redacting Privacy Gateway LLM Proxy',
+    slug: 'privacy-gateway',
+    aliases: ['privacy-gateway', 'pii-redacting-privacy-gateway', 'llm-proxy'],
+    link: 'https://github.com/C0deRhin0/privacy-gateway',
+    stack: 'Python, FastAPI, Presidio, HTTPX, Pseudonymization, DLP',
+    lines: [
+      'Privacy-preserving LLM gateway integrated with the isolated agent harness, enforcing secret redaction, contextual pseudonymization, and generic PII redaction before sensitive prompts reach external providers.',
+      'Uses request-scoped opaque tokenization, output DLP, fail-closed contextual routes, and three configurable privacy modes across OpenAI Responses and Messages-compatible APIs.',
+      'Protects normal JSON, streaming SSE, and refusal outputs while centralizing privacy controls rather than relying on manual employee sanitization.'
+    ]
+  },
+  {
     title: 'Web-Portfolio — Interactive Terminal Portfolio',
     slug: 'web-portfolio',
     aliases: ['web-portfolio', 'portfolio'],

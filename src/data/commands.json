@@ -31,6 +31,8 @@
     "desc": "My projects",
     "category": "Portfolio",
     "outputLines": [
+      "• a2a-lobby",
+      "• privacy-gateway",
       "• Web-Portfolio",
       "• privacy-first-agent-harness",
       "• semantic-chunk-router",
@@ -59,6 +61,14 @@
       "• new-trashtrackr (fork)"
     ],
     "hyperlinks": [
+      {
+        "text": "a2a-lobby",
+        "url": "https://github.com/C0deRhin0/a2a-lobby"
+      },
+      {
+        "text": "privacy-gateway",
+        "url": "https://github.com/C0deRhin0/privacy-gateway"
+      },
       {
         "text": "Web-Portfolio",
         "url": "https://github.com/C0deRhin0/Web-Portfolio"
@@ -191,7 +201,7 @@
       "Nueca Technologies Inc. | Cybersecurity Engineer, Vice Chair — AI Transformation Team, & Compliance Officer for Privacy | Onsite | Jun 2026 - Present",
       "• Serve as Global Administrator for Entra ID, Microsoft 365, and Azure environments for 55 users; enforced Zero-Trust controls that reduced privileged-access vulnerabilities by ~80%.",
       "• Spearheaded a 3-phase AI transformation roadmap across all 5 departments, reaching ~78% AI-assisted workflow adoption among 55 employees within 3 months.",
-      "• Maintain and scale 6+ production AI systems including RAG, hybrid OCR, offline transcription, AI orchestration, HR assistant, and email security responder workflows with zero cloud data exposure where required.",
+      "• Maintain and scale 6+ production AI systems including RAG, hybrid OCR, offline transcription, AI orchestration, an on-premise HR assistant, and email security responder workflows with zero cloud data exposure for privacy-sensitive operations.",
       "",
       "Mindrift | AI Engineer (Task-Based, Flexible) — LLM Training & Data | Remote | Nov 2025 - Apr 2026",
       "• Delivered 3,200+ annotated data samples across multiple LLM training task batches.",
@@ -204,14 +214,14 @@
       "• Delivered 3 company-wide cybersecurity orientations covering 100% of staff.",
       "• Appointed Compliance Officer for Privacy and led NPC Seal of Registration submission.",
       "• Provided compensated security consulting for 2 partner organizations with formal risk reports.",
-      "• Architected AI orchestration and internal ERP systems for Engineering, Operations, IAM, HR, and asset workflows.",
+      "• Architected an AI orchestration platform targeting a 30% reduction in repetitive operational overhead, and led an internal ERP system with IAM, HR, and asset tracking modules.",
       "",
       "Nueca Technologies Inc. | Network and Cloud Security Analyst Intern | Onsite | May 2025 - Jul 2025",
       "• Audited legacy infrastructure, found 12 segmentation and visibility gaps, and proposed a funded Layer 3 redesign.",
       "• Scanned 3 network segments with Nmap and OpenVAS; delivered a CVSS-prioritized remediation plan for 20+ risks.",
       "• Raised 15 macOS workstations to 82% CIS Benchmark compliance within a 2-week cycle.",
-      "• Deployed Wazuh SIEM/HIDS in lab and Kubernetes production environments, supporting logs across 8 nodes.",
-      "• Migrated 3 services to Kubernetes with Deployments, Services, RBAC, ConfigMaps, Secrets, probes, HPA, and Ingress.",
+      "• Deployed Wazuh SIEM/HIDS in a proof-of-concept lab across 5 endpoints and on managed Kubernetes with real-time log aggregation across 8 nodes.",
+      "• Built secure Dockerfiles and container stacks, and migrated 3 services to Kubernetes with Deployments, Services, RBAC, ConfigMaps, Secrets, probes, HPA, and Ingress.",
       "• Fixed SPF, DKIM, and DMARC DNS gaps and delivered a macOS spyware simulation for 20+ engineering staff."
     ]
   },

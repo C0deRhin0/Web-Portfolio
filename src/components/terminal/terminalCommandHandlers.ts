@@ -30,7 +30,7 @@ const WELCOME_LINES = [
   ''
 ];
 
-const RESUME_PDF_PATH = '/Perez_CV.pdf';
+const RESUME_PDF_PATH = '/resume.pdf';
 
 const WHOAMI_SHORT_LINES = [
   'Wilfredo Paulo A. Perez III',
