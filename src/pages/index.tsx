@@ -15,6 +15,12 @@ const Home: React.FC = () => {
   const [bootComplete, setBootComplete] = useState(false);
   const [theme, setTheme] = useState<'1' | '2' | '3'>('1');
   const [portfolioMode, setPortfolioMode] = useState<'terminal' | 'dossier'>('terminal');
+  const [dossierSession, setDossierSession] = useState(0);
+
+  const openDossier = () => {
+    setDossierSession((session) => session + 1);
+    setPortfolioMode('dossier');
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -71,7 +77,7 @@ const Home: React.FC = () => {
       {/* FLAG{S0URC3_H4CK3R} */}
       <main className={`portfolio-shell portfolio-shell--${portfolioMode}`}>
         <section className="portfolio-shell__terminal" aria-hidden={portfolioMode === 'dossier'}>
-          <button className="terminal-mode-switch" onClick={() => setPortfolioMode('dossier')} type="button">
+          <button className="terminal-mode-switch" onClick={openDossier} type="button">
             Prefer a scrollable portfolio? <span>View dossier →</span>
           </button>
           {!bootComplete && <BootSequence theme={theme} onComplete={() => setBootComplete(true)} />}
@@ -79,7 +85,7 @@ const Home: React.FC = () => {
           <Terminal />
         </section>
         <section className="portfolio-shell__dossier" aria-hidden={portfolioMode === 'terminal'}>
-          <PortfolioDossier onReturnToTerminal={() => setPortfolioMode('terminal')} />
+          <PortfolioDossier key={dossierSession} onReturnToTerminal={() => setPortfolioMode('terminal')} />
         </section>
       </main>
     </>

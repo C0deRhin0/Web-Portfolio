@@ -215,6 +215,48 @@ const Terminal: React.FC = () => {
     }
   };
 
+  const removeInputRange = (start: number, end: number) => {
+    if (!xtermRef.current || start === end) {
+      return;
+    }
+
+    clearGhostSuggestion();
+    const currentCursor = cursorIndexRef.current;
+    const after = currentLineBuffer.current.slice(end);
+    const charactersBeforeCursor = currentCursor - start;
+
+    if (charactersBeforeCursor > 0) {
+      xtermRef.current.write(`\x1b[${charactersBeforeCursor}D`);
+    }
+    const removedLength = end - start;
+    xtermRef.current.write(`${after}${' '.repeat(removedLength)}`);
+    xtermRef.current.write(`\x1b[${after.length + removedLength}D`);
+
+    currentLineBuffer.current = `${currentLineBuffer.current.slice(0, start)}${after}`;
+    cursorIndexRef.current = start;
+    updateGhostIfAtEnd();
+  };
+
+  const handleWordDeletion = (direction: 'backward' | 'forward') => {
+    const input = currentLineBuffer.current;
+    const cursor = cursorIndexRef.current;
+
+    if (direction === 'backward' && cursor > 0) {
+      let start = cursor;
+      while (start > 0 && /\s/.test(input[start - 1])) start -= 1;
+      while (start > 0 && !/\s/.test(input[start - 1])) start -= 1;
+      removeInputRange(start, cursor);
+      return;
+    }
+
+    if (direction === 'forward' && cursor < input.length) {
+      let end = cursor;
+      while (end < input.length && /\s/.test(input[end])) end += 1;
+      while (end < input.length && !/\s/.test(input[end])) end += 1;
+      removeInputRange(cursor, end);
+    }
+  };
+
   const handleTabKey = (domEvent: KeyboardEvent) => {
     if (!xtermRef.current) return;
     domEvent.preventDefault();
@@ -639,7 +681,16 @@ const Terminal: React.FC = () => {
               handleEnterKey();
               break;
             case 'Backspace':
-              handleBackspaceKey();
+              if (domEvent.ctrlKey || domEvent.metaKey || domEvent.altKey) {
+                handleWordDeletion('backward');
+              } else {
+                handleBackspaceKey();
+              }
+              break;
+            case 'Delete':
+              if (domEvent.ctrlKey || domEvent.metaKey || domEvent.altKey) {
+                handleWordDeletion('forward');
+              }
               break;
             case 'Tab':
               handleTabKey(domEvent);
