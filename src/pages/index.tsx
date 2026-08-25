@@ -7,6 +7,19 @@ import PortfolioDossier from '../components/PortfolioDossier';
 const BinaryRainOverlay = dynamic(() => import('../components/BinaryRainOverlay'), { ssr: false });
 // import '../styles/globals.css';
 
+const PORTFOLIO_MODE_KEY = 'portfolioMode';
+
+const PERSON_JSON_LD = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Wilfredo Paulo A. Perez III',
+  url: 'https://portfolio.wpperez.com',
+  jobTitle: 'Cybersecurity Engineer',
+  email: 'mailto:pauloperez9754@gmail.com',
+  sameAs: ['https://github.com/C0deRhin0', 'https://linkedin.com/in/wppereziii'],
+  knowsAbout: ['Cybersecurity', 'AI systems', 'Data privacy', 'Cloud security', 'DevSecOps']
+}).replace(/</g, '\\u003c');
+
 /**
  * Main index page for the hacker-terminal portfolio
  * Single-page application that renders the interactive terminal
@@ -17,9 +30,18 @@ const Home: React.FC = () => {
   const [portfolioMode, setPortfolioMode] = useState<'terminal' | 'dossier'>('terminal');
   const [dossierSession, setDossierSession] = useState(0);
 
+  const setPreferredMode = (mode: 'terminal' | 'dossier') => {
+    setPortfolioMode(mode);
+    try {
+      window.localStorage.setItem(PORTFOLIO_MODE_KEY, mode);
+    } catch (error) {
+      // Storage can be unavailable in private or restricted browsing modes.
+    }
+  };
+
   const openDossier = () => {
     setDossierSession((session) => session + 1);
-    setPortfolioMode('dossier');
+    setPreferredMode('dossier');
   };
 
   useEffect(() => {
@@ -42,8 +64,22 @@ const Home: React.FC = () => {
       if (storedTheme === '1' || storedTheme === '2' || storedTheme === '3') {
         setTheme(storedTheme);
       }
+
+      const storedMode = window.localStorage.getItem(PORTFOLIO_MODE_KEY);
+      if (storedMode === 'terminal' || storedMode === 'dossier') {
+        setPortfolioMode(storedMode);
+        if (storedMode === 'dossier') {
+          setDossierSession((session) => session + 1);
+        }
+      } else if (window.matchMedia('(max-width: 720px)').matches) {
+        setPortfolioMode('dossier');
+        setDossierSession((session) => session + 1);
+      }
     } catch (error) {
-      // Ignore storage errors
+      if (window.matchMedia('(max-width: 720px)').matches) {
+        setPortfolioMode('dossier');
+        setDossierSession((session) => session + 1);
+      }
     }
   }, []);
 
@@ -67,16 +103,22 @@ const Home: React.FC = () => {
         <meta property="og:description" content="Cybersecurity, applied AI, and cloud security work by Wilfredo Paulo A. Perez III." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://portfolio.wpperez.com" />
+        <meta property="og:image" content="https://portfolio.wpperez.com/og.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Wilfredo Paulo Perez III | Cybersecurity & AI Systems" />
         <meta name="twitter:description" content="Interactive terminal portfolio for cybersecurity, AI systems, and cloud security work." />
+        <meta name="twitter:image" content="https://portfolio.wpperez.com/og.png" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: PERSON_JSON_LD }} />
       </Head>
       
       {/* FLAG{S0URC3_H4CK3R} */}
       <main className={`portfolio-shell portfolio-shell--${portfolioMode}`}>
-        <section className="portfolio-shell__terminal" aria-hidden={portfolioMode === 'dossier'}>
+        <a className="skip-link" href={portfolioMode === 'terminal' ? '#terminal-portfolio' : '#dossier-portfolio'}>Skip to portfolio content</a>
+        <section className="portfolio-shell__terminal" id="terminal-portfolio" aria-hidden={portfolioMode === 'dossier'} inert={portfolioMode === 'dossier'}>
           <button className="terminal-mode-switch" onClick={openDossier} type="button">
             Prefer a scrollable portfolio? <span>View dossier →</span>
           </button>
@@ -84,8 +126,8 @@ const Home: React.FC = () => {
           <BinaryRainOverlay />
           <Terminal />
         </section>
-        <section className="portfolio-shell__dossier" aria-hidden={portfolioMode === 'terminal'}>
-          <PortfolioDossier key={dossierSession} onReturnToTerminal={() => setPortfolioMode('terminal')} />
+        <section className="portfolio-shell__dossier" id="dossier-portfolio" aria-hidden={portfolioMode === 'terminal'} inert={portfolioMode === 'terminal'}>
+          <PortfolioDossier key={dossierSession} onReturnToTerminal={() => setPreferredMode('terminal')} />
         </section>
       </main>
     </>
