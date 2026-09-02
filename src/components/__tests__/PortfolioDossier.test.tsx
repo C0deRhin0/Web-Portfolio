@@ -29,4 +29,17 @@ describe('PortfolioDossier accessibility and project filters', () => {
 
     expect(screen.queryByRole('dialog', { name: 'Welcome to Portfolio.exe' })).not.toBeInTheDocument();
   });
+
+  it('blocks direct resume access and offers official contact channels', () => {
+    render(<PortfolioDossier onReturnToTerminal={jest.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'OK' }));
+
+    fireEvent.click(screen.getByRole('button', { name: /resume\.pdf/i }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Resume Access' });
+    expect(dialog).toHaveTextContent('No free data for you. Nice try.');
+    expect(screen.getByRole('link', { name: 'Email owner' })).toHaveAttribute('href', expect.stringContaining('mailto:pauloperez9754@gmail.com'));
+    expect(screen.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', 'https://linkedin.com/in/wppereziii');
+    expect(document.querySelector('a[href="/resume.pdf"]')).not.toBeInTheDocument();
+  });
 });

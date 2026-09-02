@@ -183,7 +183,7 @@
   },
   {
     "cmd": "resume",
-    "desc": "Open resume PDF",
+    "desc": "Request resume from owner",
     "category": "Portfolio",
     "outputLines": []
   },

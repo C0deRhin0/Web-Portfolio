@@ -30,8 +30,6 @@ const WELCOME_LINES = [
   ''
 ];
 
-const RESUME_PDF_PATH = '/resume.pdf';
-
 const WHOAMI_SHORT_LINES = [
   'Wilfredo Paulo A. Perez III',
   'Cybersecurity Engineer, AI Transformation Team Vice Chair, and Compliance Officer for Privacy at Nueca Technologies.',
@@ -61,10 +59,9 @@ const MAN_PAGES: Record<string, string[]> = {
     '',
     'Usage: resume',
     '',
-    'Opens the resume PDF in a new browser tab.',
-    `Direct URL: ${RESUME_PDF_PATH}`,
+    'Opens the owner-contact prompt for requesting a current resume.',
     '',
-    'The PDF is stored under public assets so Vercel serves it at the same path in production.'
+    'Public viewing and downloading are disabled. Contact the owner through the official email or LinkedIn profile.'
   ],
   project: [
     'PROJECT(1)',
@@ -150,6 +147,7 @@ export interface TerminalCommandContext {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
   setKeyboardSoundsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   setMatrixEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  setResumeDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setShowJumpscare: React.Dispatch<React.SetStateAction<boolean>>;
   setSubTerminalFile: React.Dispatch<React.SetStateAction<string>>;
   setSubTerminalVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -201,6 +199,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
     setIsTyping,
     setKeyboardSoundsEnabled,
     setMatrixEnabled,
+    setResumeDialogOpen,
     setShowJumpscare,
     setSubTerminalFile,
     setSubTerminalVisible,
@@ -576,13 +575,11 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         displayCommandOutput(['Usage: resume'], 'error');
         return;
       }
-      if (typeof window !== 'undefined') {
-        window.open(RESUME_PDF_PATH, '_blank', 'noopener,noreferrer');
-      }
-      queueCommandOutput([
-        'Opening resume PDF...',
-        `Direct URL: ${RESUME_PDF_PATH}`
-      ], 'success', [{ text: RESUME_PDF_PATH, url: RESUME_PDF_PATH }]);
+      setResumeDialogOpen(true);
+      displayCommandOutput([
+        'Resume access request opened.',
+        'Public PDF access is disabled.'
+      ], 'warning');
       return;
     }
 
@@ -629,10 +626,7 @@ export const createTerminalCommandHandlers = (context: TerminalCommandContext) =
         return;
       }
 
-      const manualLinks = page === 'resume'
-        ? [{ text: RESUME_PDF_PATH, url: RESUME_PDF_PATH }]
-        : [];
-      queueCommandOutput(manualLines, 'info', manualLinks);
+      queueCommandOutput(manualLines, 'info');
       return;
     }
 

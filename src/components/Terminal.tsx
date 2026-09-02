@@ -23,6 +23,9 @@ const THEME_BANNER_SRC: Record<string, string> = {
   '3': '/rhino-banner-theme3.png'
 };
 
+const RESUME_REQUEST_EMAIL = 'mailto:pauloperez9754@gmail.com?subject=Resume%20Request%20%E2%80%94%20Portfolio';
+const OWNER_LINKEDIN = 'https://linkedin.com/in/wppereziii';
+
 const preloadThemeBanners = (): void => {
   if (typeof window === 'undefined') {
     return;
@@ -91,6 +94,9 @@ const Terminal: React.FC = () => {
   const keyboardSoundsEnabledRef = useRef(true);
   const [showJumpscare, setShowJumpscare] = useState(false);
   const [matrixEnabled, setMatrixEnabled] = useState(false);
+  const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
+  const resumeDialogOpenRef = useRef(false);
+  const resumeDialogRef = useRef<HTMLDivElement>(null);
   const bannerSrc = THEME_BANNER_SRC[currentTheme] ?? THEME_BANNER_SRC['1'];
 
   const availableCommands = useMemo(() => {
@@ -479,6 +485,44 @@ const Terminal: React.FC = () => {
   }, [keyboardSoundsEnabled]);
 
   useEffect(() => {
+    resumeDialogOpenRef.current = resumeDialogOpen;
+    if (!resumeDialogOpen) {
+      return;
+    }
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const focusFrame = window.requestAnimationFrame(() => {
+      resumeDialogRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    });
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setResumeDialogOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !resumeDialogRef.current) {
+        return;
+      }
+      const focusable = Array.from(resumeDialogRef.current.querySelectorAll<HTMLElement>('a[href], button'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleDialogKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', handleDialogKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [resumeDialogOpen]);
+
+  useEffect(() => {
     currentThemeRef.current = currentTheme;
     
     // Update xterm theme if initialized
@@ -663,6 +707,10 @@ const Terminal: React.FC = () => {
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
+          if (resumeDialogOpenRef.current) {
+            return;
+          }
+
           if (domEvent.ctrlKey && domEvent.key.toLowerCase() === 'c') {
             interruptActiveCommand();
             return;
@@ -782,6 +830,7 @@ const Terminal: React.FC = () => {
     setIsTyping,
     setKeyboardSoundsEnabled,
     setMatrixEnabled,
+    setResumeDialogOpen,
     setShowJumpscare,
     setSubTerminalFile,
     setSubTerminalVisible,
@@ -829,6 +878,31 @@ const Terminal: React.FC = () => {
             file={subTerminalFile} 
             onClose={() => setSubTerminalVisible(false)}
           />
+        )}
+        {resumeDialogOpen && (
+          <div className="terminal-resume-backdrop">
+            <div
+              aria-describedby="terminal-resume-description"
+              aria-labelledby="terminal-resume-title"
+              aria-modal="true"
+              className="terminal-resume-dialog"
+              ref={resumeDialogRef}
+              role="dialog"
+            >
+              <header><span>resume-access</span><button aria-label="Close resume request" onClick={() => setResumeDialogOpen(false)} type="button">[x]</button></header>
+              <div className="terminal-resume-dialog__body">
+                <p aria-hidden="true" className="terminal-resume-dialog__status">[ NO FREE DATA FOR YOU ]</p>
+                <h2 id="terminal-resume-title">Request the current resume</h2>
+                <p id="terminal-resume-description">Nice try. This document is not available for public viewing or download. Ask the owner for a copy through an official channel.</p>
+                <p className="terminal-resume-dialog__hint">Choose a verified contact route:</p>
+              </div>
+              <footer>
+                <a href={RESUME_REQUEST_EMAIL}>[ Email owner ]</a>
+                <a href={OWNER_LINKEDIN} target="_blank" rel="noreferrer">[ LinkedIn ]</a>
+                <button onClick={() => setResumeDialogOpen(false)} type="button">[ Cancel ]</button>
+              </footer>
+            </div>
+          </div>
         )}
       </div>
     </GlitchEffect>

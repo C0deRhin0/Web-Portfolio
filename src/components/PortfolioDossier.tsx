@@ -80,6 +80,9 @@ const METRICS = [
   ['~80%', 'reduction in privileged-access vulnerabilities', 'Measured from identified privileged-access exposure before and after Zero-Trust role restriction and tenant-role remediation.']
 ];
 
+const RESUME_REQUEST_EMAIL = 'mailto:pauloperez9754@gmail.com?subject=Resume%20Request%20%E2%80%94%20Portfolio';
+const OWNER_LINKEDIN = 'https://linkedin.com/in/wppereziii';
+
 const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal }) => {
   const [activeSection, setActiveSection] = useState('about');
   const [isStartOpen, setIsStartOpen] = useState(false);
@@ -88,6 +91,7 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
   const [isMaximized, setIsMaximized] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [showStatusBar, setShowStatusBar] = useState(true);
@@ -103,13 +107,15 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
   const contentRef = useRef<HTMLElement>(null);
   const desktopRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const hasModal = showWelcome || showExitDialog || Boolean(metricDetail);
+  const hasModal = showWelcome || showExitDialog || showResumeDialog || Boolean(metricDetail);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (showExitDialog) {
           setShowExitDialog(false);
+        } else if (showResumeDialog) {
+          setShowResumeDialog(false);
         } else if (metricDetail) {
           setMetricDetail(null);
         } else if (showWelcome) {
@@ -143,7 +149,7 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [hasModal, isStartOpen, metricDetail, openMenu, showExitDialog, showWelcome]);
+  }, [hasModal, isStartOpen, metricDetail, openMenu, showExitDialog, showResumeDialog, showWelcome]);
 
   useEffect(() => {
     if (!hasModal) {
@@ -217,6 +223,13 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
       setStatusText('All visible portfolio records selected.');
     }
     setOpenMenu(null);
+  };
+
+  const openResumeRequest = () => {
+    setIsStartOpen(false);
+    setOpenMenu(null);
+    setStatusText('Resume request required.');
+    setShowResumeDialog(true);
   };
 
   const startWindowDrag = (event: React.PointerEvent<HTMLElement>) => {
@@ -338,11 +351,11 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
           {showSidebar && !isCompactWindow && <aside className="win95-sidebar" aria-label="Portfolio folders">
             <p>portfolio</p>
             {folderEntries.map((entry) => <button aria-current={activeSection === entry.key ? 'page' : undefined} className={activeSection === entry.key ? 'is-active' : ''} key={entry.key} onClick={() => selectSection(entry.key)} type="button"><span aria-hidden="true">{activeSection === entry.key ? '▣' : '▤'}</span> {entry.label}</button>)}
-            <a href="/resume.pdf" target="_blank" rel="noreferrer"><span aria-hidden="true">▤</span> resume.pdf</a>
+            <button onClick={openResumeRequest} type="button"><span aria-hidden="true">▤</span> resume.pdf</button>
           </aside>}
           <section aria-label={`${currentFileName} content`} className="win95-content" ref={contentRef} tabIndex={-1}>
             {activeSection === 'about' && <div className="win95-about">
-              <div className="win95-about__hero"><div className="win95-monitor" aria-hidden="true"><div>WP</div></div><div><h1>Wilfredo Paulo<br />Perez III</h1><p>Cybersecurity engineer building privacy-conscious infrastructure and practical AI systems.</p><div className="win95-actions"><button onClick={() => selectSection('projects')} type="button">View selected work</button><a className="win95-button" href="/resume.pdf" target="_blank" rel="noreferrer">Résumé (PDF) ↓</a></div><button className="win95-contact-link" onClick={() => selectSection('contact')} type="button">Contact me</button><button className="win95-mobile-terminal" onClick={onReturnToTerminal} type="button">Open terminal experience</button></div></div>
+              <div className="win95-about__hero"><div className="win95-monitor" aria-hidden="true"><div>WP</div></div><div><h1>Wilfredo Paulo<br />Perez III</h1><p>Cybersecurity engineer building privacy-conscious infrastructure and practical AI systems.</p><div className="win95-actions"><button onClick={() => selectSection('projects')} type="button">View selected work</button><button className="win95-button" onClick={openResumeRequest} type="button">Request résumé…</button></div><button className="win95-contact-link" onClick={() => selectSection('contact')} type="button">Contact me</button><button className="win95-mobile-terminal" onClick={onReturnToTerminal} type="button">Open terminal experience</button></div></div>
               <div className="win95-notice"><b>System status:</b> Available for security, AI operations, and privacy-focused work.</div>
               <div className="win95-stats">{METRICS.map(([value, label, detail]) => <button key={value} onClick={() => setMetricDetail(detail)} type="button"><b>{value}</b><span>{label}</span><small>View proof</small></button>)}</div>
               <section className="win95-featured"><h2>Featured Work</h2><div>{featuredProjects.slice(0, 4).map((project) => <article key={project.slug}><p>{project.title}</p><span>{project.lines[2]}</span><footer><button onClick={() => openCaseStudy(project.slug)} type="button">Case Study →</button><a href={project.link} target="_blank" rel="noreferrer">GitHub ↗</a></footer></article>)}</div></section>
@@ -353,7 +366,7 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
             {activeSection === 'projects' && selectedCaseStudy && <article className="win95-case-study"><button onClick={() => setActiveCaseStudy(null)} type="button">← Back to projects</button><h1>{selectedCaseStudy.title}</h1><p className="win95-projects__stack">{selectedCaseStudy.stack}</p><section><h2>Problem</h2><p>{selectedCaseNotes?.problem ?? selectedCaseStudy.lines[0]}</p></section><section><h2>Constraints</h2><p>{selectedCaseNotes?.constraints ?? 'Delivery, security, maintainability, and practical operational use.'}</p></section><section><h2>Architecture</h2><pre>{selectedCaseNotes?.architecture ?? selectedCaseStudy.lines[1]}</pre></section><section><h2>What I built</h2><p>{selectedCaseStudy.lines[1]}</p></section><section><h2>Security & privacy decisions</h2><p>{selectedCaseNotes?.decisions ?? 'The implementation prioritizes controlled, maintainable, and authorized use.'}</p></section><section><h2>Result</h2><p>{selectedCaseStudy.lines[2]}</p></section><a className="win95-button" href={selectedCaseStudy.link} target="_blank" rel="noreferrer">Open GitHub repository ↗</a></article>}
             {activeSection === 'experience' && <div><h1>Experience</h1><div className="win95-list">{EXPERIENCE.map(([period, role, organization, detail]) => <article key={role}><p>{period}</p><div><h2>{role}</h2><h3>{organization}</h3><p>{detail}</p></div></article>)}</div></div>}
             {activeSection === 'skills' && <div><h1>Tools & foundations</h1><div className="win95-skill-grid"><article><h2>Security operations</h2><p>Wazuh SIEM · Suricata · Nmap · OpenVAS · pfSense · MITRE ATT&CK</p><small>Used in: Home-Lab Firewall · Automated Security Logging</small></article><article><h2>RAG & retrieval</h2><p>Qdrant · embeddings · hybrid retrieval · source citations · Ollama</p><small>Used in: Corp-Mind-AI · RAG Support Chatbot</small></article><article><h2>Agent systems</h2><p>A2A · MCP · LangGraph · multi-agent orchestration · privacy gateways</p><small>Used in: A2A Lobby · Vector-Mind-AI · Privacy Gateway</small></article><article><h2>Cloud & delivery</h2><p>Azure · AWS · Docker · Kubernetes · GitHub Actions · CI/CD · React · TypeScript</p><small>Used in: AWS Cloud DevSecOps · production platform work</small></article><article><h2>Education & credentials</h2><p>B.S. Computer Science, Magna Cum Laude · Ateneo de Naga University, 2022—2026</p><small>ISC² CC · Google Cybersecurity · CCSP-AWS · CNSP · BTL0 · TOPCIT Level III</small></article></div></div>}
-            {activeSection === 'contact' && <div className="win95-contact"><h1>Let’s talk.</h1><div className="win95-group"><h2>Message</h2><p>For security engineering, AI systems, cloud operations, and privacy-focused collaboration.</p><a className="win95-primary-link" href="mailto:pauloperez9754@gmail.com">✉ pauloperez9754@gmail.com</a></div><div className="win95-contact__links"><a href="https://linkedin.com/in/wppereziii" target="_blank" rel="noreferrer">▣ LinkedIn</a><a href="https://github.com/C0deRhin0" target="_blank" rel="noreferrer">▣ GitHub</a><a href="/resume.pdf" target="_blank" rel="noreferrer">▤ Download resume (PDF)</a></div></div>}
+            {activeSection === 'contact' && <div className="win95-contact"><h1>Let’s talk.</h1><div className="win95-group"><h2>Message</h2><p>For security engineering, AI systems, cloud operations, and privacy-focused collaboration.</p><a className="win95-primary-link" href="mailto:pauloperez9754@gmail.com">✉ pauloperez9754@gmail.com</a></div><div className="win95-contact__links"><a href="https://linkedin.com/in/wppereziii" target="_blank" rel="noreferrer">▣ LinkedIn</a><a href="https://github.com/C0deRhin0" target="_blank" rel="noreferrer">▣ GitHub</a><button onClick={openResumeRequest} type="button">▤ Request resume</button></div></div>}
           </section>
         </div>
         {showStatusBar && <footer className="win95-statusbar"><span aria-live="polite">{statusText}</span><span>{activeSection.toUpperCase()}</span></footer>}
@@ -361,6 +374,7 @@ const PortfolioDossier: React.FC<PortfolioDossierProps> = ({ onReturnToTerminal 
       </main>}
       {showWelcome && <div className="win95-dialog-backdrop"><div aria-labelledby="welcome-title" aria-modal="true" className="win95-dialog" ref={dialogRef} role="dialog"><header id="welcome-title">Welcome to Portfolio.exe</header><div><span aria-hidden="true" className="win95-dialog__icon">i</span><p>Welcome to the desktop portfolio of Wilfredo Paulo Perez III.<br /><br />Use the folders, menus, and taskbar to explore.</p></div><footer><button autoFocus onClick={() => setShowWelcome(false)} type="button">OK</button></footer></div></div>}
       {showExitDialog && <div className="win95-dialog-backdrop"><div aria-describedby="exit-description" aria-labelledby="exit-title" aria-modal="true" className="win95-dialog" ref={dialogRef} role="dialog"><header id="exit-title">Portfolio.exe</header><div><span aria-hidden="true" className="win95-dialog__icon">?</span><p id="exit-description">Exit Portfolio.exe and return to the terminal?</p></div><footer><button onClick={onReturnToTerminal} type="button">Yes</button><button autoFocus onClick={() => setShowExitDialog(false)} type="button">No</button></footer></div></div>}
+      {showResumeDialog && <div className="win95-dialog-backdrop"><div aria-describedby="resume-description" aria-labelledby="resume-title" aria-modal="true" className="win95-dialog win95-resume-dialog" ref={dialogRef} role="dialog"><header id="resume-title">Resume Access</header><div><span aria-hidden="true" className="win95-dialog__icon win95-dialog__icon--warning">!</span><p id="resume-description"><b>No free data for you. Nice try.</b><br /><br />Public viewing and downloading are unavailable. Request a current copy directly from the owner using an official contact channel.</p></div><footer><a autoFocus href={RESUME_REQUEST_EMAIL}>Email owner</a><a href={OWNER_LINKEDIN} target="_blank" rel="noreferrer">LinkedIn</a><button onClick={() => setShowResumeDialog(false)} type="button">Cancel</button></footer></div></div>}
       {metricDetail && <div className="win95-dialog-backdrop"><div aria-describedby="metric-description" aria-labelledby="metric-title" aria-modal="true" className="win95-dialog" ref={dialogRef} role="dialog"><header id="metric-title">Metric evidence</header><div><span aria-hidden="true" className="win95-dialog__icon">i</span><p id="metric-description">{metricDetail}</p></div><footer><button autoFocus onClick={() => setMetricDetail(null)} type="button">OK</button></footer></div></div>}
       <div className="win95-taskbar" inert={hasModal}><button aria-expanded={isStartOpen} aria-haspopup="menu" className="win95-start" onClick={() => setIsStartOpen((open) => !open)} type="button">▣ Start</button>{isStartOpen && <div className="win95-start-menu" role="menu"><b>Wilfredo Paulo Perez III</b><button onClick={() => { setIsStartOpen(false); togglePortfolioWindow(); }} role="menuitem" type="button">▣ Portfolio</button><button onClick={onReturnToTerminal} role="menuitem" type="button">▸ Terminal mode</button></div>}<button className={`win95-taskbar__app${isMinimized ? ' is-minimized' : ''}`} onClick={togglePortfolioWindow} type="button">▣ Portfolio</button><time dateTime="2026">2026</time></div>
     </div>
