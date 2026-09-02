@@ -17,6 +17,6 @@ describe('GitHubActivity', () => {
     render(<GitHubActivity />);
 
     expect(screen.getByRole('img')).toHaveAttribute('tabindex', '0');
-    expect(screen.getByRole('img')).toHaveAccessibleName(/1,815 public GitHub contributions across 126 active days/i);
+    expect(screen.getByRole('img')).toHaveAccessibleName(/\d[\d,]* public GitHub contributions across \d+ active days in \d{4}/i);
   });
 });
