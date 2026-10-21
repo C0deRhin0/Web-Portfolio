@@ -4,6 +4,28 @@ An interactive, highly immersive "hacker-terminal" web portfolio built with Next
 
 Live portfolio: [portfolio.wpperez.com](https://portfolio.wpperez.com)
 
+## Two ways to explore the portfolio
+
+The same static Next.js application offers an interactive terminal and a scrollable dossier. Content, commands, and presentation stay in separate modules.
+
+```mermaid
+flowchart LR
+V["Visitor"]:::source --> M{"Choose a view"}:::review
+    M --> T["Terminal<br/>xterm.js and command handlers"]:::process
+    M --> D["Dossier<br/>projects and case studies"]:::process
+    C["Portfolio data<br/>commands and project details"]:::store --> T
+    C --> D
+    T --> E["Next.js static export"]:::result
+    D --> E
+    classDef source fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef process fill:#ede9fe,stroke:#7c3aed,color:#3b0764
+    classDef store fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef review fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef result fill:#f1f5f9,stroke:#475569,color:#0f172a
+```
+
+For content edits, start with [terminal configuration](TERMINAL_CONFIGURATION.md). For layout changes, inspect `src/components/PortfolioDossier.tsx` and `src/styles/globals.css`.
+
 ## 🚀 Features
 
 - **Immersive Boot Sequence**: Authentic Linux-style kernel loading animation.
@@ -13,6 +35,7 @@ Live portfolio: [portfolio.wpperez.com](https://portfolio.wpperez.com)
 - **Themes & ASCII Art**: Custom rhino branding, dynamic theme switching (Green, Amber, Monochrome).
 - **System Tools**: Built-in mock commands like `top`, `htop`, `neofetch`, and `matrix` mode.
 - **Hidden CTF Challenges**: Find hidden flags and secret files spread across the application.
+- **Project capture panel**: A sideways scrolling strip of real interface captures and labeled execution evidence. Hover/focus pauses it; the viewer supports larger images, keyboard navigation, and source links. Reduced-motion preferences disable automatic scrolling.
 - **Responsive Design**: Adapts cleanly from ultra-wide monitors down to mobile devices.
 - **Extensible Architecture**: Easy to add new commands via JSON configuration.
 
@@ -28,7 +51,7 @@ Live portfolio: [portfolio.wpperez.com](https://portfolio.wpperez.com)
 1. **Clone the repository**
    ```bash
    git clone https://github.com/C0deRhin0/Web-Portfolio.git
-   cd Web-Portfolio/codebase
+   cd Web-Portfolio
    ```
 
 2. **Install dependencies**
@@ -117,3 +140,9 @@ src/
 ---
 
 *Built with ❤️ and lots of terminal love. Can you find all the flags?*
+
+## Project screenshots
+
+The dossier landing page and Projects folder show the **Project Signal** panel. Capture descriptions live in `src/data/projectScreenshots.ts`; optimized images live in `public/projects/`. The viewer distinguishes running interfaces, fictional sample data, generated reports, and CLI output. Private repository captures stay out of the public panel.
+
+Update the typed manifest when adding a capture. Describe what was actually exercised and any integration left untested. Preserve original PNGs in your local capture archive; repository copies use WebP to reduce page weight. Hover or keyboard focus pauses the strip, the Pause button stops it explicitly, and touch pauses it before selection. The enlarged viewer supports Escape, left/right arrows, and a source link.

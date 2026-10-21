@@ -118,4 +118,9 @@ colors: {
 - Command history is stored in React state (session-only)
 - Typewriter effect uses `setTimeout` with proper cleanup
 - Ctrl+C detection uses character code 3
-- All configuration is centralized in one file for easy maintenance 
+- All configuration is centralized in one file for easy maintenance
+## Project capture panel
+
+`ProjectShowcase.tsx` renders the Project Signal strip on the dossier landing page and Projects folder. Edit `src/data/projectScreenshots.ts` to add a public project, its capture type, provenance note, source link, and image captions. Images resolve from `public/projects/<repository>/` and are included in the static export.
+
+Use real captures and describe any untested integration. The duplicated visual track is hidden from assistive technology and inert; only the primary cards are focusable. Hover/focus pauses motion, the explicit control holds that state, and reduced-motion users receive a static horizontal scroller. The native dialog provides modal focus handling, Escape dismissal, and keyboard image navigation.
