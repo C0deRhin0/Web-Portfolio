@@ -120,7 +120,7 @@ const Home: React.FC = () => {
         <a className="skip-link" href={portfolioMode === 'terminal' ? '#terminal-portfolio' : '#dossier-portfolio'}>Skip to portfolio content</a>
         <section className="portfolio-shell__terminal" id="terminal-portfolio" aria-hidden={portfolioMode === 'dossier'} inert={portfolioMode === 'dossier'}>
           <button className="terminal-mode-switch" onClick={openDossier} type="button">
-            Prefer a scrollable portfolio? <span>View dossier →</span>
+            Explore projects & screenshots <span>View dossier →</span>
           </button>
           {!bootComplete && <BootSequence theme={theme} onComplete={() => setBootComplete(true)} />}
           <BinaryRainOverlay />
