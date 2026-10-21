@@ -101,7 +101,7 @@ export const PROJECT_DETAILS: ProjectDetail[] = [
     lines: [
       'Hardware entropy source using analog noise, photoresistor sensing, and chaotic LED patterns.',
       'Acts as a miniaturized analogue of Cloudflare\'s LavaLamp entropy approach.',
-      'Generates 2,400+ cryptographically-useful random bits per second with ~38% lower entropy bias than software PRNGs.'
+      'Explores physical seed inputs and SHA-256 conditioning; a validated entropy rate has not been established.'
     ]
   },
   {
@@ -285,15 +285,15 @@ export const PROJECT_DETAILS: ProjectDetail[] = [
     ]
   },
   {
-    title: 'AWS Cloud DevSecOps Pipeline',
+    title: 'AWS IAM, EC2 & S3 Labs',
     slug: 'aws-cloud-devsecops',
     aliases: ['aws-cloud-devsecops', 'aws'],
     link: 'https://github.com/C0deRhin0/aws-cloud-devsecops',
-    stack: 'AWS, GitHub Actions, IaC',
+    stack: 'AWS IAM, EC2, S3',
     lines: [
-      'Provisioned CI/CD across S3, EC2, IAM, CodeArtifact, CodeBuild, CodeDeploy, and CodePipeline.',
-      'Reduced deployment steps from 14 to 2 and cut build-to-deploy cycle time by ~72%.',
-      'Enforced least-privilege IAM across 4 roles with zero standing admin access.'
+      'Documented tag-based IAM access to development and production EC2 instances.',
+      'Explored S3 static website hosting and object/bucket access through an illustrated walkthrough.',
+      'The repository contains the report; a reusable CI/CD pipeline or IaC stack is not included.'
     ]
   },
   {
