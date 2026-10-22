@@ -143,6 +143,8 @@ src/
 
 ## Project screenshots
 
-The dossier landing page and Projects folder show the **Project Signal** panel. Capture descriptions live in `src/data/projectScreenshots.ts`; optimized images live in `public/projects/`. The viewer distinguishes running interfaces, fictional sample data, generated reports, and CLI output. Private repository captures stay out of the public panel.
+The dossier landing page and Projects folder show a Windows-style **Project screenshots** window with beveled frames, a blue title bar, and a scrolling filmstrip. Each case study uses the same window, filtered to that project's images. Capture descriptions live in `src/data/projectScreenshots.ts`; optimized images live in `public/projects/`. Running interfaces, fictional sample data, CLI output, architecture illustrations, and documentation captures carry distinct labels. Private repository captures stay out of the public panel.
 
-Update the typed manifest when adding a capture. Describe what was actually exercised and any integration left untested. Preserve original PNGs in your local capture archive; repository copies use WebP to reduce page weight. Hover or keyboard focus pauses the strip, the Pause button stops it explicitly, and touch pauses it before selection. The enlarged viewer supports Escape, left/right arrows, and a source link.
+Update the typed manifest when adding a capture. Describe what was actually exercised and any integration left untested; individual images can override the project's evidence label and note. Preserve original PNGs in your local capture archive; repository copies use WebP to reduce page weight. Hover or keyboard focus pauses the strip, and touch pauses it before selection. Reduced-motion preferences disable automatic scrolling. The enlarged viewer supports Escape, left/right arrows, and a source link.
+
+Terminal mode uses a bounded canvas of staggered binary trails with fading tails and brighter tips, fitted to the content margins. Animation stops when the tab is hidden or reduced motion is enabled, and the overlay is disabled in dossier mode and on small screens.

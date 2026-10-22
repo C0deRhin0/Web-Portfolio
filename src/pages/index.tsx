@@ -123,7 +123,7 @@ const Home: React.FC = () => {
             Explore projects & screenshots <span>View dossier →</span>
           </button>
           {!bootComplete && <BootSequence theme={theme} onComplete={() => setBootComplete(true)} />}
-          <BinaryRainOverlay />
+          <BinaryRainOverlay active={portfolioMode === 'terminal'} />
           <Terminal />
         </section>
         <section className="portfolio-shell__dossier" id="dossier-portfolio" aria-hidden={portfolioMode === 'terminal'} inert={portfolioMode === 'terminal'}>

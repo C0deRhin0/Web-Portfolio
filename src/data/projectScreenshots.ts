@@ -2,9 +2,9 @@ export type ProjectCapture = {
   slug: string;
   title: string;
   repo: string;
-  kind: 'Interface' | 'Sample data' | 'Generated report' | 'CLI evidence';
+  kind: 'Interface' | 'Sample data' | 'Generated report' | 'CLI evidence' | 'Architecture' | 'Documentation';
   note: string;
-  screens: Array<{ src: string; alt: string }>;
+  screens: Array<{ src: string; alt: string; kind?: ProjectCapture['kind']; note?: string }>;
 };
 
 export const PROJECT_CAPTURES: ProjectCapture[] = [
@@ -183,6 +183,12 @@ export const PROJECT_CAPTURES: ProjectCapture[] = [
       {
         "src": "/projects/whisper-local/mobile.webp",
         "alt": "Responsive interface at 390 pixels"
+      },
+      {
+        "src": "/projects/whisper-local/native-transcription.webp",
+        "alt": "Native CLI evidence · actual transcription of a synthetic speech clip",
+        "kind": "CLI evidence",
+        "note": "Actual transcribe() output from whisper.cpp small. Synthetic audio only; this does not verify Ollama summarization, microphone capture, or speaker diarization."
       }
     ]
   },
@@ -230,6 +236,12 @@ export const PROJECT_CAPTURES: ProjectCapture[] = [
       {
         "src": "/projects/privacy-gateway/api.webp",
         "alt": "Running API · generated endpoint documentation; no provider request sent"
+      },
+      {
+        "src": "/projects/privacy-gateway/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
       }
     ]
   },
@@ -260,6 +272,12 @@ export const PROJECT_CAPTURES: ProjectCapture[] = [
       {
         "src": "/projects/simple-port-scanner/desktop.webp",
         "alt": "Simple Port Scanner: Actual scan of a single disposable loopback service."
+      },
+      {
+        "src": "/projects/simple-port-scanner/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
       }
     ]
   },
@@ -303,6 +321,348 @@ export const PROJECT_CAPTURES: ProjectCapture[] = [
       {
         "src": "/projects/semantic-chunk-router/desktop.webp",
         "alt": "Semantic Chunk Router: Offline mock-embedding example. It does not measure semantic quality."
+      },
+      {
+        "src": "/projects/semantic-chunk-router/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      }
+    ]
+  },
+  {
+    "slug": "oncall-notification-local",
+    "title": "On-call Notifications — Local",
+    "repo": "https://github.com/C0deRhin0/oncall-notification-local",
+    "kind": "Sample data",
+    "note": "Fictional incidents and schedules in a disposable database. No calls or messages sent.",
+    "screens": [
+      {
+        "src": "/projects/oncall-notification-local/dashboard.webp",
+        "alt": "Running app · fictional incidents in a disposable local database"
+      },
+      {
+        "src": "/projects/oncall-notification-local/schedules.webp",
+        "alt": "Running app · fictional engineer schedules"
+      },
+      {
+        "src": "/projects/oncall-notification-local/logs.webp",
+        "alt": "Running app · synthetic notification audit trail"
+      }
+    ]
+  },
+  {
+    "slug": "web-portfolio",
+    "title": "Web-Portfolio — Interactive Terminal Portfolio",
+    "repo": "https://github.com/C0deRhin0/Web-Portfolio",
+    "kind": "Interface",
+    "note": "Running local production build. Dossier and terminal interfaces captured during browser verification.",
+    "screens": [
+      {
+        "src": "/projects/web-portfolio/showcase.webp",
+        "alt": "Running portfolio · Windows-style dossier screenshot window"
+      },
+      {
+        "src": "/projects/web-portfolio/case-study.webp",
+        "alt": "Running portfolio · project-specific case study gallery"
+      },
+      {
+        "src": "/projects/web-portfolio/terminal.webp",
+        "alt": "Running portfolio · restrained binary rain in terminal mode"
+      }
+    ]
+  },
+  {
+    "slug": "privacy-first-agent-harness",
+    "title": "Privacy-First Isolated AI Agent Harness",
+    "repo": "https://github.com/C0deRhin0",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/privacy-first-agent-harness/design.webp",
+        "alt": "Design illustration · described system boundaries",
+        "kind": "Architecture",
+        "note": "Design illustration based on the published portfolio description. No live system or physical installation was captured."
+      },
+      {
+        "src": "/projects/privacy-first-agent-harness/documentation.webp",
+        "alt": "Case-study notes · published description",
+        "kind": "Documentation",
+        "note": "Published case-study description. Physical and private-system verification remains outside this capture."
+      }
+    ]
+  },
+  {
+    "slug": "ai-centric-email-security",
+    "title": "AI-Centric Email Security Responder",
+    "repo": "https://github.com/C0deRhin0/ai-centric-email-security",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/ai-centric-email-security/template-safe.webp",
+        "alt": "Email template preview · safe assessment with fictional placeholders",
+        "kind": "Sample data",
+        "note": "Rendered repository HTML template with fictional substitutions. No mailbox, workflow, or message delivery was invoked."
+      },
+      {
+        "src": "/projects/ai-centric-email-security/template-suspicious.webp",
+        "alt": "Email template preview · suspicious assessment with fictional placeholders",
+        "kind": "Sample data",
+        "note": "Rendered repository HTML template with fictional substitutions. No mailbox, workflow, or message delivery was invoked."
+      }
+    ]
+  },
+  {
+    "slug": "led-entropy",
+    "title": "LED-Entropy — Hardware True Random Number Generator",
+    "repo": "https://github.com/C0deRhin0/LED-entropy",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/led-entropy/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/led-entropy/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "forensic-security-analysis-suite",
+    "title": "Forensic Security Analysis Suite",
+    "repo": "https://github.com/C0deRhin0/forensic-security-analysis-suite",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/forensic-security-analysis-suite/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/forensic-security-analysis-suite/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "keylogger-py",
+    "title": "keylogger-py — Controlled Lab Keylogging Demo",
+    "repo": "https://github.com/C0deRhin0/keylogger-py",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/keylogger-py/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/keylogger-py/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "offensive-python-scripts",
+    "title": "Offensive Python Scripts",
+    "repo": "https://github.com/C0deRhin0/offensive-python-scripts",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/offensive-python-scripts/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/offensive-python-scripts/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "opencode-cheatscale",
+    "title": "CheatScale — Enterprise AI Development Orchestration",
+    "repo": "https://github.com/C0deRhin0/opencode-cheatscale",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/opencode-cheatscale/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/opencode-cheatscale/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "automated-system-logging",
+    "title": "Automated System Security Logging",
+    "repo": "https://github.com/C0deRhin0/automated-system-logging",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/automated-system-logging/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/automated-system-logging/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "vulnerable-smart-contract",
+    "title": "Vulnerable Smart Contract Demo",
+    "repo": "https://github.com/C0deRhin0/vulnerable-smart-contract",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/vulnerable-smart-contract/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/vulnerable-smart-contract/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "aws-cloud-devsecops",
+    "title": "AWS IAM, EC2 & S3 Labs",
+    "repo": "https://github.com/C0deRhin0/aws-cloud-devsecops",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/aws-cloud-devsecops/archived-report-3.webp",
+        "alt": "Archived repository report · page 3; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      },
+      {
+        "src": "/projects/aws-cloud-devsecops/archived-report-1.webp",
+        "alt": "Archived repository report · page 1; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      }
+    ]
+  },
+  {
+    "slug": "hybridrf-iot-ids",
+    "title": "HybridRF-IoT-IDS",
+    "repo": "https://github.com/C0deRhin0/HybridRF-IoT-IDS",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/hybridrf-iot-ids/archived-report-3.webp",
+        "alt": "Archived repository report · page 3; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      },
+      {
+        "src": "/projects/hybridrf-iot-ids/archived-report-2.webp",
+        "alt": "Archived repository report · page 2; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      }
+    ]
+  },
+  {
+    "slug": "juiceshop-penetration",
+    "title": "Juice Shop Penetration",
+    "repo": "https://github.com/C0deRhin0/juiceshop-penetration",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/juiceshop-penetration/archived-report-2.webp",
+        "alt": "Archived repository report · page 2; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      },
+      {
+        "src": "/projects/juiceshop-penetration/archived-report-1.webp",
+        "alt": "Archived repository report · page 1; original experiment, not rerun",
+        "kind": "Documentation",
+        "note": "Page rendered from the archived PDF already in the public repository. The original cloud, security lab, or model-training exercise was not repeated during this review."
+      }
+    ]
+  },
+  {
+    "slug": "new-trashtrackr",
+    "title": "new-trashtrackr — Forked Mobile Project",
+    "repo": "https://github.com/C0deRhin0/new-trashtrackr",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/new-trashtrackr/architecture.webp",
+        "alt": "Repository architecture · rendered Mermaid diagram",
+        "kind": "Architecture",
+        "note": "Rendered from the repository README Mermaid diagram. This describes the source architecture."
+      },
+      {
+        "src": "/projects/new-trashtrackr/documentation.webp",
+        "alt": "Repository documentation · README excerpt",
+        "kind": "Documentation",
+        "note": "Actual README excerpt from the local repository. Documentation evidence; the described system was not executed for this capture."
+      }
+    ]
+  },
+  {
+    "slug": "home-lab-firewall",
+    "title": "Home-Lab Software-Defined Firewall",
+    "repo": "https://github.com/C0deRhin0",
+    "kind": "Documentation",
+    "note": "Repository documentation and architecture evidence; no running application is claimed.",
+    "screens": [
+      {
+        "src": "/projects/home-lab-firewall/design.webp",
+        "alt": "Design illustration · described system boundaries",
+        "kind": "Architecture",
+        "note": "Design illustration based on the published portfolio description. No live system or physical installation was captured."
+      },
+      {
+        "src": "/projects/home-lab-firewall/documentation.webp",
+        "alt": "Case-study notes · published description",
+        "kind": "Documentation",
+        "note": "Published case-study description. Physical and private-system verification remains outside this capture."
       }
     ]
   }

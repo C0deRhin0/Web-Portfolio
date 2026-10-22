@@ -1,176 +1,125 @@
-// full updated binrain.tsx (React + CSS in same file for clarity)
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-interface ColumnConfig {
-  id: string;
-  fontSizePx: number;
-  opacity: number;
-  delaySeedMs: number;
-  pxPerMs: number;
+interface BinaryRainProps {
+  leftColumns?: number;
+  rightColumns?: number;
+  sideWidthVw?: number;
+  pxPerSecond?: number;
+  leftWidthPx?: number;
+  rightWidthPx?: number;
 }
 
-// generate binary string WITHOUT an always-appended space
-const generateBinaryString = (length: number) => {
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    const isGap = Math.random() < 0.01;
-    result += isGap ? ' ' : (Math.random() > 0.5 ? '1' : '0');
-  }
-  return result;
-};
+interface Stream {
+  x: number;
+  y: number;
+  size: number;
+  speed: number;
+  opacity: number;
+  bits: string[];
+  nextChange: number;
+}
 
-const MIN_LENGTH = 6;
-const MAX_LENGTH = 18;
-const MIN_PX_PER_SECOND = 25;
+/** A bounded number of staggered trails, drawn only in the terminal margins. */
+const BinaryRain: React.FC<BinaryRainProps> = ({ leftColumns = 10, rightColumns = 10, sideWidthVw = 10, pxPerSecond = 58, leftWidthPx, rightWidthPx }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-const useColumns = (count: number, seed: number, basePxPerSecond: number) => {
-  return useMemo<ColumnConfig[]>(() => {
-    const columns: ColumnConfig[] = [];
-    for (let i = 0; i < count; i++) {
-      const rand = Math.abs(Math.sin(seed + i * 1337));
-      const fontSizePx = 10 + Math.floor(rand * 12);
-      const opacity = 0.25 + rand * 0.6;
-      const delaySeedMs = Math.floor(rand * 1500);
-      const pxPerSecond = Math.max(MIN_PX_PER_SECOND, basePxPerSecond * (0.6 + rand * 1.2));
-      const pxPerMs = pxPerSecond / 1000;
-      columns.push({ id: `col-${i}`, fontSizePx, opacity, delaySeedMs, pxPerMs });
-    }
-    return columns;
-  }, [count, seed, basePxPerSecond]);
-};
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!canvas || !context) return;
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    let previous = 0;
+    let width = 0;
+    let height = 0;
+    let streams: Stream[] = [];
 
-const BinaryColumn: React.FC<{
-  text: string;
-  config: ColumnConfig;
-  colScale?: number;
-}> = ({ text, config, colScale = 1 }) => {
-  const spanRef = useRef<HTMLSpanElement | null>(null);
-  const [durationMs, setDurationMs] = useState<number | null>(null);
-  const [initialDelayMs] = useState<number>(() => -Math.floor(Math.random() * 3000));
-
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (!spanRef.current) return;
-      const contentHeight = spanRef.current.getBoundingClientRect().height;
-      const viewportH = typeof window !== 'undefined' ? window.innerHeight : 800;
-      const distancePx = Math.max(viewportH, contentHeight + viewportH);
-      const rawDuration = Math.max(300, Math.floor(distancePx / config.pxPerMs));
-      const jitter = 0.9 + Math.random() * 0.2;
-      setDurationMs(Math.floor(rawDuration * jitter));
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      const scale = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      context.setTransform(scale, 0, 0, scale, 0, 0);
+      const left = Math.max(0, Math.min(leftWidthPx ?? width * sideWidthVw / 100, width * 0.14));
+      const right = Math.max(0, Math.min(rightWidthPx ?? width * sideWidthVw / 100, width * 0.14));
+      streams = [];
+      const addSide = (sideWidth: number, count: number, offset: number) => {
+        const total = Math.max(0, Math.min(count, 12, Math.floor(sideWidth / 16)));
+        for (let index = 0; index < total; index++) {
+          const size = 11 + Math.floor(Math.random() * 4);
+          const length = 9 + Math.floor(Math.random() * 13);
+          streams.push({
+            x: offset + (index + 0.5) * sideWidth / total,
+            y: Math.random() * (height + length * size),
+            size,
+            speed: Math.max(24, pxPerSecond * (0.55 + Math.random() * 0.8)),
+            opacity: 0.35 + Math.random() * 0.38,
+            bits: Array.from({ length }, () => Math.random() > 0.5 ? '1' : '0'),
+            nextChange: Math.random() * 800,
+          });
+        }
+      };
+      addSide(left, leftColumns, 0);
+      addSide(right, rightColumns, width - right);
+      canvas.dataset.streams = String(streams.length);
+      canvas.dataset.leftWidth = String(Math.round(left));
+      canvas.dataset.rightWidth = String(Math.round(right));
     };
 
-    measure();
-    const onResize = () => measure();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [text, config.fontSizePx, config.pxPerMs]);
-
-  return (
-    <div
-      className="binary-column"
-      style={{
-        fontSize: `${Math.max(8, Math.floor(config.fontSizePx * colScale))}px`,
-        opacity: config.opacity,
-        animationDuration: durationMs ? `${durationMs}ms` : undefined,
-        animationDelay: `${initialDelayMs + config.delaySeedMs}ms`,
-        animationTimingFunction: 'linear'
-      }}
-    >
-      <span ref={spanRef} className="binary-span" aria-hidden>
-        {text}
-      </span>
-      <span className="binary-span" aria-hidden>
-        {text}
-      </span>
-    </div>
-  );
-};
-
-const BinarySide: React.FC<{
-  side: 'left' | 'right';
-  columnsCount: number;
-  seed: number;
-  basePxPerSecond: number;
-}> = ({ side, columnsCount, seed, basePxPerSecond }) => {
-  const cols = useColumns(columnsCount, seed, basePxPerSecond);
-
-  const sideRef = useRef<HTMLDivElement | null>(null);
-  const [colScale, setColScale] = useState<number>(1);
-
-  const [content, setContent] = useState<string[]>([]);
-
-  useEffect(() => {
-    const strings = cols.map(() => {
-      const len = Math.floor(MIN_LENGTH + Math.random() * (MAX_LENGTH - MIN_LENGTH + 1));
-      return generateBinaryString(len);
-    });
-    setContent(strings);
-  }, [cols]);
-
-  useEffect(() => {
-    const computeScale = () => {
-      if (!sideRef.current || cols.length === 0) {
-        setColScale(1);
-        return;
+    const draw = (now: number) => {
+      frame = window.requestAnimationFrame(draw);
+      if (previous && now - previous < 1000 / 30) return;
+      const elapsed = previous ? Math.min((now - previous) / 1000, 0.1) : 0;
+      previous = now;
+      context.clearRect(0, 0, width, height);
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      for (const stream of streams) {
+        stream.y += stream.speed * elapsed;
+        if (stream.y - stream.bits.length * stream.size > height) {
+          stream.y = -40 - Math.random() * 220;
+          stream.speed = Math.max(24, pxPerSecond * (0.55 + Math.random() * 0.8));
+        }
+        if (now >= stream.nextChange) {
+          stream.bits[Math.floor(Math.random() * stream.bits.length)] = Math.random() > 0.5 ? '1' : '0';
+          stream.nextChange = now + 140 + Math.random() * 500;
+        }
+        context.font = `${stream.size}px ui-monospace, monospace`;
+        for (let index = stream.bits.length - 1; index >= 0; index--) {
+          const y = stream.y - index * stream.size * 1.12;
+          if (y < -stream.size || y > height + stream.size) continue;
+          const fade = Math.pow(1 - index / stream.bits.length, 1.4);
+          context.fillStyle = index === 0 ? `rgba(176,255,214,${stream.opacity})` : `rgba(0,220,135,${fade * stream.opacity * 0.78})`;
+          context.shadowColor = '#32e89b';
+          context.shadowBlur = index === 0 ? 4 : 0;
+          context.fillText(stream.bits[index], stream.x, y);
+        }
       }
-      const sideWidthPx = sideRef.current.clientWidth;
-      const gapPx = 6;
-      const avgColWidth = cols.reduce((s, c) => s + (c.fontSizePx * 0.6 + 4), 0) / cols.length;
-      const needed = cols.length * avgColWidth + Math.max(0, cols.length - 1) * gapPx;
-      const scale = needed > 0 ? Math.min(1, sideWidthPx / needed) : 1;
-      setColScale(Math.max(0.45, scale));
+      context.shadowBlur = 0;
     };
-  
-    const runCompute = () => {
-      computeScale();
-      // re-run on next frame to handle late layout/font changes
-      requestAnimationFrame(() => computeScale());
+
+    const updateMotion = () => {
+      window.cancelAnimationFrame(frame);
+      previous = 0;
+      context.clearRect(0, 0, width, height);
+      if (!preference.matches && !document.hidden && width > 768 && streams.length > 0) frame = window.requestAnimationFrame(draw);
     };
-  
-    // If Font Loading API is available, wait for fonts to be ready first
-    if (typeof document !== 'undefined' && (document as any).fonts && (document as any).fonts.ready) {
-      (document as any).fonts.ready.then(() => runCompute()).catch(() => runCompute());
-    } else {
-      runCompute();
-    }
-  
-    const onResize = () => {
-      // small debounce could be added if needed
-      computeScale();
+    const handleResize = () => { resize(); updateMotion(); };
+    resize();
+    updateMotion();
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', updateMotion);
+    preference.addEventListener('change', updateMotion);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', updateMotion);
+      preference.removeEventListener('change', updateMotion);
     };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [cols]);
-  
+  }, [leftColumns, rightColumns, sideWidthVw, pxPerSecond, leftWidthPx, rightWidthPx]);
 
-  return (
-    <div className={`binary-side ${side}`} ref={sideRef} aria-hidden>
-      {cols.map((col, i) => (
-        <BinaryColumn key={col.id} text={content[i] || ''} config={col} colScale={colScale} />
-      ))}
-    </div>
-  );
-};
-
-const BinaryRain: React.FC<{ leftColumns?: number; rightColumns?: number; sideWidthVw?: number; pxPerSecond?: number }> = ({
-  leftColumns = 140,
-  rightColumns = 140,
-  sideWidthVw = 10,
-  pxPerSecond = 200
-}) => {
-  const seed = useMemo(() => Math.random(), []);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!rootRef.current) return;
-    rootRef.current.style.setProperty('--side-width', `${sideWidthVw}vw`);
-  }, [sideWidthVw]);
-
-  return (
-    <div className="binary-rain" ref={rootRef} aria-hidden>
-      <BinarySide side="left" columnsCount={leftColumns} seed={seed} basePxPerSecond={pxPerSecond} />
-      <BinarySide side="right" columnsCount={rightColumns} seed={seed + 42} basePxPerSecond={pxPerSecond} />
-    </div>
-  );
+  return <canvas className="binary-rain" ref={canvasRef} aria-hidden="true" />;
 };
 
 export default BinaryRain;
