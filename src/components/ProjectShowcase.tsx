@@ -12,16 +12,18 @@ const normalizeRepo = (value: string) => value.replace(/\.git$|\/$/g, '').toLowe
 const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projectSlug, projectRepo }) => {
   const [touchPaused, setTouchPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [overflowing, setOverflowing] = useState(true);
   const [selection, setSelection] = useState<{ project: ProjectCapture; screen: number } | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const scoped = Boolean(projectSlug || projectRepo);
   const projects = useMemo(() => PROJECT_CAPTURES.filter((project) => !scoped ||
     project.slug === projectSlug || Boolean(projectRepo && /github\.com\/[^/]+\/[^/]+$/.test(normalizeRepo(projectRepo)) && normalizeRepo(project.repo) === normalizeRepo(projectRepo))), [scoped, projectSlug, projectRepo]);
   const slides = useMemo(() => projects.flatMap((project) =>
     (scoped ? project.screens : project.screens.slice(0, 1)).map((screen, index) => ({ project, screen, index }))), [projects, scoped]);
-  const looping = slides.length > 1;
+  const looping = slides.length > 1 && overflowing;
   const current = selection?.project;
 
   useEffect(() => {
@@ -32,6 +34,21 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projectSlug, projectR
     preference.addEventListener?.('change', update);
     return () => preference.removeEventListener?.('change', update);
   }, []);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const group = viewport?.querySelector('[data-copy="primary"]');
+    if (!viewport || !group) return;
+    const measure = () => {
+      if (viewport.clientWidth > 0) setOverflowing(group.scrollWidth > viewport.clientWidth + 1);
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    observer?.observe(viewport);
+    observer?.observe(group);
+    window.addEventListener('resize', measure);
+    return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
+  }, [slides]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -54,12 +71,17 @@ const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ projectSlug, projectR
   return (
     <section className={styles.panel} aria-labelledby={titleId} data-project={scoped ? projectSlug : 'all'} data-paused={touchPaused || Boolean(selection) || reducedMotion}>
       <header className={styles.titlebar}><span className={styles.pictureIcon} aria-hidden="true">▧</span><h2 className={styles.title} id={titleId}>{scoped ? `${projects[0].title} — Screenshots` : 'Project screenshots'}</h2></header>
-      <div className={styles.viewport} onPointerDown={(event) => { if (event.pointerType === 'touch') setTouchPaused(true); }}>
-        <div className={styles.loop} data-looping={looping} style={{ animationDuration: `${Math.max(24, slides.length * 10)}s` }}>
+      <div className={styles.viewport} ref={viewportRef} tabIndex={0} role="group" aria-label="Scroll project screenshots" onPointerDown={(event) => { if (event.pointerType === 'touch') setTouchPaused(true); }} onKeyDown={(event) => {
+        if (event.key === 'Tab' && event.target === event.currentTarget) {
+          event.currentTarget.querySelector('[data-gallery-track]')?.getAnimations().forEach((animation) => { animation.currentTime = 0; });
+          event.currentTarget.scrollLeft = 0;
+        }
+      }}>
+        <div className={styles.loop} data-gallery-track data-looping={looping} style={{ animationDuration: `${Math.max(24, slides.length * 10)}s` }}>
           {(looping ? [false, true] : [false]).map((duplicate) => (
-            <div className={styles.group} key={String(duplicate)} aria-hidden={duplicate || undefined} inert={duplicate || undefined}>
+            <div className={styles.group} key={String(duplicate)} data-copy={duplicate ? 'repeat' : 'primary'} aria-hidden={duplicate || undefined}>
               {slides.map(({ project, screen, index }) => (
-                <button className={styles.card} type="button" key={`${project.slug}-${index}`} tabIndex={duplicate ? -1 : 0} aria-label={`Open ${project.title}: ${screen.alt}`} onClick={(event) => { triggerRef.current = event.currentTarget; setSelection({ project, screen: index }); }}>
+                <button className={styles.card} type="button" key={`${project.slug}-${index}`} tabIndex={duplicate ? -1 : 0} aria-label={`Open ${project.title}: ${screen.alt}`} onPointerDown={(event) => { if (duplicate) event.preventDefault(); }} onClick={(event) => { triggerRef.current = duplicate ? viewportRef.current : event.currentTarget; setSelection({ project, screen: index }); }}>
                   <span className={styles.imageFrame}><img src={screen.src} alt="" width={1440} height={1000} loading="lazy" decoding="async" /></span>
                   <span className={styles.cardBody}><strong>{scoped ? screen.alt : project.title}</strong><span className={styles.kind}>{screen.kind ?? project.kind}</span></span>
                 </button>

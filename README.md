@@ -147,4 +147,6 @@ The dossier landing page and Projects folder show a Windows-style **Project scre
 
 Update the typed manifest when adding a capture. Describe what was actually exercised and any integration left untested; individual images can override the project's evidence label and note. Preserve original PNGs in your local capture archive; repository copies use WebP to reduce page weight. Hover or keyboard focus pauses the strip, and touch pauses it before selection. Reduced-motion preferences disable automatic scrolling. The enlarged viewer supports Escape, left/right arrows, and a source link.
 
+Use solid color surfaces and beveled borders throughout the interface; do not add gradients. Gallery cards reserve equal rows for the image, two-line caption, and evidence label, with padding and borders included in their dimensions. Collections scroll only when their contents exceed the available width. Every visible card, including a repeated copy in a scrolling strip, opens its screenshot. Repeated copies stay outside the keyboard sequence and return focus to the accessible strip after closing the viewer.
+
 Terminal mode uses a bounded canvas of staggered binary trails with fading tails and brighter tips, fitted to the content margins. Animation stops when the tab is hidden or reduced motion is enabled, and the overlay is disabled in dossier mode and on small screens.

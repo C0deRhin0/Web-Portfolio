@@ -74,8 +74,6 @@
 .terminal-mode-switch span { margin-left: 6px; }.terminal-mode-switch:active, .win95-button:active { border-color: #404040 #fff #fff #404040; transform: translate(1px, 1px); }
 
 .win95-desktop { background: #006f70; box-sizing: border-box; color: #151512; font-family: 'W95FA', 'MS Sans Serif', sans-serif; font-smooth: never; -webkit-font-smoothing: none; height: 100vh; min-height: 100vh; overflow: hidden; padding: 34px 68px 55px 110px; position: relative; }
-.win95-desktop::before { background: repeating-linear-gradient(to bottom, rgba(10, 25, 20, 0.15) 0, rgba(10, 25, 20, 0.15) 1px, transparent 1px, transparent 3px); content: ''; inset: 0; mix-blend-mode: multiply; pointer-events: none; position: fixed; z-index: 60; }
-.win95-desktop::after { border: 1px solid rgba(54, 50, 38, 0.25); box-shadow: inset 0 0 120px rgba(30, 24, 12, 0.38), inset 0 0 4px rgba(255, 242, 199, 0.5); content: ''; inset: 0; pointer-events: none; position: fixed; z-index: 61; }
 .win95-desktop--maximized { padding: 0 0 38px; }.win95-desktop--maximized .win95-window { height: calc(100vh - 38px) !important; max-width: none; min-height: 0; width: 100% !important; }.win95-desktop--maximized .win95-icons { display: none; }
 .win95-icons { color: #fff; display: grid; gap: 25px; left: 22px; position: fixed; text-align: center; top: 22px; }.win95-icons button { background: transparent; border: 0; color: inherit; cursor: pointer; padding: 0; text-shadow: 1px 1px #000; }.win95-icons span { display: block; font-family: 'Courier New', monospace; font-size: 30px; }.win95-icons small { display: block; font-family: Arial, sans-serif; font-size: 11px; margin-top: 3px; }.win95-desktop--large-icons .win95-icons span { font-size: 42px; }.win95-desktop--large-icons .win95-icons small { font-size: 13px; }
 .win95-window { background: #b7b4aa; border: 3px solid; border-color: #e7e4d5 #3d3d36 #3d3d36 #e7e4d5; box-shadow: 2px 2px #000; display: flex; flex-direction: column; height: calc(100vh - 110px); margin: 0 auto; min-height: 360px; position: relative; width: min(1180px, calc(100vw - 178px)); }
@@ -306,13 +304,7 @@ html, body {
 .crt-overlay__scanlines {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.14) 0px,
-    rgba(255, 255, 255, 0.08) 1px,
-    rgba(0, 0, 0, 0.18) 2px,
-    rgba(0, 0, 0, 0.18) 3px
-  );
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='4'%3E%3Cpath fill='%23fff' fill-opacity='.12' d='M0 0h1v1H0z'/%3E%3Cpath fill='%23000' fill-opacity='.18' d='M0 2h1v2H0z'/%3E%3C/svg%3E") repeat;
   mix-blend-mode: overlay;
   opacity: 0.7;
   animation: scanlines 3s linear infinite;
@@ -329,8 +321,8 @@ html, body {
 .crt-overlay__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.7) 100%);
-  opacity: 0.8;
+  background: none;
+  opacity: 0;
 }
 
 @keyframes scanlines {
@@ -449,7 +441,7 @@ html, body {
 .jumpscare-overlay {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle, rgba(255, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.95) 70%);
+  background: #16040a;
   z-index: 40;
   display: flex;
   flex-direction: column;

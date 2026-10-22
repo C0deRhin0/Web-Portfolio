@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import ProjectShowcase from '../ProjectShowcase';
 import { PROJECT_CAPTURES } from '../../data/projectScreenshots';
 import { PROJECT_DETAILS } from '../../data/projectDetails';
@@ -30,6 +30,21 @@ describe('project screenshot collections', () => {
       const evidence = PROJECT_CAPTURES.find(capture => capture.slug === project.slug);
       expect(evidence?.screens.length).toBeGreaterThanOrEqual(2);
       expect(evidence?.screens.every(image => image.alt.length > 10)).toBe(true);
+    }
+  });
+
+  it('opens repeated cards and restores focus to the accessible strip', () => {
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value() { this.setAttribute('open', ''); } });
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.removeAttribute('open'); } });
+    const { container } = render(<ProjectShowcase projectSlug="a2a-lobby" />);
+    const repeat = container.querySelector('[data-copy="repeat"]')!;
+    expect(repeat).not.toHaveAttribute('inert');
+    const cards = repeat.querySelectorAll('button');
+    for (const card of Array.from(cards)) {
+      fireEvent.click(card);
+      expect(screen.getByRole('dialog', { name: 'A2A Lobby' })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Close screenshot preview' }));
+      expect(screen.getByRole('group', { name: 'Scroll project screenshots' })).toHaveFocus();
     }
   });
 });
