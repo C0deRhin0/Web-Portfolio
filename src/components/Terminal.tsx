@@ -629,12 +629,16 @@ const Terminal: React.FC = () => {
 
     let Terminal: any, FitAddon: any;
     let terminal: any, fitAddon: any;
+    let cancelled = false;
+    let resizeObserver: ResizeObserver | undefined;
+    let removeResizeListener: (() => void) | undefined;
 
     (async () => {
       try {
         const xtermPkg = await import('xterm');
         const fitPkg = await import('xterm-addon-fit');
         await import('xterm/css/xterm.css');
+        if (cancelled) return;
         Terminal = xtermPkg.Terminal;
         FitAddon = fitPkg.FitAddon;
 
@@ -669,6 +673,7 @@ const Terminal: React.FC = () => {
         
         // Fit the terminal to the container and enforce column limit
         const customFit = () => {
+          if (cancelled) return;
           fitAddon.fit();
         };
         
@@ -704,6 +709,9 @@ const Terminal: React.FC = () => {
         // Handle window resize with custom fit
         const handleResize = () => customFit();
         window.addEventListener('resize', handleResize);
+        removeResizeListener = () => window.removeEventListener('resize', handleResize);
+        resizeObserver = new ResizeObserver(customFit);
+        resizeObserver.observe(terminalRef.current!);
 
         // Handle terminal input
         terminal.onKey(({ key, domEvent }: any) => {
@@ -760,18 +768,17 @@ const Terminal: React.FC = () => {
           }
         });
 
-        // Cleanup function
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          if (terminal && !terminal.disposed) {
-            terminal.dispose();
-          }
-        };
       } catch (error) {
-        handleTerminalInitializationError(error);
+        if (!cancelled) handleTerminalInitializationError(error);
       }
     })();
-  }, [isInitialized]); // Only depend on isInitialized
+    return () => {
+      cancelled = true;
+      removeResizeListener?.();
+      resizeObserver?.disconnect();
+      terminal?.dispose();
+    };
+  }, []); // The terminal and its observer live for this component's lifetime.
 
   // Interrupt typewriter effect
   const interruptTypewriter = () => {
@@ -870,7 +877,7 @@ const Terminal: React.FC = () => {
             />
           </div>
         )}
-        <div ref={terminalRef} className="xterm-wrapper" />
+        <div className="xterm-wrapper"><div ref={terminalRef} className="xterm-mount" /></div>
         <div className="terminal-bottom-spacer" aria-hidden="true" />
         {tooltip && <TerminalTooltip text={tooltip.text} x={tooltip.x} y={tooltip.y} />}
         {subTerminalVisible && (
